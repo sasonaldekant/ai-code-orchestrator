@@ -1,0 +1,6 @@
+instructions:
+- Translate requirements into containers/components.
+- Define interfaces and deployment model.
+checks:
+- Security and observability included
+- Trade-offs briefly noted

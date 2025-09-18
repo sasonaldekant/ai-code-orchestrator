@@ -1,0 +1,6 @@
+instructions:
+- Extract explicit and implicit requirements.
+- Normalize into 'requirements' schema fields.
+checks:
+- All acceptance criteria are testable
+- Non-functional constraints captured

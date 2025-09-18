@@ -1,0 +1,9 @@
+style:
+- .NET 8
+- minimal APIs or MVC
+- OpenAPI first
+deliverables:
+- endpoints
+- models
+- controllers
+- openapi

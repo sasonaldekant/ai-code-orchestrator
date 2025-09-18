@@ -1,0 +1,8 @@
+style:
+- function components
+- hooks
+- no prop drilling
+deliverables:
+- component
+- props_interface
+- tests

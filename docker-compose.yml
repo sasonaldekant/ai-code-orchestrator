@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      - OFFLINE_LLM=1
+      - TRACE_JSONL=1
+      - TRACE_FILE=/data/trace.jsonl
+    volumes:
+      - ./outputs:/app/outputs
+      - ./rag:/app/rag
+      - ./data:/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+volumes:
+  qdrant_storage: {}

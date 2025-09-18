@@ -1,0 +1,8 @@
+style:
+- BEM
+- mobile-first
+- WCAG AA
+deliverables:
+- design_tokens
+- utilities
+- components

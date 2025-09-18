@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "react_component",
+  "type": "object",
+  "properties": {
+    "component_name": {
+      "type": "string"
+    },
+    "props_interface": {
+      "type": "string"
+    },
+    "jsx": {
+      "type": "string"
+    },
+    "tests": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "component_name",
+    "jsx"
+  ]
+}

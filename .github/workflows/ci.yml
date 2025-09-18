@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -e .[dev]
+          pip install jsonschema pyyaml
+      - name: Run tests
+        run: pytest -q
+      - name: Run E2E pipeline
+        env:
+          OFFLINE_LLM: "1"
+          TRACE_JSONL: "1"
+          TRACE_FILE: "trace.jsonl"
+        run: |
+          python -m pipeline
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs-and-trace
+          path: |
+            outputs/*
+            trace.jsonl

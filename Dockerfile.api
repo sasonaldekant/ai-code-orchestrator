@@ -1,0 +1,7 @@
+FROM python:3.11-slim
+WORKDIR /app
+COPY . /app
+RUN pip install -U pip && pip install -e .[dev] && pip install jsonschema pyyaml fastapi uvicorn prometheus_client
+ENV OFFLINE_LLM=1
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]

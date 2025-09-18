@@ -1,0 +1,7 @@
+style:
+- strictNullChecks
+- noImplicitAny
+deliverables:
+- types
+- interfaces
+- enums

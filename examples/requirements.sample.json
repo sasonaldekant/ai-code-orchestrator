@@ -1,0 +1,42 @@
+{
+  "project_name": "AI Code Orchestrator",
+  "business_goals": [
+    "Faster delivery",
+    "Higher quality"
+  ],
+  "in_scope": [
+    "RAG",
+    "Phase agents"
+  ],
+  "out_of_scope": [
+    "iOS client"
+  ],
+  "stakeholders": [
+    "PM",
+    "Tech Lead"
+  ],
+  "constraints": [
+    "Budget: Medium",
+    "Python 3.10+"
+  ],
+  "assumptions": [
+    "Cloud access available"
+  ],
+  "interfaces": [
+    "Slack Bot",
+    "REST API"
+  ],
+  "dependencies": [
+    "PostgreSQL"
+  ],
+  "acceptance_criteria": [
+    "End-to-end demo passes",
+    "CI green"
+  ],
+  "non_functional": {
+    "performance": "p95<300ms",
+    "availability": "99.9%",
+    "security": "OWASP top 10"
+  },
+  "timeline": "Q4 2025"
+}

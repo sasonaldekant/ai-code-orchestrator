@@ -1,0 +1,963 @@
+[
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "run",
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "isExtraImport": true,
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "isExtraImport": true,
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "ingest_dir",
+        "importPath": "rag.ingest",
+        "description": "rag.ingest",
+        "isExtraImport": true,
+        "detail": "rag.ingest",
+        "documentation": {}
+    },
+    {
+        "label": "ingest_dir",
+        "importPath": "rag.ingest",
+        "description": "rag.ingest",
+        "isExtraImport": true,
+        "detail": "rag.ingest",
+        "documentation": {}
+    },
+    {
+        "label": "ask",
+        "importPath": "rag.query",
+        "description": "rag.query",
+        "isExtraImport": true,
+        "detail": "rag.query",
+        "documentation": {}
+    },
+    {
+        "label": "ask",
+        "importPath": "rag.query",
+        "description": "rag.query",
+        "isExtraImport": true,
+        "detail": "rag.query",
+        "documentation": {}
+    },
+    {
+        "label": "os,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os.",
+        "description": "os.",
+        "detail": "os.",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Counter",
+        "importPath": "prometheus_client",
+        "description": "prometheus_client",
+        "isExtraImport": true,
+        "detail": "prometheus_client",
+        "documentation": {}
+    },
+    {
+        "label": "Histogram",
+        "importPath": "prometheus_client",
+        "description": "prometheus_client",
+        "isExtraImport": true,
+        "detail": "prometheus_client",
+        "documentation": {}
+    },
+    {
+        "label": "generate_latest",
+        "importPath": "prometheus_client",
+        "description": "prometheus_client",
+        "isExtraImport": true,
+        "detail": "prometheus_client",
+        "documentation": {}
+    },
+    {
+        "label": "CONTENT_TYPE_LATEST",
+        "importPath": "prometheus_client",
+        "description": "prometheus_client",
+        "isExtraImport": true,
+        "detail": "prometheus_client",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "is_dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "json,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json.",
+        "description": "json.",
+        "detail": "json.",
+        "documentation": {}
+    },
+    {
+        "label": "re,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re.",
+        "description": "re.",
+        "detail": "re.",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess.",
+        "description": "subprocess.",
+        "detail": "subprocess.",
+        "documentation": {}
+    },
+    {
+        "label": "validate",
+        "importPath": "core.output_validator",
+        "description": "core.output_validator",
+        "isExtraImport": true,
+        "detail": "core.output_validator",
+        "documentation": {}
+    },
+    {
+        "label": "validate",
+        "importPath": "core.output_validator",
+        "description": "core.output_validator",
+        "isExtraImport": true,
+        "detail": "core.output_validator",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "IngestRequest",
+        "kind": 6,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "class IngestRequest(BaseModel):\n    src: str = \"rag/domain_docs\"\n    store: str = \"rag/store.json\"\nclass RunRequest(BaseModel):\n    phase: str\n    schema_name: str\n    specialty: str | None = None\n    question: str | None = None   # optional RAG question to enrich prompt\n    top_k: int = 3\n    class Config:",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "RunRequest",
+        "kind": 6,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "class RunRequest(BaseModel):\n    phase: str\n    schema_name: str\n    specialty: str | None = None\n    question: str | None = None   # optional RAG question to enrich prompt\n    top_k: int = 3\n    class Config:\n        json_schema_extra = {\n            \"examples\": [{\n                \"phase\": \"analyst\",",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "QueryRequest",
+        "kind": 6,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "class QueryRequest(BaseModel):\n    question: str\n    top_k: int = 3\n    class Config:\n        json_schema_extra = {\n            \"examples\": [{\n                \"question\": \"OpenAPI health checks\",\n                \"top_k\": 3\n            }]\n        }",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "QueryHit",
+        "kind": 6,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "class QueryHit(BaseModel):\n    id: str\n    score: float\n    text: str\nclass RunResponse(BaseModel):\n    ok: bool\n    message: str\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "RunResponse",
+        "kind": 6,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "class RunResponse(BaseModel):\n    ok: bool\n    message: str\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}\n@app.post(\"/query\")\ndef post_query(req: QueryRequest, request: Request):\n    if not check_key(request):\n        REQS.labels(path=\"/query\", method=\"POST\", status=\"401\").inc()",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "check_key",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def check_key(req: Request):\n    if API_KEY is None:\n        return True\n    return req.headers.get(\"x-api-key\") == API_KEY\n_LIMIT = int(os.getenv(\"RATE_LIMIT_PER_MIN\", \"60\"))\n_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}\n_lock = threading.Lock()\ndef allow(ip: str) -> bool:\n    if _LIMIT <= 0:",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "allow",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def allow(ip: str) -> bool:\n    if _LIMIT <= 0:\n        return True\n    now = time.time()\n    with _lock:\n        tokens, last = _buckets.get(ip, (_LIMIT, now))\n        delta = now - last\n        tokens = min(_LIMIT, tokens + delta * _refill)\n        if tokens >= 1.0:\n            tokens -= 1.0",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "health",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def health():\n    return {\"status\": \"ok\"}\n@app.post(\"/query\")\ndef post_query(req: QueryRequest, request: Request):\n    if not check_key(request):\n        REQS.labels(path=\"/query\", method=\"POST\", status=\"401\").inc()\n        raise HTTPException(status_code=401, detail=\"Unauthorized\")\n    ip = request.client.host if request and request.client else \"unknown\"\n    if not allow(ip):\n        REQS.labels(path=\"/query\", method=\"POST\", status=\"429\").inc()",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "post_query",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def post_query(req: QueryRequest, request: Request):\n    if not check_key(request):\n        REQS.labels(path=\"/query\", method=\"POST\", status=\"401\").inc()\n        raise HTTPException(status_code=401, detail=\"Unauthorized\")\n    ip = request.client.host if request and request.client else \"unknown\"\n    if not allow(ip):\n        REQS.labels(path=\"/query\", method=\"POST\", status=\"429\").inc()\n        raise HTTPException(status_code=429, detail=\"Too Many Requests\")\n    import time as _t; _t0 = _t.time()\n    hits = ask('rag/store.json', req.question, k=req.top_k)",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "post_ingest",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def post_ingest(req: IngestRequest, request: Request):\n    if not check_key(request):\n        REQS.labels(path=\"/ingest\", method=\"POST\", status=\"401\").inc()\n        raise HTTPException(status_code=401, detail=\"Unauthorized\")\n    ip = request.client.host if request and request.client else \"unknown\"\n    if not allow(ip):\n        REQS.labels(path=\"/ingest\", method=\"POST\", status=\"429\").inc()\n        raise HTTPException(status_code=429, detail=\"Too Many Requests\")\n    import time as _t; _t0 = _t.time()\n    ingest_dir(req.src, req.store)",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "post_run",
+        "kind": 2,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "def post_run(req: RunRequest, request: Request):\n    # Auth, RL, metrics start\n    if not check_key(request):\n        REQS.labels(path=\"/run\", method=\"POST\", status=\"401\").inc()\n        raise HTTPException(status_code=401, detail=\"Unauthorized\")\n    ip = request.client.host if request and request.client else \"unknown\"\n    if not allow(ip):\n        REQS.labels(path=\"/run\", method=\"POST\", status=\"429\").inc()\n        raise HTTPException(status_code=429, detail=\"Too Many Requests\")\n    import time as _t; _t0 = _t.time()",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "REQS",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "REQS = Counter(\"aio_requests_total\", \"Total API requests\", [\"path\", \"method\", \"status\"])\nLAT = Histogram(\"aio_request_seconds\", \"Request latency seconds\", [\"path\", \"method\"])\nAPI_KEY = os.getenv(\"API_KEY\")  # if None, auth disabled\ndef check_key(req: Request):\n    if API_KEY is None:\n        return True\n    return req.headers.get(\"x-api-key\") == API_KEY\n_LIMIT = int(os.getenv(\"RATE_LIMIT_PER_MIN\", \"60\"))\n_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "LAT",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "LAT = Histogram(\"aio_request_seconds\", \"Request latency seconds\", [\"path\", \"method\"])\nAPI_KEY = os.getenv(\"API_KEY\")  # if None, auth disabled\ndef check_key(req: Request):\n    if API_KEY is None:\n        return True\n    return req.headers.get(\"x-api-key\") == API_KEY\n_LIMIT = int(os.getenv(\"RATE_LIMIT_PER_MIN\", \"60\"))\n_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}\n_lock = threading.Lock()",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "API_KEY",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "API_KEY = os.getenv(\"API_KEY\")  # if None, auth disabled\ndef check_key(req: Request):\n    if API_KEY is None:\n        return True\n    return req.headers.get(\"x-api-key\") == API_KEY\n_LIMIT = int(os.getenv(\"RATE_LIMIT_PER_MIN\", \"60\"))\n_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}\n_lock = threading.Lock()\ndef allow(ip: str) -> bool:",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "_LIMIT",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "_LIMIT = int(os.getenv(\"RATE_LIMIT_PER_MIN\", \"60\"))\n_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}\n_lock = threading.Lock()\ndef allow(ip: str) -> bool:\n    if _LIMIT <= 0:\n        return True\n    now = time.time()\n    with _lock:\n        tokens, last = _buckets.get(ip, (_LIMIT, now))",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "_refill",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "_refill = _LIMIT / 60.0\n_buckets: Dict[str, Tuple[float, float]] = {}\n_lock = threading.Lock()\ndef allow(ip: str) -> bool:\n    if _LIMIT <= 0:\n        return True\n    now = time.time()\n    with _lock:\n        tokens, last = _buckets.get(ip, (_LIMIT, now))\n        delta = now - last",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "_lock",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "_lock = threading.Lock()\ndef allow(ip: str) -> bool:\n    if _LIMIT <= 0:\n        return True\n    now = time.time()\n    with _lock:\n        tokens, last = _buckets.get(ip, (_LIMIT, now))\n        delta = now - last\n        tokens = min(_LIMIT, tokens + delta * _refill)\n        if tokens >= 1.0:",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "app = FastAPI(title=\"AI Code Orchestrator API\", version=\"0.0.1\")\nSCHEMA_MAP = {\n    \"requirements\": \"schemas/phase_schemas/requirements.json\",\n    \"architecture\": \"schemas/phase_schemas/architecture.json\",\n    \"test_report\": \"schemas/phase_schemas/test_report.json\",\n    \"css_output\": \"schemas/specialist_schemas/css_output.json\",\n    \"typescript_types\": \"schemas/specialist_schemas/typescript_types.json\",\n    \"react_component\": \"schemas/specialist_schemas/react_component.json\",\n    \"dotnet_api\": \"schemas/specialist_schemas/dotnet_api.json\",\n}",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "SCHEMA_MAP",
+        "kind": 5,
+        "importPath": "api.app",
+        "description": "api.app",
+        "peekOfCode": "SCHEMA_MAP = {\n    \"requirements\": \"schemas/phase_schemas/requirements.json\",\n    \"architecture\": \"schemas/phase_schemas/architecture.json\",\n    \"test_report\": \"schemas/phase_schemas/test_report.json\",\n    \"css_output\": \"schemas/specialist_schemas/css_output.json\",\n    \"typescript_types\": \"schemas/specialist_schemas/typescript_types.json\",\n    \"react_component\": \"schemas/specialist_schemas/react_component.json\",\n    \"dotnet_api\": \"schemas/specialist_schemas/dotnet_api.json\",\n}\nclass IngestRequest(BaseModel):",
+        "detail": "api.app",
+        "documentation": {}
+    },
+    {
+        "label": "Context",
+        "kind": 6,
+        "importPath": "core.context_manager",
+        "description": "core.context_manager",
+        "peekOfCode": "class Context:\n    phase: str\n    specialty: str | None\n    rules: dict\n    schema: dict\n    extra: dict\ndef load_yaml(p: Path) -> dict:\n    return yaml.safe_load(p.read_text(encoding=\"utf-8\"))\ndef load_json(p: Path) -> dict:\n    return json.loads(p.read_text(encoding=\"utf-8\"))",
+        "detail": "core.context_manager",
+        "documentation": {}
+    },
+    {
+        "label": "load_yaml",
+        "kind": 2,
+        "importPath": "core.context_manager",
+        "description": "core.context_manager",
+        "peekOfCode": "def load_yaml(p: Path) -> dict:\n    return yaml.safe_load(p.read_text(encoding=\"utf-8\"))\ndef load_json(p: Path) -> dict:\n    return json.loads(p.read_text(encoding=\"utf-8\"))\ndef build_context(phase: str, specialty: str | None, schema_path: Path, rules_path: Path | None = None) -> Context:\n    rules = load_yaml(rules_path) if rules_path and rules_path.exists() else {}\n    schema = load_json(schema_path)\n    return Context(phase=phase, specialty=specialty, rules=rules, schema=schema, extra={})",
+        "detail": "core.context_manager",
+        "documentation": {}
+    },
+    {
+        "label": "load_json",
+        "kind": 2,
+        "importPath": "core.context_manager",
+        "description": "core.context_manager",
+        "peekOfCode": "def load_json(p: Path) -> dict:\n    return json.loads(p.read_text(encoding=\"utf-8\"))\ndef build_context(phase: str, specialty: str | None, schema_path: Path, rules_path: Path | None = None) -> Context:\n    rules = load_yaml(rules_path) if rules_path and rules_path.exists() else {}\n    schema = load_json(schema_path)\n    return Context(phase=phase, specialty=specialty, rules=rules, schema=schema, extra={})",
+        "detail": "core.context_manager",
+        "documentation": {}
+    },
+    {
+        "label": "build_context",
+        "kind": 2,
+        "importPath": "core.context_manager",
+        "description": "core.context_manager",
+        "peekOfCode": "def build_context(phase: str, specialty: str | None, schema_path: Path, rules_path: Path | None = None) -> Context:\n    rules = load_yaml(rules_path) if rules_path and rules_path.exists() else {}\n    schema = load_json(schema_path)\n    return Context(phase=phase, specialty=specialty, rules=rules, schema=schema, extra={})",
+        "detail": "core.context_manager",
+        "documentation": {}
+    },
+    {
+        "label": "LLMResponse",
+        "kind": 6,
+        "importPath": "core.llm_client",
+        "description": "core.llm_client",
+        "peekOfCode": "class LLMResponse:\n    text: str\n    model: str\n    usage: dict | None = None\ndef _trace(event: str, payload: dict):\n    if os.getenv(\"TRACE_JSONL\", \"1\") == \"1\":\n        line = json.dumps({\n            \"ts\": datetime.datetime.utcnow().isoformat() + \"Z\",\n            \"event\": event,\n            **payload",
+        "detail": "core.llm_client",
+        "documentation": {}
+    },
+    {
+        "label": "call",
+        "kind": 2,
+        "importPath": "core.llm_client",
+        "description": "core.llm_client",
+        "peekOfCode": "def call(model: str, prompt: str, temperature: float = 0.0, max_retries: int = 3) -> LLMResponse:\n    \"\"\"LLM call with optional OpenAI SDK and exponential backoff.\n    OFFLINE_LLM=1 forces deterministic stub.\n    TRACE_JSONL=1 writes events to TRACE_FILE (default: trace.jsonl).\n    \"\"\"\n    if os.getenv(\"OFFLINE_LLM\", \"1\") == \"1\":\n        return _offline_response(model, prompt)\n    # Try OpenAI SDK if available\n    try:\n        from openai import OpenAI  # type: ignore",
+        "detail": "core.llm_client",
+        "documentation": {}
+    },
+    {
+        "label": "ModelChoice",
+        "kind": 6,
+        "importPath": "core.model_router",
+        "description": "core.model_router",
+        "peekOfCode": "class ModelChoice:\n    name: str\n    temperature: float = 0.0\n# Basic heuristic: route by specialty/phase (placeholder)\ndef route(phase: str, specialty: str | None) -> ModelChoice:\n    if specialty in {\"css\", \"react\", \"typescript\"}:\n        return ModelChoice(name=\"gpt-4o-mini\")\n    if specialty in {\"dotnet\", \"backend\"}:\n        return ModelChoice(name=\"gpt-4o\")\n    return ModelChoice(name=\"gpt-4o-mini\")",
+        "detail": "core.model_router",
+        "documentation": {}
+    },
+    {
+        "label": "route",
+        "kind": 2,
+        "importPath": "core.model_router",
+        "description": "core.model_router",
+        "peekOfCode": "def route(phase: str, specialty: str | None) -> ModelChoice:\n    if specialty in {\"css\", \"react\", \"typescript\"}:\n        return ModelChoice(name=\"gpt-4o-mini\")\n    if specialty in {\"dotnet\", \"backend\"}:\n        return ModelChoice(name=\"gpt-4o\")\n    return ModelChoice(name=\"gpt-4o-mini\")",
+        "detail": "core.model_router",
+        "documentation": {}
+    },
+    {
+        "label": "Result",
+        "kind": 6,
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "peekOfCode": "class Result:\n    ok: bool\n    message: str\ndef run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:\n    ctx = build_context(phase=phase, specialty=specialty, schema_path=Path(schema_path))\n    model = route(phase, specialty)\n    log(\"orchestrator.context\", {\"phase\": phase, \"specialty\": specialty, \"schema\": Path(schema_path).name, \"model\": asdict(model)})\n    # Build prompt with optional RAG context (truncate to ~2000 chars for safety)\nctx_snippet = (extra_context or \"\")[:2000]\nprompt = (",
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "run",
+        "kind": 2,
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "peekOfCode": "def run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:\n    ctx = build_context(phase=phase, specialty=specialty, schema_path=Path(schema_path))\n    model = route(phase, specialty)\n    log(\"orchestrator.context\", {\"phase\": phase, \"specialty\": specialty, \"schema\": Path(schema_path).name, \"model\": asdict(model)})\n    # Build prompt with optional RAG context (truncate to ~2000 chars for safety)\nctx_snippet = (extra_context or \"\")[:2000]\nprompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")",
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "peekOfCode": "def main():\n    ap = argparse.ArgumentParser(description=\"AI Code Orchestrator\")\n    ap.add_argument(\"--phase\", required=True, help=\"analyst|architect|tester|...\")\n    ap.add_argument(\"--schema\", required=True, help=\"Path to JSON schema\")\n    ap.add_argument(\"--specialty\", required=False, help=\"css|react|typescript|dotnet|...\")\n    args = ap.parse_args()\n    res = run(phase=args.phase, schema_path=args.schema, specialty=args.specialty)\n    print((\"OK: \" if res.ok else \"FAIL: \") + res.message)\nif __name__ == \"__main__\":\n    main()",
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "ctx_snippet",
+        "kind": 5,
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "peekOfCode": "ctx_snippet = (extra_context or \"\")[:2000]\nprompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")\n)\n    resp = call(model.name, prompt, temperature=model.temperature)\n    ok, err = validate(resp.text, ctx.schema)\n    log(\"orchestrator.validate\", {\"ok\": ok, \"error\": err})\n    if not ok:",
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "prompt",
+        "kind": 5,
+        "importPath": "core.orchestrator",
+        "description": "core.orchestrator",
+        "peekOfCode": "prompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")\n)\n    resp = call(model.name, prompt, temperature=model.temperature)\n    ok, err = validate(resp.text, ctx.schema)\n    log(\"orchestrator.validate\", {\"ok\": ok, \"error\": err})\n    if not ok:\n        return Result(ok=False, message=f\"Validation failed: {err}\\nRaw: {resp.text[:200]}...\")",
+        "detail": "core.orchestrator",
+        "documentation": {}
+    },
+    {
+        "label": "validate",
+        "kind": 2,
+        "importPath": "core.output_validator",
+        "description": "core.output_validator",
+        "peekOfCode": "def validate(output_str: str, schema: dict) -> tuple[bool, str | None]:\n    try:\n        data = json.loads(output_str)\n        jsonschema.validate(instance=data, schema=schema)\n        return True, None\n    except jsonschema.ValidationError as e:\n        return False, f\"Schema validation error: {e.message}\"\n    except Exception as e:\n        return False, f\"Invalid JSON: {e}\"",
+        "detail": "core.output_validator",
+        "documentation": {}
+    },
+    {
+        "label": "log",
+        "kind": 2,
+        "importPath": "core.tracing",
+        "description": "core.tracing",
+        "peekOfCode": "def log(event: str, payload):\n    if is_dataclass(payload):\n        payload = asdict(payload)\n    rec = {\"ts\": datetime.datetime.utcnow().isoformat() + \"Z\", \"event\": event, **payload}\n    with open(TRACE_FILE, \"a\", encoding=\"utf-8\") as f:\n        f.write(json.dumps(rec, ensure_ascii=False) + \"\\n\")",
+        "detail": "core.tracing",
+        "documentation": {}
+    },
+    {
+        "label": "TRACE_FILE",
+        "kind": 5,
+        "importPath": "core.tracing",
+        "description": "core.tracing",
+        "peekOfCode": "TRACE_FILE = os.getenv(\"TRACE_FILE\", \"trace.jsonl\")\ndef log(event: str, payload):\n    if is_dataclass(payload):\n        payload = asdict(payload)\n    rec = {\"ts\": datetime.datetime.utcnow().isoformat() + \"Z\", \"event\": event, **payload}\n    with open(TRACE_FILE, \"a\", encoding=\"utf-8\") as f:\n        f.write(json.dumps(rec, ensure_ascii=False) + \"\\n\")",
+        "detail": "core.tracing",
+        "documentation": {}
+    },
+    {
+        "label": "score_css",
+        "kind": 2,
+        "importPath": "evals.specialist_evals.css_quality_eval",
+        "description": "evals.specialist_evals.css_quality_eval",
+        "peekOfCode": "def score_css(doc: dict) -> dict:\n    css = (doc.get(\"utilities\", \"\") + \"\\n\" + \"\\n\".join(c.get(\"css\", \"\") for c in doc.get(\"components\", [])))\n    bem_ok = bool(BEM_RE.search(css))\n    wcag_hits = sum(tok in css.lower() for tok in WCAG_TOKENS)\n    notes = []\n    if not bem_ok: notes.append(\"No BEM selectors detected\")\n    if wcag_hits < 1: notes.append(\"No WCAG related tokens found\")\n    return {\"score\": (1 if bem_ok else 0) + wcag_hits, \"notes\": notes}",
+        "detail": "evals.specialist_evals.css_quality_eval",
+        "documentation": {}
+    },
+    {
+        "label": "WCAG_TOKENS",
+        "kind": 5,
+        "importPath": "evals.specialist_evals.css_quality_eval",
+        "description": "evals.specialist_evals.css_quality_eval",
+        "peekOfCode": "WCAG_TOKENS = [\"contrast\", \"focus\", \"aria-\", \"sr-only\"]\nBEM_RE = re.compile(r\"\\\\.([a-z]+(?:-[a-z]+)*)(__[a-z-]+)?(--[a-z-]+)?\\s*\\{\", re.I)\ndef score_css(doc: dict) -> dict:\n    css = (doc.get(\"utilities\", \"\") + \"\\n\" + \"\\n\".join(c.get(\"css\", \"\") for c in doc.get(\"components\", [])))\n    bem_ok = bool(BEM_RE.search(css))\n    wcag_hits = sum(tok in css.lower() for tok in WCAG_TOKENS)\n    notes = []\n    if not bem_ok: notes.append(\"No BEM selectors detected\")\n    if wcag_hits < 1: notes.append(\"No WCAG related tokens found\")\n    return {\"score\": (1 if bem_ok else 0) + wcag_hits, \"notes\": notes}",
+        "detail": "evals.specialist_evals.css_quality_eval",
+        "documentation": {}
+    },
+    {
+        "label": "BEM_RE",
+        "kind": 5,
+        "importPath": "evals.specialist_evals.css_quality_eval",
+        "description": "evals.specialist_evals.css_quality_eval",
+        "peekOfCode": "BEM_RE = re.compile(r\"\\\\.([a-z]+(?:-[a-z]+)*)(__[a-z-]+)?(--[a-z-]+)?\\s*\\{\", re.I)\ndef score_css(doc: dict) -> dict:\n    css = (doc.get(\"utilities\", \"\") + \"\\n\" + \"\\n\".join(c.get(\"css\", \"\") for c in doc.get(\"components\", [])))\n    bem_ok = bool(BEM_RE.search(css))\n    wcag_hits = sum(tok in css.lower() for tok in WCAG_TOKENS)\n    notes = []\n    if not bem_ok: notes.append(\"No BEM selectors detected\")\n    if wcag_hits < 1: notes.append(\"No WCAG related tokens found\")\n    return {\"score\": (1 if bem_ok else 0) + wcag_hits, \"notes\": notes}",
+        "detail": "evals.specialist_evals.css_quality_eval",
+        "documentation": {}
+    },
+    {
+        "label": "score_dotnet",
+        "kind": 2,
+        "importPath": "evals.specialist_evals.dotnet_standards",
+        "description": "evals.specialist_evals.dotnet_standards",
+        "peekOfCode": "def score_dotnet(doc: dict) -> dict:\n    endpoints = doc.get(\"endpoints\", [])\n    openapi = doc.get(\"openapi\", \"\")\n    has_health = any(\"/health\" in e.lower() for e in endpoints)\n    has_openapi = \"openapi:\" in openapi.lower()\n    score = (1 if has_health else 0) + (1 if has_openapi else 0)\n    notes = []\n    if not has_health: notes.append(\"No /health endpoint defined\")\n    if not has_openapi: notes.append(\"OpenAPI spec missing header\")\n    return {\"score\": score, \"notes\": notes}",
+        "detail": "evals.specialist_evals.dotnet_standards",
+        "documentation": {}
+    },
+    {
+        "label": "score_react",
+        "kind": 2,
+        "importPath": "evals.specialist_evals.react_best_practices",
+        "description": "evals.specialist_evals.react_best_practices",
+        "peekOfCode": "def score_react(doc: dict) -> dict:\n    jsx = doc.get(\"jsx\", \"\")\n    hooks = \"useState(\" in jsx or \"useEffect(\" in jsx\n    fncomp = \"function\" in jsx or \"=>\" in jsx\n    return {\"score\": (1 if hooks else 0) + (1 if fncomp else 0), \"notes\": []}",
+        "detail": "evals.specialist_evals.react_best_practices",
+        "documentation": {}
+    },
+    {
+        "label": "score_ts",
+        "kind": 2,
+        "importPath": "evals.specialist_evals.typescript_eval",
+        "description": "evals.specialist_evals.typescript_eval",
+        "peekOfCode": "def score_ts(doc: dict) -> dict:\n    text = \"\\n\".join(doc.get(k, []) if isinstance(doc.get(k), list) else [doc.get(k, \"\")] for k in [\"types\",\"enums\",\"interfaces\"])  # type: ignore\n    strict = all(substr in text for substr in [\":\", \"interface\", \"type \"])\n    return {\"score\": 1 if strict else 0, \"notes\": [] if strict else [\"Missing basic TS constructs\"]}",
+        "detail": "evals.specialist_evals.typescript_eval",
+        "documentation": {}
+    },
+    {
+        "label": "EmbeddingRecord",
+        "kind": 6,
+        "importPath": "rag.embeddings_store",
+        "description": "rag.embeddings_store",
+        "peekOfCode": "class EmbeddingRecord:\n    id: str\n    text: str\n    vector: list[float]\nclass EmbeddingStore:\n    def __init__(self, path: Path):\n        self.path = path\n        self.records: list[EmbeddingRecord] = []\n        if path.exists():\n            data = json.loads(path.read_text(encoding=\"utf-8\"))",
+        "detail": "rag.embeddings_store",
+        "documentation": {}
+    },
+    {
+        "label": "EmbeddingStore",
+        "kind": 6,
+        "importPath": "rag.embeddings_store",
+        "description": "rag.embeddings_store",
+        "peekOfCode": "class EmbeddingStore:\n    def __init__(self, path: Path):\n        self.path = path\n        self.records: list[EmbeddingRecord] = []\n        if path.exists():\n            data = json.loads(path.read_text(encoding=\"utf-8\"))\n            self.records = [EmbeddingRecord(**r) for r in data]\n    def add(self, id: str, text: str):\n        self.records.append(EmbeddingRecord(id=id, text=text, vector=embed(text)))\n    def save(self):",
+        "detail": "rag.embeddings_store",
+        "documentation": {}
+    },
+    {
+        "label": "embed",
+        "kind": 2,
+        "importPath": "rag.embeddings_store",
+        "description": "rag.embeddings_store",
+        "peekOfCode": "def embed(text: str, dim: int = 128) -> list[float]:\n    \"\"\"Deterministic fake 'embedding': uses SHA256 rolling to fill dim.\"\"\"\n    seed = hashlib.sha256(text.encode(\"utf-8\")).digest()\n    vec = [(seed[i % len(seed)] / 255.0) for i in range(dim)]\n    return vec\ndef cos(a: list[float], b: list[float]) -> float:\n    dot = sum(x*y for x,y in zip(a,b))\n    na = math.sqrt(sum(x*x for x in a))\n    nb = math.sqrt(sum(y*y for y in b))\n    return dot / (na*nb + 1e-9)",
+        "detail": "rag.embeddings_store",
+        "documentation": {}
+    },
+    {
+        "label": "cos",
+        "kind": 2,
+        "importPath": "rag.embeddings_store",
+        "description": "rag.embeddings_store",
+        "peekOfCode": "def cos(a: list[float], b: list[float]) -> float:\n    dot = sum(x*y for x,y in zip(a,b))\n    na = math.sqrt(sum(x*x for x in a))\n    nb = math.sqrt(sum(y*y for y in b))\n    return dot / (na*nb + 1e-9)\n@dataclass\nclass EmbeddingRecord:\n    id: str\n    text: str\n    vector: list[float]",
+        "detail": "rag.embeddings_store",
+        "documentation": {}
+    },
+    {
+        "label": "ingest_dir",
+        "kind": 2,
+        "importPath": "rag.ingest",
+        "description": "rag.ingest",
+        "peekOfCode": "def ingest_dir(src_dir: str, store_path: str):\n    src = Path(src_dir)\n    store = EmbeddingStore(Path(store_path))\n    for p in src.rglob(\"*.md\"):\n        store.add(id=p.stem, text=p.read_text(encoding=\"utf-8\"))\n    store.save()\nif __name__ == \"__main__\":\n    import argparse\n    ap = argparse.ArgumentParser()\n    ap.add_argument(\"--src\", required=True, help=\"directory with .md files\")",
+        "detail": "rag.ingest",
+        "documentation": {}
+    },
+    {
+        "label": "ask",
+        "kind": 2,
+        "importPath": "rag.query",
+        "description": "rag.query",
+        "peekOfCode": "def ask(store_path: str, question: str, k: int = 3):\n    store = EmbeddingStore(Path(store_path))\n    return store.query(question, k=k)\nif __name__ == \"__main__\":\n    import argparse, json\n    ap = argparse.ArgumentParser()\n    ap.add_argument(\"--store\", required=True)\n    ap.add_argument(\"--q\", required=True)\n    ap.add_argument(\"--k\", type=int, default=3)\n    args = ap.parse_args()",
+        "detail": "rag.query",
+        "documentation": {}
+    },
+    {
+        "label": "test_orchestrator_offline",
+        "kind": 2,
+        "importPath": "tests.test_orchestrator_cli",
+        "description": "tests.test_orchestrator_cli",
+        "peekOfCode": "def test_orchestrator_offline(tmp_path: Path):\n    os.environ[\"OFFLINE_LLM\"] = \"1\"\n    schema = Path(\"schemas/phase_schemas/requirements.json\")\n    proc = subprocess.run([sys.executable, \"-m\", \"cli\", \"--phase\", \"analyst\", \"--schema\", str(schema)], capture_output=True, text=True)\n    assert proc.returncode == 0\n    assert \"OK:\" in proc.stdout",
+        "detail": "tests.test_orchestrator_cli",
+        "documentation": {}
+    },
+    {
+        "label": "test_rag_ingest_and_query",
+        "kind": 2,
+        "importPath": "tests.test_rag",
+        "description": "tests.test_rag",
+        "peekOfCode": "def test_rag_ingest_and_query(tmp_path: Path):\n    src = tmp_path / \"docs\"\n    src.mkdir()\n    (src / \"a.md\").write_text(\"alpha beta gamma\", encoding=\"utf-8\")\n    store = tmp_path / \"store.json\"\n    ingest_dir(str(src), str(store))\n    res = ask(str(store), \"alpha\", k=1)\n    assert len(res) == 1 and res[0][0] == \"a\"",
+        "detail": "tests.test_rag",
+        "documentation": {}
+    },
+    {
+        "label": "test_validate_pass",
+        "kind": 2,
+        "importPath": "tests.test_validator",
+        "description": "tests.test_validator",
+        "peekOfCode": "def test_validate_pass():\n    ok, err = validate(json.dumps({\"x\":1}), schema)\n    assert ok and err is None\ndef test_validate_fail():\n    ok, err = validate(json.dumps({\"y\":2}), schema)\n    assert not ok and \"Schema validation error\" in err",
+        "detail": "tests.test_validator",
+        "documentation": {}
+    },
+    {
+        "label": "test_validate_fail",
+        "kind": 2,
+        "importPath": "tests.test_validator",
+        "description": "tests.test_validator",
+        "peekOfCode": "def test_validate_fail():\n    ok, err = validate(json.dumps({\"y\":2}), schema)\n    assert not ok and \"Schema validation error\" in err",
+        "detail": "tests.test_validator",
+        "documentation": {}
+    },
+    {
+        "label": "schema",
+        "kind": 5,
+        "importPath": "tests.test_validator",
+        "description": "tests.test_validator",
+        "peekOfCode": "schema = {\"type\":\"object\", \"properties\":{\"x\":{\"type\":\"number\"}}, \"required\":[\"x\"]}\ndef test_validate_pass():\n    ok, err = validate(json.dumps({\"x\":1}), schema)\n    assert ok and err is None\ndef test_validate_fail():\n    ok, err = validate(json.dumps({\"y\":2}), schema)\n    assert not ok and \"Schema validation error\" in err",
+        "detail": "tests.test_validator",
+        "documentation": {}
+    },
+    {
+        "label": "load_schema",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def load_schema(name: str) -> dict:\n    return json.loads(SCHEMAS[name].read_text(encoding=\"utf-8\"))\ndef save(name: str, obj: dict) -> Path:\n    p = OUT / f\"{name}.json\"\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding=\"utf-8\")\n    return p\ndef phase_requirements() -> dict:\n    return {\n        \"project_name\": \"AI Code Orchestrator\",",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "save",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def save(name: str, obj: dict) -> Path:\n    p = OUT / f\"{name}.json\"\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding=\"utf-8\")\n    return p\ndef phase_requirements() -> dict:\n    return {\n        \"project_name\": \"AI Code Orchestrator\",\n        \"business_goals\": [\"Accelerate delivery\", \"Improve quality via validation\"],\n        \"in_scope\": [\"Phase agents\", \"RAG\", \"Eval pipeline\"],",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "phase_requirements",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def phase_requirements() -> dict:\n    return {\n        \"project_name\": \"AI Code Orchestrator\",\n        \"business_goals\": [\"Accelerate delivery\", \"Improve quality via validation\"],\n        \"in_scope\": [\"Phase agents\", \"RAG\", \"Eval pipeline\"],\n        \"out_of_scope\": [\"Native mobile apps\"],\n        \"stakeholders\": [\"PM\", \"Tech Lead\", \"QA Lead\"],\n        \"constraints\": [\"Budget: Medium\", \"Python >=3.10\"],\n        \"assumptions\": [\"Cloud access available\"],\n        \"interfaces\": [\"REST API\", \"Slack Bot\"],",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "phase_architecture",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def phase_architecture(req: dict) -> dict:\n    return {\n        \"system_context\": \"CLI-driven orchestrator that routes tasks to micro-specialized agents\",\n        \"containers\": [\n            {\"name\": \"orchestrator\", \"purpose\": \"route/validate\", \"tech\": \"Python 3.11\", \"interfaces\": [\"agents\"]},\n            {\"name\": \"rag\", \"purpose\": \"retrieve domain chunks\", \"tech\": \"embeddings\", \"interfaces\": [\"orchestrator\"]},\n            {\"name\": \"evals\", \"purpose\": \"quality checks\", \"tech\": \"pytest/python\", \"interfaces\": [\"orchestrator\"]}\n        ],\n        \"components\": [\"context_manager\", \"model_router\", \"output_validator\"],\n        \"data_model\": \"JSON outputs validated by JSON Schema\",",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "spec_css",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def spec_css() -> dict:\n    return {\n        \"design_tokens\": {\"space-1\": \"4px\", \"color-brand\": \"#0047ff\"},\n        \"utilities\": \".sr-only{position:absolute;left:-10000px;}\",\n        \"components\": [\n            {\"name\": \"Button\", \"css\": \".btn{padding:8px 12px;}.btn--primary{background:var(--color-brand);}\"},\n        ],\n        \"notes\": \"BEM-style naming; mobile-first\"\n    }\ndef spec_typescript() -> dict:",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "spec_typescript",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def spec_typescript() -> dict:\n    return {\n        \"types\": [\"type UserId = string\", \"type Score = number\"],\n        \"enums\": [\"enum Status { Ok = 'ok', Err = 'err' }\"],\n        \"interfaces\": [\"interface ApiResponse<T>{ data:T; error?: string }\"]\n    }\ndef spec_react() -> dict:\n    return {\n        \"component_name\": \"PrimaryButton\",\n        \"props_interface\": \"interface PrimaryButtonProps { label: string; onClick: () => void }\",",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "spec_react",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def spec_react() -> dict:\n    return {\n        \"component_name\": \"PrimaryButton\",\n        \"props_interface\": \"interface PrimaryButtonProps { label: string; onClick: () => void }\",\n        \"jsx\": \"export function PrimaryButton({label,onClick}:any){return <button onClick={onClick}>{label}</button>}\",\n        \"tests\": \"it('renders',()=>{/* jest test placeholder */})\"\n    }\ndef spec_dotnet() -> dict:\n    return {\n        \"controllers\": [\"HealthController\"],",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "spec_dotnet",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def spec_dotnet() -> dict:\n    return {\n        \"controllers\": [\"HealthController\"],\n        \"models\": [\"HealthResponse\"],\n        \"endpoints\": [\"GET /health\"],\n        \"openapi\": \"openapi: 3.0.3\\ninfo:\\n  title: Orchestrator API\\n  version: 0.0.1\"\n    }\ndef phase_test_report() -> dict:\n    return {\n        \"test_plan\": \"E2E smoke covering all phase outputs and schema validation\",",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "phase_test_report",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def phase_test_report() -> dict:\n    return {\n        \"test_plan\": \"E2E smoke covering all phase outputs and schema validation\",\n        \"test_cases\": [\n            {\"id\":\"REQ-1\",\"title\":\"Requirements exist\",\"steps\":[\"Generate requirements\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"},\n            {\"id\":\"ARC-1\",\"title\":\"Architecture exists\",\"steps\":[\"Generate architecture\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"},\n            {\"id\":\"CSS-1\",\"title\":\"CSS spec exists\",\"steps\":[\"Generate CSS\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"},\n            {\"id\":\"TS-1\",\"title\":\"TS types exist\",\"steps\":[\"Generate TS\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"},\n            {\"id\":\"RE-1\",\"title\":\"React component exists\",\"steps\":[\"Generate React\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"},\n            {\"id\":\"DN-1\",\"title\":\".NET API exists\",\"steps\":[\"Generate .NET\"],\"expected\":\"Valid per schema\",\"actual\":\"As expected\",\"status\":\"pass\"}",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def main():\n    OUT = ROOT / \"outputs\"\n    OUT.mkdir(parents=True, exist_ok=True)\n    # REQUIREMENTS\n    req = phase_requirements()\n    ok, err = validate(json.dumps(req), load_schema(\"requirements\"))\n    assert ok, f\"requirements invalid: {err}\"\n    save(\"requirements\", req)\n    # ARCHITECTURE\n    arc = phase_architecture(req)",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "load_schema",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def load_schema(name: str) -> dict:\n    return json.loads((SCHEMAS[name]).read_text(encoding=\"utf-8\"))\ndef save(name: str, obj: dict) -> Path:\n    p = (ROOT / \"outputs\" / f\"{name}.json\")\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding=\"utf-8\")\n    return p\nif __name__ == \"__main__\":\n    main()\ndef _eval_all():",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "save",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def save(name: str, obj: dict) -> Path:\n    p = (ROOT / \"outputs\" / f\"{name}.json\")\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding=\"utf-8\")\n    return p\nif __name__ == \"__main__\":\n    main()\ndef _eval_all():\n    from evals.specialist_evals.css_quality_eval import score_css\n    from evals.specialist_evals.typescript_eval import score_ts",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "def main():\n    OUT = ROOT / \"outputs\"\n    OUT.mkdir(parents=True, exist_ok=True)\n    # original steps...\n    req = phase_requirements()\n    ok, err = validate(json.dumps(req), load_schema(\"requirements\"))\n    assert ok, f\"requirements invalid: {err}\"\n    save(\"requirements\", req)\n    arc = phase_architecture(req)\n    ok, err = validate(json.dumps(arc), load_schema(\"architecture\"))",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "ROOT",
+        "kind": 5,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "ROOT = Path(__file__).parent\nSCHEMAS = {\n    \"requirements\": ROOT / \"schemas/phase_schemas/requirements.json\",\n    \"architecture\": ROOT / \"schemas/phase_schemas/architecture.json\",\n    \"test_report\": ROOT / \"schemas/phase_schemas/test_report.json\",\n    \"css_output\": ROOT / \"schemas/specialist_schemas/css_output.json\",\n    \"typescript_types\": ROOT / \"schemas/specialist_schemas/typescript_types.json\",\n    \"react_component\": ROOT / \"schemas/specialist_schemas/react_component.json\",\n    \"dotnet_api\": ROOT / \"schemas/specialist_schemas/dotnet_api.json\",\n    \"microservice_config\": ROOT / \"schemas/specialist_schemas/microservice_config.json\",",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "SCHEMAS",
+        "kind": 5,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "SCHEMAS = {\n    \"requirements\": ROOT / \"schemas/phase_schemas/requirements.json\",\n    \"architecture\": ROOT / \"schemas/phase_schemas/architecture.json\",\n    \"test_report\": ROOT / \"schemas/phase_schemas/test_report.json\",\n    \"css_output\": ROOT / \"schemas/specialist_schemas/css_output.json\",\n    \"typescript_types\": ROOT / \"schemas/specialist_schemas/typescript_types.json\",\n    \"react_component\": ROOT / \"schemas/specialist_schemas/react_component.json\",\n    \"dotnet_api\": ROOT / \"schemas/specialist_schemas/dotnet_api.json\",\n    \"microservice_config\": ROOT / \"schemas/specialist_schemas/microservice_config.json\",\n}",
+        "detail": "pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "OUT",
+        "kind": 5,
+        "importPath": "pipeline",
+        "description": "pipeline",
+        "peekOfCode": "OUT = ROOT / \"outputs\"\ndef load_schema(name: str) -> dict:\n    return json.loads(SCHEMAS[name].read_text(encoding=\"utf-8\"))\ndef save(name: str, obj: dict) -> Path:\n    p = OUT / f\"{name}.json\"\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding=\"utf-8\")\n    return p\ndef phase_requirements() -> dict:\n    return {",
+        "detail": "pipeline",
+        "documentation": {}
+    }
+]

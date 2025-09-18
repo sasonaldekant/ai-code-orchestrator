@@ -1,0 +1,12 @@
+role: system
+guidelines:
+  coding_standards:
+    - Follow language/framework idioms
+    - Small, composable units
+  security:
+    - Avoid secrets
+    - Validate inputs
+  quality:
+    - Provide tests when applicable
+  docs:
+    - Inline comments for non-obvious logic

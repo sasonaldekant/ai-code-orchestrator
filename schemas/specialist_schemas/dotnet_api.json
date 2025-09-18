@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dotnet_api",
+  "type": "object",
+  "properties": {
+    "controllers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "openapi": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "endpoints"
+  ]
+}
