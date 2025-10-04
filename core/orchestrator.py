@@ -1,44 +1,68 @@
-"""Orchestrator entrypoint with model routing, validation, tracing."""
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
-import json, argparse
-from .context_manager import build_context
+import json
+
 from .model_router import route
 from .output_validator import validate
 from .llm_client import call
-from .tracing import log
+
+# Optional tracing: fall back to no-op if not present
+try:
+    from .tracing import log as _trace_log
+except Exception:  # pragma: no cover
+    def _trace_log(*args, **kwargs):
+        return None
 
 @dataclass
 class Result:
     ok: bool
     message: str
 
+def _extract_text(resp) -> str:
+    """Handle several possible response shapes from llm_client.call."""
+    if resp is None:
+        return ""
+    if isinstance(resp, str):
+        return resp
+    # dict-like
+    if isinstance(resp, dict):
+        return str(resp.get("text", resp))
+    # object with .text
+    text = getattr(resp, "text", None)
+    if text is not None:
+        return str(text)
+    return str(resp)
+
+def _build_prompt(phase: str, specialty: str | None, schema: dict, extra_context: str | None):
+    parts = [
+        "You are a micro-specialized code agent.",
+        f"Phase: {phase}",
+        f"Specialty: {specialty or 'generic'}",
+        "Produce ONLY valid JSON matching the provided JSON Schema.",
+        "DO NOT include any prose outside the JSON value.",
+    ]
+    if extra_context:
+        parts.append("Context:\n" + extra_context)
+    parts.append("JSON Schema:\n" + json.dumps(schema))
+    return "\n\n".join(parts)
+
 def run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:
-    ctx = build_context(phase=phase, specialty=specialty, schema_path=Path(schema_path))
+    schema = json.loads(Path(schema_path).read_text(encoding="utf-8"))
     model = route(phase, specialty)
-    log("orchestrator.context", {"phase": phase, "specialty": specialty, "schema": Path(schema_path).name, "model": asdict(model)})
-    # Build prompt with optional RAG context (truncate to ~2000 chars for safety)
-ctx_snippet = (extra_context or "")[:2000]
-prompt = (
-    f"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. "
-    "Output only JSON. "
-    + (f"Context:\n{ctx_snippet}" if ctx_snippet else "")
-)
+    prompt = _build_prompt(phase, specialty, schema, extra_context)
     resp = call(model.name, prompt, temperature=model.temperature)
-    ok, err = validate(resp.text, ctx.schema)
-    log("orchestrator.validate", {"ok": ok, "error": err})
+    text = _extract_text(resp)
+
+    ok, err = validate(text, schema)
+
+    _trace_log("orchestrator.run", {
+        "phase": phase, "specialty": specialty, "model": model.name, "ok": ok
+    })
+
     if not ok:
-        return Result(ok=False, message=f"Validation failed: {err}\nRaw: {resp.text[:200]}...")
-    return Result(ok=True, message="Run succeeded with model %s" % model.name)
+        return Result(ok=False, message=f"Validation failed: {err}\nRaw: {text[:200]}...")
 
-def main():
-    ap = argparse.ArgumentParser(description="AI Code Orchestrator")
-    ap.add_argument("--phase", required=True, help="analyst|architect|tester|...")
-    ap.add_argument("--schema", required=True, help="Path to JSON schema")
-    ap.add_argument("--specialty", required=False, help="css|react|typescript|dotnet|...")
-    args = ap.parse_args()
-    res = run(phase=args.phase, schema_path=args.schema, specialty=args.specialty)
-    print(("OK: " if res.ok else "FAIL: ") + res.message)
-
-if __name__ == "__main__":
-    main()
+    out_dir = Path("outputs"); out_dir.mkdir(exist_ok=True)
+    out = out_dir / f"{phase}-{(specialty or 'generic')}.json"
+    out.write_text(text, encoding="utf-8")
+    return Result(ok=True, message=f"Run succeeded with model {model.name}")

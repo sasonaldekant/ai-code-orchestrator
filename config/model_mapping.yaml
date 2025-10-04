@@ -1,1 +1,12 @@
-# Auto-generated template: model_mapping.yaml
+default:
+  model: gpt-4o-mini
+  temperature: 0.0
+routing:
+  phase:
+    analyst:   { model: gpt-4o-mini, temperature: 0.0 }
+    architect: { model: gpt-4o,      temperature: 0.0 }
+  specialty:
+    css:        { model: gpt-4o-mini, temperature: 0.0 }
+    react:      { model: gpt-4o-mini, temperature: 0.0 }
+    typescript: { model: gpt-4o-mini, temperature: 0.0 }
+    dotnet:     { model: gpt-4o,      temperature: 0.0 }

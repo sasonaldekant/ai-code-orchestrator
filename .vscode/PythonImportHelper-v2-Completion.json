@@ -32,6 +32,22 @@
         "documentation": {}
     },
     {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
         "label": "FastAPI",
         "importPath": "fastapi",
         "description": "fastapi",
@@ -53,6 +69,30 @@
         "description": "pydantic",
         "isExtraImport": true,
         "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
         "documentation": {}
     },
     {
@@ -201,6 +241,30 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Counter",
         "importPath": "prometheus_client",
         "description": "prometheus_client",
@@ -265,7 +329,7 @@
         "documentation": {}
     },
     {
-        "label": "asdict",
+        "label": "dataclass",
         "importPath": "dataclasses",
         "description": "dataclasses",
         "isExtraImport": true,
@@ -297,12 +361,47 @@
         "documentation": {}
     },
     {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
         "label": "json,",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "json.",
         "description": "json.",
         "detail": "json.",
+        "documentation": {}
+    },
+    {
+        "label": "yaml",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "yaml",
+        "description": "yaml",
+        "detail": "yaml",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
         "documentation": {}
     },
     {
@@ -337,15 +436,6 @@
         "description": "core.output_validator",
         "isExtraImport": true,
         "detail": "core.output_validator",
-        "documentation": {}
-    },
-    {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
         "documentation": {}
     },
     {
@@ -578,7 +668,7 @@
         "kind": 6,
         "importPath": "core.model_router",
         "description": "core.model_router",
-        "peekOfCode": "class ModelChoice:\n    name: str\n    temperature: float = 0.0\n# Basic heuristic: route by specialty/phase (placeholder)\ndef route(phase: str, specialty: str | None) -> ModelChoice:\n    if specialty in {\"css\", \"react\", \"typescript\"}:\n        return ModelChoice(name=\"gpt-4o-mini\")\n    if specialty in {\"dotnet\", \"backend\"}:\n        return ModelChoice(name=\"gpt-4o\")\n    return ModelChoice(name=\"gpt-4o-mini\")",
+        "peekOfCode": "class ModelChoice:\n    name: str\n    temperature: float = 0.0\n_cfg = None\ndef _load_cfg():\n    global _cfg\n    if _cfg is None:\n        cfg_path = Path(__file__).resolve().parent.parent / \"config\" / \"model_mapping.yaml\"\n        _cfg = yaml.safe_load(cfg_path.read_text(encoding=\"utf-8\"))\n    return _cfg",
         "detail": "core.model_router",
         "documentation": {}
     },
@@ -587,7 +677,16 @@
         "kind": 2,
         "importPath": "core.model_router",
         "description": "core.model_router",
-        "peekOfCode": "def route(phase: str, specialty: str | None) -> ModelChoice:\n    if specialty in {\"css\", \"react\", \"typescript\"}:\n        return ModelChoice(name=\"gpt-4o-mini\")\n    if specialty in {\"dotnet\", \"backend\"}:\n        return ModelChoice(name=\"gpt-4o\")\n    return ModelChoice(name=\"gpt-4o-mini\")",
+        "peekOfCode": "def route(phase: str, specialty: str | None) -> ModelChoice:\n    cfg = _load_cfg()\n    d = dict(cfg.get(\"default\", {}))\n    # precedence: phase → specialty override\n    if phase and phase in cfg.get(\"routing\", {}).get(\"phase\", {}):\n        d.update(cfg[\"routing\"][\"phase\"][phase])\n    if specialty and specialty in cfg.get(\"routing\", {}).get(\"specialty\", {}):\n        d.update(cfg[\"routing\"][\"specialty\"][specialty])\n    return ModelChoice(name=d[\"model\"], temperature=float(d.get(\"temperature\", 0.0)))",
+        "detail": "core.model_router",
+        "documentation": {}
+    },
+    {
+        "label": "_cfg",
+        "kind": 5,
+        "importPath": "core.model_router",
+        "description": "core.model_router",
+        "peekOfCode": "_cfg = None\ndef _load_cfg():\n    global _cfg\n    if _cfg is None:\n        cfg_path = Path(__file__).resolve().parent.parent / \"config\" / \"model_mapping.yaml\"\n        _cfg = yaml.safe_load(cfg_path.read_text(encoding=\"utf-8\"))\n    return _cfg\ndef route(phase: str, specialty: str | None) -> ModelChoice:\n    cfg = _load_cfg()\n    d = dict(cfg.get(\"default\", {}))",
         "detail": "core.model_router",
         "documentation": {}
     },
@@ -596,7 +695,7 @@
         "kind": 6,
         "importPath": "core.orchestrator",
         "description": "core.orchestrator",
-        "peekOfCode": "class Result:\n    ok: bool\n    message: str\ndef run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:\n    ctx = build_context(phase=phase, specialty=specialty, schema_path=Path(schema_path))\n    model = route(phase, specialty)\n    log(\"orchestrator.context\", {\"phase\": phase, \"specialty\": specialty, \"schema\": Path(schema_path).name, \"model\": asdict(model)})\n    # Build prompt with optional RAG context (truncate to ~2000 chars for safety)\nctx_snippet = (extra_context or \"\")[:2000]\nprompt = (",
+        "peekOfCode": "class Result:\n    ok: bool\n    message: str\ndef _extract_text(resp) -> str:\n    \"\"\"Handle several possible response shapes from llm_client.call.\"\"\"\n    if resp is None:\n        return \"\"\n    if isinstance(resp, str):\n        return resp\n    # dict-like",
         "detail": "core.orchestrator",
         "documentation": {}
     },
@@ -605,34 +704,7 @@
         "kind": 2,
         "importPath": "core.orchestrator",
         "description": "core.orchestrator",
-        "peekOfCode": "def run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:\n    ctx = build_context(phase=phase, specialty=specialty, schema_path=Path(schema_path))\n    model = route(phase, specialty)\n    log(\"orchestrator.context\", {\"phase\": phase, \"specialty\": specialty, \"schema\": Path(schema_path).name, \"model\": asdict(model)})\n    # Build prompt with optional RAG context (truncate to ~2000 chars for safety)\nctx_snippet = (extra_context or \"\")[:2000]\nprompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")",
-        "detail": "core.orchestrator",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": "core.orchestrator",
-        "description": "core.orchestrator",
-        "peekOfCode": "def main():\n    ap = argparse.ArgumentParser(description=\"AI Code Orchestrator\")\n    ap.add_argument(\"--phase\", required=True, help=\"analyst|architect|tester|...\")\n    ap.add_argument(\"--schema\", required=True, help=\"Path to JSON schema\")\n    ap.add_argument(\"--specialty\", required=False, help=\"css|react|typescript|dotnet|...\")\n    args = ap.parse_args()\n    res = run(phase=args.phase, schema_path=args.schema, specialty=args.specialty)\n    print((\"OK: \" if res.ok else \"FAIL: \") + res.message)\nif __name__ == \"__main__\":\n    main()",
-        "detail": "core.orchestrator",
-        "documentation": {}
-    },
-    {
-        "label": "ctx_snippet",
-        "kind": 5,
-        "importPath": "core.orchestrator",
-        "description": "core.orchestrator",
-        "peekOfCode": "ctx_snippet = (extra_context or \"\")[:2000]\nprompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")\n)\n    resp = call(model.name, prompt, temperature=model.temperature)\n    ok, err = validate(resp.text, ctx.schema)\n    log(\"orchestrator.validate\", {\"ok\": ok, \"error\": err})\n    if not ok:",
-        "detail": "core.orchestrator",
-        "documentation": {}
-    },
-    {
-        "label": "prompt",
-        "kind": 5,
-        "importPath": "core.orchestrator",
-        "description": "core.orchestrator",
-        "peekOfCode": "prompt = (\n    f\"Generate JSON valid to provided schema for phase={phase}, specialty={specialty}. \"\n    \"Output only JSON. \"\n    + (f\"Context:\\n{ctx_snippet}\" if ctx_snippet else \"\")\n)\n    resp = call(model.name, prompt, temperature=model.temperature)\n    ok, err = validate(resp.text, ctx.schema)\n    log(\"orchestrator.validate\", {\"ok\": ok, \"error\": err})\n    if not ok:\n        return Result(ok=False, message=f\"Validation failed: {err}\\nRaw: {resp.text[:200]}...\")",
+        "peekOfCode": "def run(phase: str, schema_path: str, specialty: str | None = None, extra_context: str | None = None) -> Result:\n    schema = json.loads(Path(schema_path).read_text(encoding=\"utf-8\"))\n    model = route(phase, specialty)\n    prompt = _build_prompt(phase, specialty, schema, extra_context)\n    resp = call(model.name, prompt, temperature=model.temperature)\n    text = _extract_text(resp)\n    ok, err = validate(text, schema)\n    _trace_log(\"orchestrator.run\", {\n        \"phase\": phase, \"specialty\": specialty, \"model\": model.name, \"ok\": ok\n    })",
         "detail": "core.orchestrator",
         "documentation": {}
     },
@@ -643,6 +715,24 @@
         "description": "core.output_validator",
         "peekOfCode": "def validate(output_str: str, schema: dict) -> tuple[bool, str | None]:\n    try:\n        data = json.loads(output_str)\n        jsonschema.validate(instance=data, schema=schema)\n        return True, None\n    except jsonschema.ValidationError as e:\n        return False, f\"Schema validation error: {e.message}\"\n    except Exception as e:\n        return False, f\"Invalid JSON: {e}\"",
         "detail": "core.output_validator",
+        "documentation": {}
+    },
+    {
+        "label": "Limits",
+        "kind": 6,
+        "importPath": "core.settings",
+        "description": "core.settings",
+        "peekOfCode": "class Limits:\n    top_k: int = 4\n    max_input_tokens: int = 6000\n    max_output_tokens: int = 1000\n    concurrency: int = 2\ndef load_limits() -> Limits:\n    # from YAML if present\n    cfg = {}\n    p = Path(__file__).resolve().parent.parent / \"config\" / \"limits.yaml\"\n    if p.exists():",
+        "detail": "core.settings",
+        "documentation": {}
+    },
+    {
+        "label": "load_limits",
+        "kind": 2,
+        "importPath": "core.settings",
+        "description": "core.settings",
+        "peekOfCode": "def load_limits() -> Limits:\n    # from YAML if present\n    cfg = {}\n    p = Path(__file__).resolve().parent.parent / \"config\" / \"limits.yaml\"\n    if p.exists():\n        import yaml  # project already uses PyYAML\n        cfg = yaml.safe_load(p.read_text(encoding=\"utf-8\")) or {}\n    budgets = cfg.get(\"budgets\", {})\n    retr = cfg.get(\"retrieval\", {})\n    conc = cfg.get(\"concurrency\", {})",
+        "detail": "core.settings",
         "documentation": {}
     },
     {
@@ -715,6 +805,42 @@
         "description": "evals.specialist_evals.typescript_eval",
         "peekOfCode": "def score_ts(doc: dict) -> dict:\n    text = \"\\n\".join(doc.get(k, []) if isinstance(doc.get(k), list) else [doc.get(k, \"\")] for k in [\"types\",\"enums\",\"interfaces\"])  # type: ignore\n    strict = all(substr in text for substr in [\":\", \"interface\", \"type \"])\n    return {\"score\": 1 if strict else 0, \"notes\": [] if strict else [\"Missing basic TS constructs\"]}",
         "detail": "evals.specialist_evals.typescript_eval",
+        "documentation": {}
+    },
+    {
+        "label": "Hit",
+        "kind": 6,
+        "importPath": "rag.context_selector",
+        "description": "rag.context_selector",
+        "peekOfCode": "class Hit:\n    path: str\n    text: str\n    score: float\ndef _chunk_text(txt: str, chunk_chars: int = 800, overlap: int = 120) -> List[str]:\n    if len(txt) <= chunk_chars:\n        return [txt]\n    chunks = []\n    i = 0\n    while i < len(txt):",
+        "detail": "rag.context_selector",
+        "documentation": {}
+    },
+    {
+        "label": "ingest",
+        "kind": 2,
+        "importPath": "rag.context_selector",
+        "description": "rag.context_selector",
+        "peekOfCode": "def ingest(docs_dir: str, index_path: str, chunk_chars: int = 800, overlap: int = 120) -> None:\n    docs = []\n    df: Dict[str, int] = {}\n    idx = 0\n    for p in Path(docs_dir).rglob(\"*\"):\n        if not p.is_file():\n            continue\n        if p.suffix.lower() not in {\".md\", \".txt\"}:\n            continue\n        raw = p.read_text(encoding=\"utf-8\", errors=\"ignore\")",
+        "detail": "rag.context_selector",
+        "documentation": {}
+    },
+    {
+        "label": "query",
+        "kind": 2,
+        "importPath": "rag.context_selector",
+        "description": "rag.context_selector",
+        "peekOfCode": "def query(question: str, index_path: str, top_k: int = 4) -> List[Hit]:\n    idx = json.loads(Path(index_path).read_text(encoding=\"utf-8\"))\n    q = _tokenize(question)\n    scored: List[Tuple[float, dict]] = []\n    for d in idx[\"docs\"]:\n        s = _bm25_score(q, d, idx[\"df\"], idx[\"N\"], idx[\"avgdl\"])\n        if s > 0:\n            scored.append((s, d))\n    scored.sort(key=lambda x: x[0], reverse=True)\n    hits: List[Hit] = []",
+        "detail": "rag.context_selector",
+        "documentation": {}
+    },
+    {
+        "label": "_WORD_RE",
+        "kind": 5,
+        "importPath": "rag.context_selector",
+        "description": "rag.context_selector",
+        "peekOfCode": "_WORD_RE = re.compile(r\"[\\w]+\", re.UNICODE)\ndef _tokenize(text: str) -> List[str]:\n    return [t.lower() for t in _WORD_RE.findall(text)]\n@dataclass\nclass Hit:\n    path: str\n    text: str\n    score: float\ndef _chunk_text(txt: str, chunk_chars: int = 800, overlap: int = 120) -> List[str]:\n    if len(txt) <= chunk_chars:",
+        "detail": "rag.context_selector",
         "documentation": {}
     },
     {
