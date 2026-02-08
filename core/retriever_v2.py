@@ -9,6 +9,7 @@ advanced filtering capabilities.
 from __future__ import annotations
 
 import logging
+import uuid
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Literal
 from dataclasses import dataclass
@@ -134,8 +135,9 @@ class EnhancedRAGRetriever:
         if metadata is None:
             metadata = {}
         
-        if doc_id:
-            metadata["doc_id"] = doc_id
+        if doc_id is None:
+            doc_id = f"doc_{uuid.uuid4().hex}"
+        metadata["doc_id"] = doc_id
         
         # Chunk the document
         chunks = self.chunker.chunk_document(
@@ -149,7 +151,7 @@ class EnhancedRAGRetriever:
             return 0
         
         # Prepare data for ChromaDB
-        ids = [f"{doc_id or 'doc'}_{chunk.chunk_id}" for chunk in chunks]
+        ids = [f"{doc_id}_{chunk.chunk_id}" for chunk in chunks]
         documents = [chunk.content for chunk in chunks]
         metadatas = [chunk.metadata for chunk in chunks]
         
