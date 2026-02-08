@@ -1,66 +1,14 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "architecture",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Architecture schema",
   "type": "object",
   "properties": {
-    "system_context": {
-      "type": "string"
-    },
-    "containers": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "purpose": {
-            "type": "string"
-          },
-          "tech": {
-            "type": "string"
-          },
-          "interfaces": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "name",
-          "purpose"
-        ]
-      }
-    },
-    "components": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "data_model": {
-      "type": "string"
-    },
-    "api_endpoints": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "deployment": {
-      "type": "string"
-    },
-    "observability": {
-      "type": "string"
-    },
-    "security": {
-      "type": "string"
-    }
+    "phase": {"type": "string"},
+    "architecture": {"type": "string"},
+    "tokens_in": {"type": "number"},
+    "tokens_out": {"type": "number"},
+    "model": {"type": "string"},
+    "provider": {"type": "string"}
   },
-  "required": [
-    "system_context",
-    "containers",
-    "deployment"
-  ]
+  "required": ["phase", "architecture"]
 }

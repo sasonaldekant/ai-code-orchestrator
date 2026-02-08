@@ -1,15 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Analyst requirements schema",
+  "title": "Testing schema",
   "type": "object",
   "properties": {
     "phase": {"type": "string"},
-    "requirements": {"type": ["string", "object"]},
-    "raw_output": {"type": "string"},
+    "tests": {"type": "string"},
     "tokens_in": {"type": "number"},
     "tokens_out": {"type": "number"},
     "model": {"type": "string"},
     "provider": {"type": "string"}
   },
-  "required": ["phase", "requirements", "raw_output"]
+  "required": ["phase", "tests"]
 }
