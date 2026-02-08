@@ -1,0 +1,233 @@
+# Domain Configuration for WIWA Insurance System
+# Repository: https://github.com/mgasic/WIWA_Questionnaires
+# Database: WIWA_DB_NEW_09_01_2026.sql (150+ tables)
+
+domain:
+  name: "wiwa-insurance-system"
+  description: "Property and risk insurance management platform with questionnaires, tariffs, and policy management"
+
+# Knowledge Sources
+knowledge_sources:
+  # 1. Database Schema (150+ tables)
+  - type: "database"
+    source_format: "sql_ddl"
+    path: "./data/WIWA_DB_NEW_09_01_2026.sql"
+    bounded_contexts:
+      policies:
+        - "Concerns"
+        - "ConcernRisks"
+        - "ConcernRiskCovers"
+        - "Packages"
+        - "PackageTariffRisk"
+        - "NotSelectedConcernRisks"
+      
+      properties:
+        - "ConcernProperties"
+        - "PropertyBuildings"
+        - "PropertyBuildingTypes"
+        - "PropertyConcernTypes"
+        - "PropertyTypes"
+        - "Buildings"
+        - "BuildingMarks"
+        - "BuildingMarkTypes"
+        - "BuildingCategoryMatrix"
+      
+      questionnaires:
+        - "QuestionnaireByQuestionnaireIdentificator"
+        - "QuestionnaireByQuestionnaireIdentificatorType"
+        - "QuestionnaireIdentificator"
+        - "QuestionnaireAnswers"
+        - "PredefinedAnswers"
+        - "PredefinedAnswerSubQuestions"
+        - "ConcernQuestionaryTypeOptions"
+        - "ConcernRiskQuestionaries"
+        - "ProductQuestionaryTypes"
+      
+      tariffs:
+        - "Tariffs"
+        - "TariffRisks"
+        - "TariffRiskMarks"
+        - "PremiumRateMatrix"
+        - "Corrections"
+        - "AllowedCorrectionLevels"
+        - "CorrectionPackageRisks"
+        - "ProductTypeTariffs"
+        - "ActionPerTariffs"
+      
+      clients_and_entities:
+        - "BusinessEntities"
+        - "BusinessEntityNotificationQuestionaryHistory"
+        - "ConcernPersons"
+        - "ConcernInsuredPersons"
+        - "ConcernHierarchies"
+      
+      marks_and_risks:
+        - "ConcernMarks"
+        - "ConcernMarkTypes"
+        - "ConcernMarkTypeFilters"
+        - "ConcernMarkGroup"
+        - "LevelOfRisks"
+      
+      locations:
+        - "Locations"
+        - "Addresses"
+        - "Streets"
+        - "Places"
+        - "Municipalities"
+        - "Districts"
+        - "States"
+        - "EarthquakeZones"
+        - "CompanyDistricts"
+      
+      products:
+        - "Products"
+        - "ProductTypes"
+        - "ProductSettings"
+        - "ProductTypeDocumentMarks"
+        - "LineOfBusinesses"
+        - "LineOfBusinessExtensions"
+        - "LineOfBusinessHierarchies"
+      
+      reference_data:
+        - "Currencies"
+        - "PaymentDynamics"
+        - "PaymentMethods"
+        - "InsuranceConditions"
+        - "ContractingTypes"
+        - "MethodOfContracting"
+        - "GroupOfContracting"
+        - "ConstructionTypes"
+        - "ConstructionMaterials"
+        - "ExternalWallMaterials"
+        - "RoofCoveringMaterials"
+        - "Covers"
+        - "Clauses"
+        - "ClauseTypes"
+        - "ClauseForActions"
+        - "IndustryCodes"
+        - "IndustryCodeCategories"
+        - "IndustryCodeLevels"
+        - "HazardClasses"
+        - "GoodsHazardClasses"
+        - "ProtectionClasses"
+        - "ForPurposes"
+        - "NumberOfInsurees"
+  
+  # 2. Existing Backend (C# .NET)
+  - type: "existing_codebase"
+    source_format: "dotnet_solution"
+    path: "https://github.com/mgasic/WIWA_Questionnaires"
+    clone_to: "./workdir/WIWA_Questionnaires"
+    subpath: "src/Backend"
+    analysis_depth: "deep"
+    focus_areas:
+      - "api_endpoints"         # Parse [ApiController] classes
+      - "data_models"           # Find EF Core entities or DTOs
+      - "business_logic"        # Service layer patterns
+      - "validation_rules"      # FluentValidation or Data Annotations
+  
+  # 3. Existing Frontend (React/TypeScript)
+  - type: "existing_codebase"
+    source_format: "react_typescript"
+    path: "https://github.com/mgasic/WIWA_Questionnaires"
+    clone_to: "./workdir/WIWA_Questionnaires"
+    subpath: "src/Frontend/wiwa-questionnaire-fe"
+    analysis_depth: "medium"
+    focus_areas:
+      - "ui_components"        # React components
+      - "state_management"     # Redux/Zustand/Context
+      - "api_clients"          # axios/fetch calls
+  
+  # 4. Admin Panel Frontend (React/TypeScript)
+  - type: "existing_codebase"
+    source_format: "react_typescript"
+    path: "https://github.com/mgasic/WIWA_Questionnaires"
+    clone_to: "./workdir/WIWA_Questionnaires"
+    subpath: "src/Frontend/wiwa-admin-panel"
+    analysis_depth: "medium"
+    focus_areas:
+      - "ui_components"
+      - "api_clients"
+  
+  # 5. Shared Component Library
+  - type: "component_library"
+    source_format: "react_tsx"
+    path: "https://github.com/mgasic/dyn-ui-main-v01"
+    clone_to: "./workdir/dyn-ui-main-v01"
+    component_groups:
+      basic:
+        - "DynButton"
+        - "DynInput"
+        - "DynSelect"
+        - "DynCheckbox"
+        - "DynRadio"
+        - "DynSwitch"
+      
+      layout:
+        - "DynGrid"
+        - "DynFlex"
+        - "DynContainer"
+        - "DynStack"
+        - "DynBox"
+      
+      data:
+        - "DynTable"
+        - "DynListView"
+        - "DynChart"
+        - "DynPagination"
+        - "DynDataGrid"
+      
+      forms:
+        - "DynForm"
+        - "DynFormField"
+        - "DynValidation"
+        - "DynFieldError"
+
+# RAG Strategy
+rag_strategy:
+  vector_store: "chromadb"
+  embedding_model: "text-embedding-3-small"
+  collection_per_source: true
+  multi_collection_retrieval: true
+  max_context_tokens: 12000
+  
+  # Collection-specific settings
+  collections:
+    database_schema:
+      chunk_size: 2000
+      overlap: 200
+      metadata_fields:
+        - "table_name"
+        - "bounded_context"
+        - "relationships"
+        - "primary_key"
+        - "foreign_keys"
+    
+    existing_backend:
+      chunk_size: 1500
+      overlap: 150
+      metadata_fields:
+        - "file_path"
+        - "class_name"
+        - "method_name"
+        - "endpoint_route"
+        - "http_method"
+        - "bounded_context"
+    
+    existing_frontend:
+      chunk_size: 1000
+      overlap: 100
+      metadata_fields:
+        - "component_name"
+        - "props"
+        - "state_hooks"
+        - "api_dependencies"
+    
+    component_library:
+      chunk_size: 800
+      overlap: 80
+      metadata_fields:
+        - "component_name"
+        - "category"
+        - "props_interface"
+        - "has_children"
