@@ -137,7 +137,7 @@ class EnhancedRAGRetriever:
             metadata = {}
         
         if doc_id is None:
-            doc_id = f"doc_{uuid4().hex}"
+            doc_id = metadata.get("doc_id") or f"doc_{uuid4().hex}"
         metadata["doc_id"] = doc_id
         
         # Chunk the document
