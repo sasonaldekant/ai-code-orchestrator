@@ -56,8 +56,31 @@ class DocumentChunker:
         encoding_name : str
             Tiktoken encoding to use for token counting.
         """
+        if chunk_size <= 0:
+            raise ValueError("chunk_size must be positive")
+        if chunk_overlap < 0:
+            raise ValueError("chunk_overlap cannot be negative")
+        if chunk_overlap >= chunk_size:
+            logger.warning(
+                "chunk_overlap (%s) must be smaller than chunk_size (%s); "
+                "clamping overlap to %s",
+                chunk_overlap,
+                chunk_size,
+                chunk_size - 1,
+            )
+            chunk_overlap = max(chunk_size - 1, 0)
         self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
+        if chunk_overlap >= chunk_size:
+            clamped_overlap = max(chunk_size - 1, 0)
+            logger.warning(
+                "chunk_overlap (%s) must be smaller than chunk_size (%s); clamping to %s",
+                chunk_overlap,
+                chunk_size,
+                clamped_overlap,
+            )
+            self.chunk_overlap = clamped_overlap
+        else:
+            self.chunk_overlap = chunk_overlap
         self.encoding = tiktoken.get_encoding(encoding_name)
 
     def count_tokens(self, text: str) -> int:
@@ -268,7 +291,8 @@ class DocumentChunker:
             chunks.append(chunk)
             
             # Move window with overlap
-            start_idx += self.chunk_size - self.chunk_overlap
+            step = max(self.chunk_size - self.chunk_overlap, 1)
+            start_idx += step
             chunk_id += 1
         
         return chunks
