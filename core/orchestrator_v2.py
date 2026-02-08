@@ -235,8 +235,7 @@ class OrchestratorV2:
         result = await agent.execute(context=context or {}, rag_context=rag_context)
         
         # Validate
-        schema_path = f"phase_schemas/{schema_name}.json"
-        validation = self.validator.validate(result, schema_path)
+        validation = self.validator.validate(result, schema_name)
         
         if not validation["valid"]:
             self.tracer.log_event("validation_failed", {
