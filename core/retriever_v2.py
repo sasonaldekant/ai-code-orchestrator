@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import uuid
 from pathlib import Path
+from uuid import uuid4
 from typing import List, Dict, Any, Optional, Literal
 from dataclasses import dataclass
 
@@ -136,7 +137,7 @@ class EnhancedRAGRetriever:
             metadata = {}
         
         if doc_id is None:
-            doc_id = f"doc_{uuid.uuid4().hex}"
+            doc_id = f"doc_{uuid4().hex}"
         metadata["doc_id"] = doc_id
         
         # Chunk the document
