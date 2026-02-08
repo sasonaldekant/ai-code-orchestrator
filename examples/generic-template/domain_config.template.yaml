@@ -1,0 +1,97 @@
+# Generic Domain Configuration Template
+# Copy this file and customize for your project
+
+domain:
+  name: "{{PROJECT_NAME}}"
+  description: "{{PROJECT_DESCRIPTION}}"
+
+# Knowledge Sources
+knowledge_sources:
+  # Database Schema
+  - type: "database"
+    source_format: "sql_ddl"  # Options: sql_ddl, ef_core, prisma, django_models
+    path: "{{PATH_TO_DB_SCHEMA}}"
+    bounded_contexts:
+      context1:
+        - "Table1"
+        - "Table2"
+      context2:
+        - "Table3"
+        - "Table4"
+  
+  # Existing Codebase (Backend)
+  - type: "existing_codebase"
+    source_format: "dotnet_solution"  # Options: dotnet_solution, nodejs, python, react_typescript
+    path: "{{PATH_OR_GITHUB_URL}}"
+    clone_to: "./workdir/{{PROJECT_NAME}}"
+    analysis_depth: "deep"  # Options: shallow, medium, deep
+    focus_areas:
+      - "api_endpoints"
+      - "data_models"
+      - "business_logic"
+  
+  # Existing Codebase (Frontend)
+  - type: "existing_codebase"
+    source_format: "react_typescript"  # Options: react_tsx, vue, angular
+    path: "{{PATH_OR_GITHUB_URL}}"
+    clone_to: "./workdir/{{PROJECT_NAME}}-frontend"
+    analysis_depth: "medium"
+    focus_areas:
+      - "ui_components"
+      - "state_management"
+      - "api_clients"
+  
+  # Component Library
+  - type: "component_library"
+    source_format: "react_tsx"
+    path: "{{PATH_OR_GITHUB_URL}}"
+    clone_to: "./workdir/component-library"
+    component_groups:
+      basic:
+        - "Button"
+        - "Input"
+        - "Select"
+      layout:
+        - "Grid"
+        - "Flex"
+        - "Container"
+      data:
+        - "Table"
+        - "ListView"
+        - "Chart"
+
+# RAG Strategy
+rag_strategy:
+  vector_store: "chromadb"  # Options: chromadb, faiss, weaviate
+  embedding_model: "text-embedding-3-small"
+  collection_per_source: true
+  multi_collection_retrieval: true
+  max_context_tokens: 8000
+  
+  collections:
+    database_schema:
+      chunk_size: 2000
+      overlap: 200
+      metadata_fields:
+        - "table_name"
+        - "bounded_context"
+    
+    existing_backend:
+      chunk_size: 1500
+      overlap: 150
+      metadata_fields:
+        - "file_path"
+        - "class_name"
+    
+    existing_frontend:
+      chunk_size: 1000
+      overlap: 100
+      metadata_fields:
+        - "component_name"
+    
+    component_library:
+      chunk_size: 800
+      overlap: 80
+      metadata_fields:
+        - "component_name"
+        - "category"
