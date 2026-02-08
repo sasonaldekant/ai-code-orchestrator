@@ -1,9 +1,8 @@
 """
-Analyst agent.
+Testing agent.
 
-The analyst phase takes high‑level requirements and produces a structured
-requirements specification.  It uses a reasoning model (default: Claude
-Sonnet) for deep analysis.
+Generates test cases and reports for the implementation.  Uses a smaller,
+cheaper model (e.g. GPT‑4o mini) for cost efficiency.
 """
 
 from __future__ import annotations
@@ -11,31 +10,25 @@ from __future__ import annotations
 from typing import Dict, Any, List
 from pathlib import Path
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 
 
-class AnalystAgent:
-    """Analyst agent using the orchestrator's services."""
+class TestingAgent:
+    """Generate tests for the implemented solution."""
 
     def __init__(self, orchestrator) -> None:
         self.orchestrator = orchestrator
-        self.prompt_path = Path("prompts/phase_prompts/analyst.txt")
+        self.prompt_path = Path("prompts/phase_prompts/testing.txt")
 
     async def execute(self, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> Dict[str, Any]:
-        # Build prompt
         prompt_template = self._load_prompt()
         prompt = self._fill_prompt(prompt_template, context, rag_context)
-        # Select model
-        cfg = self.orchestrator.model_router.get_model_config("analyst")
-        # Generate response
+        cfg = self.orchestrator.model_router.get_model_config("testing")
         resp = await self.orchestrator.llm_client.generate(prompt, cfg)
-        # For demonstration, we do not parse the content deeply
         result = {
-            "phase": "analyst",
-            "requirements": context.get("requirements", ""),
-            "raw_output": resp["content"],
+            "phase": "testing",
+            "tests": resp["content"],
             "tokens_in": resp["tokens_in"],
             "tokens_out": resp["tokens_out"],
             "model": cfg["model"],
@@ -48,7 +41,7 @@ class AnalystAgent:
             with open(self.prompt_path, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            return "You are an analyst agent. Requirements: {requirements}"
+            return "You are a testing agent. Implementation details: {implementation}"
 
     def _fill_prompt(self, template: str, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> str:
         prompt = template

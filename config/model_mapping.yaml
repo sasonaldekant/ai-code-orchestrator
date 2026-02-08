@@ -1,12 +1,55 @@
+version: "2.0"
 default:
   model: gpt-4o-mini
   temperature: 0.0
+  max_tokens: 4000
+  provider: openai
+
 routing:
   phase:
-    analyst:   { model: gpt-4o-mini, temperature: 0.0 }
-    architect: { model: gpt-4o,      temperature: 0.0 }
-  specialty:
-    css:        { model: gpt-4o-mini, temperature: 0.0 }
-    react:      { model: gpt-4o-mini, temperature: 0.0 }
-    typescript: { model: gpt-4o-mini, temperature: 0.0 }
-    dotnet:     { model: gpt-4o,      temperature: 0.0 }
+    analyst:
+      model: claude-3-5-sonnet
+      temperature: 0.1
+      max_tokens: 8000
+      provider: anthropic
+    architect:
+      model: claude-3-5-sonnet
+      temperature: 0.1
+      max_tokens: 16000
+      provider: anthropic
+      consensus_mode: true
+      consensus_models:
+        - claude-3-5-sonnet
+        - gpt-4o
+        - gemini-2.5-pro
+    implementation:
+      model: gpt-4o
+      temperature: 0.0
+      max_tokens: 8000
+      provider: openai
+    testing:
+      model: gpt-4o-mini
+      temperature: 0.0
+      max_tokens: 4000
+      provider: openai
+  speciality:
+    backend:
+      model: gpt-4o
+      temperature: 0.0
+      max_tokens: 8000
+      provider: openai
+    frontend:
+      model: gpt-4o-mini
+      temperature: 0.0
+      max_tokens: 6000
+      provider: openai
+    review:
+      model: claude-3-5-sonnet
+      temperature: 0.0
+      max_tokens: 8000
+      provider: anthropic
+    documentation:
+      model: gemini-2.5-pro
+      temperature: 0.2
+      max_tokens: 32000
+      provider: google

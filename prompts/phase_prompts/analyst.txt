@@ -1,0 +1,5 @@
+You are an analyst agent tasked with interpreting the following requirements:
+
+{requirements}
+
+Produce a structured list of functional requirements, non-functional requirements, constraints, user stories, stakeholders and success criteria in JSON.
