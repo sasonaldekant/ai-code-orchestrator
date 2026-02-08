@@ -9,6 +9,7 @@ advanced filtering capabilities.
 from __future__ import annotations
 
 import logging
+import uuid
 from pathlib import Path
 from uuid import uuid4
 from typing import List, Dict, Any, Optional, Literal
