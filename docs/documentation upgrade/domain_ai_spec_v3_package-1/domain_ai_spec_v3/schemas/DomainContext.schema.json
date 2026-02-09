@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Domain Context Schema",
+  "type": "object",
+  "properties": {
+    "db": {"type": "object", "properties": {
+      "entities": {"type": "array", "items": {"type": "object", "properties": {
+        "name": {"type": "string"},
+        "props": {"type": "array", "items": {"type": "string"}},
+        "rels": {"type": "array", "items": {"type": "string"}}
+      }, "required": ["name"]}},
+      "rels": {"type": "array", "items": {"type": "string"}}
+    }, "required": ["entities"]},
+    "ui": {"type": "object", "properties": {
+      "components": {"type": "array", "items": {"type": "object", "properties": {
+        "name": {"type": "string"},
+        "props": {"type": "array", "items": {"type": "string"}}
+      }, "required": ["name"]}},
+      "tokens": {"type": "array", "items": {"type": "string"}}
+    }, "required": ["components"]},
+    "query_patterns": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": ["db", "ui"]
+}

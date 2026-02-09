@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trace Event Schema",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "phase": {"type": "string"},
+    "task_id": {"type": ["string", "null"]},
+    "message": {"type": "string"},
+    "cost": {"type": "number"},
+    "tokens": {"type": "integer"}
+  },
+  "required": ["id", "timestamp", "phase", "message"]
+}

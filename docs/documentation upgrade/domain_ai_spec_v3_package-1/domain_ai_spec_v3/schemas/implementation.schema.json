@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Implementation Output Schema",
+  "type": "object",
+  "properties": {
+    "backend": {"type": "object", "properties": {
+      "controller": {"type": "string"},
+      "service": {"type": "string"},
+      "queries": {"type": "array", "items": {"type": "string"}}
+    }, "required": ["controller", "service"]},
+    "frontend": {"type": "object", "properties": {
+      "component": {"type": "string"},
+      "components_used": {"type": "array", "items": {"type": "string"}},
+      "design_tokens_used": {"type": "array", "items": {"type": "string"}}
+    }, "required": ["component"]},
+    "validation": {"type": "object", "properties": {
+      "backend_validation": {"type": "string"},
+      "frontend_validation": {"type": "string"}
+    }, "required": ["backend_validation", "frontend_validation"]}
+  },
+  "required": ["backend", "frontend", "validation"]
+}
