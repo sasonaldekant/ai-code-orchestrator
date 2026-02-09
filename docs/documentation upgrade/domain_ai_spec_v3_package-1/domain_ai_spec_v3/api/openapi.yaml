@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: Domain‑Specific AI Code Orchestrator API
+  version: 1.0.0
+description: |
+  API specification for running domain‑specific AI workflows.  This API is internal and used by CLI and web clients.
+servers:
+  - url: http://localhost:8000
+paths:
+  /run:
+    post:
+      summary: Execute a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requirement:
+                  type: string
+                  description: Natural language requirement provided by the user.
+                mode:
+                  type: string
+                  enum: [greenfield, incremental, refactor, migration]
+                  description: Workflow mode.
+                contextType:
+                  type: string
+                  enum: [backend, frontend, full]
+                  description: Context type for retrieval.
+              required: [requirement]
+      responses:
+        '200':
+          description: Workflow result containing implementation, tests and compliance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  result:
+                    $ref: '#/components/schemas/ImplementationOutput'
+                required: [status, result]
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+      x-cli-command: run
+  /query:
+    post:
+      summary: Retrieve domain context for a requirement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requirement:
+                  type: string
+                top_k_entities:
+                  type: integer
+                  default: 5
+                top_k_components:
+                  type: integer
+                  default: 8
+              required: [requirement]
+      responses:
+        '200':
+          description: Structured domain context for the requirement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainContext'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+      x-cli-command: query
+components:
+  schemas:
+    ImplementationOutput:
+      $ref: '../schemas/implementation.schema.json'
+    DomainContext:
+      $ref: '../schemas/DomainContext.schema.json'

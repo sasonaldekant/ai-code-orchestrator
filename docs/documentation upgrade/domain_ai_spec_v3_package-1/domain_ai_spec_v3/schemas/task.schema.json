@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task Schema",
+  "type": "object",
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "description": {"type": "string"},
+    "type": {"type": "string"},
+    "assigned_workflow": {"type": "string"},
+    "estimated_effort": {"type": "integer", "minimum": 0},
+    "database_entities": {"type": "array", "items": {"type": "string"}},
+    "ui_components": {"type": "array", "items": {"type": "string"}},
+    "dependencies": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": ["id", "title", "type", "assigned_workflow"]
+}

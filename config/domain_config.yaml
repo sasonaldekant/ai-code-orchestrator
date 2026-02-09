@@ -1,0 +1,14 @@
+domain:
+  name: "Detailed Domain"
+  description: "Retail Point of Sale Application"
+
+knowledge_sources:
+  - type: "database"
+    source_format: "ef_core"
+    path: "./backend/Data"
+    bounded_contexts:
+      ordering: ["Orders", "OrderItems"]
+
+  - type: "component_library"
+    source_format: "react_tsx"
+    path: "./frontend/src/components"

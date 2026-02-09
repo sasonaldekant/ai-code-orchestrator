@@ -87,13 +87,14 @@ class OrchestratorV2:
         max_retries: int = 3,
         retry_delay: float = 1.0,
         max_feedback_iterations: int = 3,
+        retriever: Optional[Any] = None,
     ) -> None:
         self.cost_manager = CostManager()
         self.model_router = ModelRouterV2(config_path)
         self.llm_client = LLMClientV2(self.cost_manager)
         self.validator = OutputValidator()
         self.tracer = TracingService()
-        self.retriever = RAGRetriever()
+        self.retriever = retriever or RAGRetriever()
 
         # Configuration
         self.max_retries = max_retries
@@ -325,34 +326,65 @@ class OrchestratorV2:
         phase: str,
     ) -> FeedbackResult:
         """
-        Assess the quality of phase output.
-        
-        This is a placeholder that should be customized per phase.
-        In production, this could use another LLM call or rule-based checks.
+        Assess the quality of phase output using an LLM reviewer.
         """
-        # Simple heuristic-based assessment
-        quality_score = 0.85  # Default score
-        issues = []
-        suggestions = []
+        logger.info(f"Assessing quality for phase: {phase}")
         
-        # Check for completeness
-        if not output:
-            quality_score = 0.3
-            issues.append("Output is empty")
-            suggestions.append("Provide complete output")
-        elif len(str(output)) < 100:
-            quality_score = 0.6
-            issues.append("Output seems too brief")
-            suggestions.append("Add more details")
+        # Get reviewer configuration
+        reviewer_cfg = self.model_router.get_model_for_phase("reviewer")
         
-        needs_iteration = quality_score < 0.8 and len(issues) > 0
-        
-        return FeedbackResult(
-            quality_score=quality_score,
-            issues=issues,
-            suggestions=suggestions,
-            needs_iteration=needs_iteration,
+        # Construct review prompt
+        prompt = (
+            f"You are a Quality Assurance Reviewer for the '{phase}' phase.\n"
+            f"Review the following output against the expected quality standards.\n"
+            f"Output JSON with check result.\n\n"
+            f"Output to Review:\n{json.dumps(output, indent=2)[:4000]}...\n\n" # Truncate if too long
+            f"Return JSON format:\n"
+            f"{{\n"
+            f"  \"score\": <float 0.0-1.0>,\n"
+            f"  \"issues\": [\"ticket 1\", ...],\n"
+            f"  \"suggestions\": [\"suggestion 1\", ...],\n"
+            f"  \"needs_iteration\": <bool>\n"
+            f"}}"
         )
+        
+        try:
+            # Call LLM for review
+            response = await self.llm_client.complete(
+                messages=[
+                    {"role": "system", "content": "You are a critical code reviewer. Output structured JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                model=reviewer_cfg.model,
+                temperature=0.0,
+                json_mode=True
+            )
+            
+            # Parse result
+            content = response.content.strip()
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+                
+            review_data = json.loads(content)
+            
+            return FeedbackResult(
+                quality_score=float(review_data.get("score", 0.0)),
+                issues=review_data.get("issues", []),
+                suggestions=review_data.get("suggestions", []),
+                needs_iteration=bool(review_data.get("needs_iteration", False))
+            )
+
+        except Exception as e:
+            logger.warning(f"Review failed, falling back to heuristic: {e}")
+            # Fallback heuristic
+            return FeedbackResult(
+                quality_score=0.8, # Assume OK if review fails to avoid infinite loops
+                issues=["Review process failed"],
+                suggestions=[],
+                needs_iteration=False
+            )
 
     async def run_parallel_phases(
         self,
