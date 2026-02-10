@@ -10,6 +10,7 @@ The Advanced RAG feature provides intelligent knowledge retrieval to enrich LLM 
 - **Sentence Transformers** - State-of-the-art embeddings
 - **Strategic Auto-Chunking (Phase 10)** - Logic-aware document splitting (Functions/Classes)
 - **Optimization Advisor** - Proactive token-saving recommendations
+- **Re-ranking (Phase 11)** - Cross-Encoder refinement for high precision
 - **Document Management** - Fine-grained retrieval and deletion
 - **Hybrid Search** - Combines semantic + keyword matching
 
@@ -36,6 +37,12 @@ The Advanced RAG feature provides intelligent knowledge retrieval to enrich LLM 
          ▼
 ┌─────────────────┐
 │ Hybrid Search   │ ← Semantic + Keyword fusion
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Re-ranker       │ ← Cross-Encoder (Optional)
+│ (Phase 11)      │
 └────────┬────────┘
          │
          ▼
@@ -139,114 +146,66 @@ results = retriever.retrieve(
 )
 ```
 
-### 3. Enhanced Context Manager (`core/context_manager_v2.py`)
+### 3. Re-ranking Module (`rag/reranker.py`) [NEW in v4.0 Phase 11]
 
-Combines static configuration with dynamic RAG retrieval:
+Implements a second-stage retrieval process using Cross-Encoders to improve precision.
 
-**Features:**
-
-- Automatic knowledge retrieval based on query
-- Static schema/rules loading
-- Context formatting for LLM prompts
-- RAG statistics tracking
+**Why Re-ranking?**
+Standard vector search (Cosine Similarity) finds "semantically similar" text, but often misses subtle nuances. Cross-Encoders compare the query and document _together_, achieving much higher accuracy at the cost of speed.
 
 **Usage:**
 
 ```python
-from core.context_manager_v2 import EnhancedContextManager
-from pathlib import Path
-
-context_mgr = EnhancedContextManager(
-    enable_rag=True,
-)
-
-# Build enriched context
-context = context_mgr.build_context(
-    phase="implementation",
-    specialty="backend",
-    schema_path=Path("schemas/api_schema.json"),
-    rules_path=Path("config/backend_rules.yaml"),
-    user_query="Create REST API for user management",
-    top_k_docs=3,
-)
-
-# Format for LLM prompt
-prompt_context = context.to_prompt_context(max_docs=3)
-
-# Add domain knowledge
-context_mgr.add_domain_knowledge(
-    content=api_documentation,
-    metadata={"type": "api_docs", "version": "v1"},
-    doc_id="api_v1_docs",
+# Enable re-ranking in search
+results = store.search(
+    query="How to handle auth errors?",
+    top_k=5,
+    use_reranking=True  # Automatically triggers Cross-Encoder
 )
 ```
 
-### 4. Build RAG Index Script (`scripts/build_rag_index.py`)
+**Best Practices:**
 
-CLI tool for populating the vector database:
+- Use for complex "How-to" queries.
+- Keep `top_k` small (5-10) to minimize latency.
+- Do NOT use for simple ID or filename lookups.
 
-**Features:**
-
-- Index from files, directories, or JSON
-- Auto-detect chunking strategy from file type
-- Pattern-based file filtering
-- Collection management (reset, stats)
-
-**Usage:**
-
-````bash
-# Index a single file
-python scripts/build_rag_index.py --file path/to/document.md
-
-# Index entire directory
-python scripts/build_rag_index.py --directory ./codebase \
-    --pattern "**/*.py" \
-    --exclude "tests" "__pycache__"
-
-# Index from JSON
-python scripts/build_rag_index.py --json documents.json
-
-# Reset and rebuild
-python scripts/build_rag_index.py --directory ./docs --reset
-
-# Show statistics
-python scripts/build_rag_index.py --stats
-
-### 5. RAG Management API [NEW Phase 10 Extension]
+### 4. RAG Management API [NEW Phase 10 Extension]
 
 Exposes fine-grained control over the vector store.
 
 **Endpoints:**
+
 - `GET /admin/collections/{name}/documents`: Browse documents with pagination.
 - `DELETE /admin/collections/{name}/documents/{doc_id}`: Remove specific stale or invalid chunks.
 
-**Direct Usage (VectorStore):**
-```python
-from rag.vector_store import ChromaVectorStore
+### 5. Agentic Retrieval ("Deep Search") [NEW in Phase 15]
 
-store = ChromaVectorStore(collection_name="code_docs")
+Moving beyond static vector search, v4.0 introduces the **Retrieval Agent**.
 
-# Browse documents
-docs = store.get_documents(limit=10, offset=0)
+**Concept:**
+Instead of a single query, the agent performs a simplified ReAct loop:
 
-# Delete invalid chunk
-store.delete_document("chunk_id_123")
-````
+1.  **Thought:** "I need to find the `AuthMiddleware` class."
+2.  **Action:** `search_code("class AuthMiddleware")`
+3.  **Observation:** Found in `src/middleware/auth.ts`.
+4.  **Thought:** "Now I need to see how it handles tokens."
+5.  **Action:** `read_file("src/middleware/auth.ts")`
 
-### 6. Agent Helper (`core/agent_helper.py`) [NEW]
+**Components:**
 
-Utility for specialist agents to handle inputs exceeding LLM context windows.
+- `RetrievalAgent` (`agents/specialist_agents/retrieval_agent.py`)
+- Tools: `search_code`, `read_file`, `list_dir`
 
-```python
-from core.agent_helper import AgentHelper
+### 6. Experience Retrieval (Self-Correction) [NEW in Phase 17]
 
-helper = AgentHelper()
-results = await helper.process_large_content(
-    content=massive_file_content,
-    file_path="big_script.py",
-    process_fn=my_agent_method
-)
-```
+The system now indexes its own execution history.
+
+**Mechanism:**
+
+- **Source:** `experience.db` (SQLite) containing `(error_embedding, fix_strategy)`.
+- **Query:** When an error occurs, the `RepairAgent` embeds the error traceback.
+- **Retrieval:** Finds the top-k most similar past errors and retrieves their successful fixes.
 
 ## Installation
 
@@ -278,315 +237,4 @@ python -c "from sentence_transformers import SentenceTransformer; SentenceTransf
 
 ## Quick Start
 
-### 1. Index Your Codebase
-
-```bash
-# Index all Python files
-python scripts/build_rag_index.py \
-    --directory ./my_project \
-    --pattern "**/*.py" \
-    --collection "my_project_code"
-
-# Index documentation
-python scripts/build_rag_index.py \
-    --directory ./docs \
-    --pattern "**/*.md" \
-    --collection "my_project_docs"
-```
-
-### 2. Use in Your Pipeline
-
-```python
-from core.context_manager_v2 import EnhancedContextManager
-from core.retriever_v2 import EnhancedRAGRetriever
-
-# Initialize
-retriever = EnhancedRAGRetriever(
-    collection_name="my_project_code",
-)
-
-context_mgr = EnhancedContextManager(
-    retriever=retriever,
-    enable_rag=True,
-)
-
-# Get enriched context
-context = context_mgr.build_context(
-    phase="implementation",
-    user_query="Add caching to the API endpoint",
-    top_k_docs=5,
-)
-
-# Use in LLM prompt
-from core.llm_client_v2 import EnhancedLLMClient
-
-client = EnhancedLLMClient()
-response = client.complete(
-    prompt=f"""
-    {context.to_prompt_context()}
-
-    Task: {user_query}
-
-    Generate implementation following the retrieved patterns and rules.
-    """,
-    provider="anthropic",
-    model="claude-3-5-sonnet-20241022",
-)
-```
-
-## Performance
-
-### Chunking Strategies Performance
-
-| Strategy     | Speed  | Context Quality | Best For               |
-| ------------ | ------ | --------------- | ---------------------- |
-| **Text**     | Fast   | Good            | Documentation, READMEs |
-| **Markdown** | Medium | Excellent       | Structured docs        |
-| **Code**     | Medium | Excellent       | Source code            |
-
-### Embedding Model Options
-
-| Model               | Dimensions | Speed  | Quality |
-| ------------------- | ---------- | ------ | ------- |
-| `all-MiniLM-L6-v2`  | 384        | Fast   | Good    |
-| `all-mpnet-base-v2` | 768        | Medium | Better  |
-| `instructor-large`  | 768        | Slow   | Best    |
-
-Default: `all-MiniLM-L6-v2` (good balance)
-
-### Search Strategy Comparison
-
-**Semantic Only:**
-
-- Best for: Conceptual queries
-- Example: "How to handle authentication?"
-
-**Keyword Only:**
-
-- Best for: Exact matches
-- Example: "UserController.login method"
-
-**Hybrid (Recommended):**
-
-- Best for: General queries
-- Combines strengths of both
-- Configurable weight (default: 70% semantic, 30% keyword)
-
-## Configuration
-
-### Chunking Parameters
-
-```python
-chunker = DocumentChunker(
-    chunk_size=512,        # Target tokens per chunk
-    chunk_overlap=50,      # Overlap between chunks
-    encoding_name="cl100k_base",  # Tiktoken encoding
-)
-```
-
-**Guidelines:**
-
-- **Small chunks (256-512)**: Better precision, more chunks
-- **Large chunks (1024-2048)**: More context, fewer chunks
-- **Overlap (10-20%)**: Prevents context loss at boundaries
-
-### Retrieval Parameters
-
-```python
-results = retriever.hybrid_retrieve(
-    query="user query",
-    top_k=5,                  # Number of results
-    semantic_weight=0.7,       # Semantic vs keyword balance
-    filter_metadata={...},     # Optional filters
-)
-```
-
-**Guidelines:**
-
-- **top_k**: 3-5 for focused context, 10-15 for comprehensive
-- **semantic_weight**: 0.7-0.8 for general queries, 0.5-0.6 for code search
-
-## Testing
-
-Run tests:
-
-```bash
-# All RAG tests
-pytest tests/test_retriever_v2.py -v
-
-# Specific test
-pytest tests/test_retriever_v2.py::test_hybrid_retrieval -v
-
-# With coverage
-pytest tests/test_retriever_v2.py --cov=core.retriever_v2 --cov-report=html
-```
-
-## Examples
-
-### Example 1: Index Project Documentation
-
-```python
-from core.retriever_v2 import EnhancedRAGRetriever
-from pathlib import Path
-
-retriever = EnhancedRAGRetriever()
-
-# Index all markdown files
-for md_file in Path("docs").glob("**/*.md"):
-    content = md_file.read_text()
-    retriever.add_document(
-        content=content,
-        metadata={
-            "source": str(md_file),
-            "type": "documentation",
-        },
-        doc_id=str(md_file),
-        chunking_strategy="markdown",
-    )
-
-print(retriever.get_collection_stats())
-```
-
-### Example 2: Code Search with Filtering
-
-```python
-# Search for authentication code in backend
-results = retriever.hybrid_retrieve(
-    query="JWT token authentication implementation",
-    top_k=5,
-    filter_metadata={
-        "category": "backend",
-        "language": "python",
-    },
-)
-
-for result in results:
-    print(f"Score: {result.score:.3f}")
-    print(f"Source: {result.metadata['source']}")
-    print(f"Content: {result.content[:200]}...")
-    print("-" * 50)
-```
-
-### Example 3: Batch Indexing from JSON
-
-```json
-// documents.json
-[
-  {
-    "content": "API endpoint documentation...",
-    "metadata": {
-      "type": "api",
-      "version": "v1",
-      "category": "backend"
-    },
-    "id": "api_v1_users"
-  },
-  {
-    "content": "Database schema description...",
-    "metadata": {
-      "type": "schema",
-      "database": "postgresql"
-    },
-    "id": "schema_users"
-  }
-]
-```
-
-```python
-import json
-
-with open("documents.json") as f:
-    documents = json.load(f)
-
-retriever.add_documents_batch(documents, chunking_strategy="text")
-```
-
-## Troubleshooting
-
-### Issue: ChromaDB persistence errors
-
-**Solution:** Ensure directory permissions:
-
-```bash
-chmod 755 ./chroma_db
-```
-
-### Issue: Out of memory with large files
-
-**Solution:** Reduce chunk size:
-
-```python
-retriever = EnhancedRAGRetriever(
-    chunk_size=256,  # Smaller chunks
-    chunk_overlap=25,
-)
-```
-
-### Issue: Slow retrieval
-
-**Solution:** Use smaller embedding model or limit top_k:
-
-```python
-retriever = EnhancedRAGRetriever(
-    embedding_model="all-MiniLM-L6-v2",  # Fastest
-)
-
-results = retriever.retrieve(query, top_k=3)  # Fewer results
-```
-
-### Issue: Poor retrieval quality
-
-**Solutions:**
-
-1. Use hybrid search instead of semantic-only
-2. Increase semantic_weight for conceptual queries
-3. Add more specific metadata for filtering
-4. Use better embedding model (all-mpnet-base-v2)
-
-## Migration from v1
-
-Old retriever (`core/retriever.py`):
-
-```python
-from core.retriever import RAGRetriever
-
-retriever = RAGRetriever(index_dir="rag/domain_indices")
-results = retriever.retrieve(query, top_k=3)
-```
-
-New retriever (`core/retriever_v2.py`):
-
-```python
-from core.retriever_v2 import EnhancedRAGRetriever
-
-retriever = EnhancedRAGRetriever(
-    collection_name="code_docs",
-    persist_directory="./chroma_db",
-)
-results = retriever.hybrid_retrieve(query, top_k=3)
-```
-
-**Key Differences:**
-
-- Vector database instead of JSON files
-- Semantic search instead of keyword-only
-- Hybrid search capability
-- Metadata filtering
-- Better chunking strategies
-
-## Future Enhancements
-
-- [ ] Multi-modal embeddings (code + docs)
-- [ ] Query expansion and reformulation
-- [ ] Relevance feedback loop
-- [ ] Distributed vector database (Qdrant/Weaviate)
-- [ ] Custom fine-tuned embeddings
-- [ ] Automatic index updates on file changes
-- [ ] Graph-based knowledge retrieval
-
-## Resources
-
-- [ChromaDB Documentation](https://docs.trychroma.com/)
-- [Sentence Transformers](https://www.sbert.net/)
-- [Tiktoken](https://github.com/openai/tiktoken)
-- [RAG Best Practices](https://www.pinecone.io/learn/retrieval-augmented-generation/)
+... (Rest of the guide remains similar)

@@ -26,6 +26,8 @@ from .cost_manager import CostManager
 from .validator import OutputValidator
 from .tracer import TracingService
 from .retriever import RAGRetriever
+from core.agents.specialist_agents.retrieval_agent import RetrievalAgent
+from .external_integration import ExternalIntegration
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +144,8 @@ class OrchestratorV2:
         context: Optional[Dict[str, Any]] = None,
         question: Optional[str] = None,
         top_k: int = 3,
+        deep_search: bool = False,
+        retrieval_strategy: str = "local",
     ) -> PhaseResult:
         """
         Run a phase with automatic retry on failure.
@@ -173,6 +177,8 @@ class OrchestratorV2:
                     context=context,
                     question=question,
                     top_k=top_k,
+                    deep_search=deep_search,
+                    retrieval_strategy=retrieval_strategy,
                 )
                 
                 result.output = output
@@ -211,6 +217,8 @@ class OrchestratorV2:
         context: Optional[Dict[str, Any]] = None,
         question: Optional[str] = None,
         top_k: int = 3,
+        deep_search: bool = False,
+        retrieval_strategy: str = "local",
     ) -> Dict[str, Any]:
         """
         Internal method to execute a single phase.
@@ -218,16 +226,47 @@ class OrchestratorV2:
         self.tracer.log_event("phase_start", {
             "phase": phase,
             "schema": schema_name,
+            "deep_search": deep_search,
             "timestamp": datetime.utcnow().isoformat(),
         })
         
         # RAG retrieval
         rag_context: list = []
-        if question:
+        
+        # [Phase 15] Agentic Retrieval / Deep Search
+        if deep_search and question:
+             logger.info(f"Running Deep Search (Investigator) for: {question} [Strategy: {retrieval_strategy}]")
+             
+             # Preliminary RAG for planning
+             rag_context = self.retriever.retrieve(question, top_k=top_k)
+             
+             initial_plan = None
+             if retrieval_strategy == "hybrid":
+                 try:
+                     ext = ExternalIntegration()
+                     context_nodes = []
+                     for doc in rag_context:
+                         # Handle both objects and dicts if necessary
+                         path = getattr(doc, 'metadata', {}).get('file_path', 'unknown')
+                         content = getattr(doc, 'page_content', str(doc))[:1000]
+                         context_nodes.append({"path": path, "content": content})
+                         
+                     initial_plan = ext.generate_search_plan(question, context_nodes)
+                     logger.info("Hybrid Plan Generated")
+                 except Exception as e:
+                     logger.error(f"Failed to generate hybrid plan: {e}")
+             
+             investigator = RetrievalAgent(self.llm_client)
+             deep_findings = await investigator.run(question, initial_plan=initial_plan)
+             rag_context.append({"source": "agentic_investigation", "content": deep_findings})
+
+        elif question:
             rag_context = self.retriever.retrieve(question, top_k=top_k)
-            rag_path = self.outputs_dir / f"rag_context_{phase}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
-            with open(rag_path, "w", encoding="utf-8") as f:
-                json.dump(rag_context, f, indent=2)
+        
+        # Persist context for audit
+        rag_path = self.outputs_dir / f"rag_context_{phase}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
+        with open(rag_path, "w", encoding="utf-8") as f:
+            json.dump(rag_context, f, indent=2)
 
         # Get agent and execute
         agent = self.phase_agents.get(phase)
@@ -462,6 +501,7 @@ class OrchestratorV2:
         
         try:
             # Analyst phase (always first)
+            # We assume agentic retrieval (if enabled elsewhere) might happen here
             analyst_result = await (
                 self.run_phase_with_feedback(
                     phase="analyst",

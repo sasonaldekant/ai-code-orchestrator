@@ -12,9 +12,11 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict
+from core.cost_manager import CostManager
+from core.memory.user_prefs import UserPreferences
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class LLMResponse:
 
 
 class LLMProvider(ABC):
-    def __init__(self, api_key: str, cost_manager: Any):
+    def __init__(self, api_key: str, cost_manager: CostManager):
         self.api_key = api_key
         self.cost_manager = cost_manager
     
@@ -118,7 +120,18 @@ class GoogleProvider(LLMProvider):
         genai.configure(api_key=self.api_key)
         gemini = genai.GenerativeModel(model)
         
-        prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+        # Handle list content (multi-modal) by extracting text only
+        prompt_parts = []
+        for m in messages:
+            content = m["content"]
+            if isinstance(content, list):
+                # Extract text parts only for simplified provider
+                text_content = " ".join([p["text"] for p in content if p.get("type") == "text"])
+                prompt_parts.append(f"{m['role']}: {text_content}")
+            else:
+                prompt_parts.append(f"{m['role']}: {content}")
+                
+        prompt = "\n".join(prompt_parts)
         response = await gemini.generate_content_async(prompt)
         
         # Rough token estimation
@@ -139,9 +152,10 @@ class GoogleProvider(LLMProvider):
 
 
 class LLMClientV2:
-    def __init__(self, cost_manager: Any):
+    def __init__(self, cost_manager: CostManager):
         self.cost_manager = cost_manager
         self.providers: Dict[str, LLMProvider] = {}
+        self.user_prefs = UserPreferences()
         
         # Init Providers
         if os.getenv("OPENAI_API_KEY"):
@@ -159,7 +173,7 @@ class LLMClientV2:
 
     async def complete(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[Dict[str, Union[str, List[Dict]]]],
         model: str,
         temperature: float = 0.0,
         max_tokens: int = 4000,
@@ -175,11 +189,46 @@ class LLMClientV2:
         # 1. Budget Check
         start_time = time.time()
         self.cost_manager.check_and_update(model, 0, 0) # Update "last used" tracking or similar if implemented
+        # Prepare messages
+        # Inject User Preferences into System Prompt if present
+        final_messages = []
+        system_content = ""
         
-        # 2. Execution
+        # Extract existing system prompt if any
+        for m in messages:
+            if m["role"] == "system":
+                system_content += str(m["content"]) + "\n"
+        
+        # Add User Preferences
+        prefs_context = self.user_prefs.get_system_prompt_context()
+        if prefs_context:
+            system_content += f"\n{prefs_context}"
+            
+        if system_content:
+             # Check if we already have a system message to replace or add new
+             has_system = any(m["role"] == "system" for m in messages)
+             if has_system:
+                 final_messages = []
+                 for m in messages:
+                     if m["role"] == "system":
+                         # Replace strictly? Or append?
+                         # Current logic above extracted content. Let's create a unified system message.
+                         pass
+                     else:
+                         final_messages.append(m)
+                 final_messages.insert(0, {"role": "system", "content": system_content})
+             else:
+                 final_messages = [{"role": "system", "content": system_content}] + messages
+        else:
+             final_messages = messages
+
+        # Multi-modal handling happened before validation, but we can do it here/provider level.
+        # But wait, Provider impls take `messages`. We should pass `final_messages`.
+        
         try:
             response = await provider.complete(
-                messages, model, 
+                messages=final_messages,
+                model=model, 
                 temperature=temperature, 
                 max_tokens=max_tokens, 
                 json_mode=json_mode, 

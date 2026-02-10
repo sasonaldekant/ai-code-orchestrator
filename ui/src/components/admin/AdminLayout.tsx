@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity } from 'lucide-react';
+import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2 } from 'lucide-react';
 import clsx from 'clsx';
 import { IngestionPanel } from './IngestionPanel';
 import { ModelConfigPanel } from './ModelConfigPanel';
 import { BudgetPanel } from './BudgetPanel';
 import { KnowledgeExplorer } from './KnowledgeExplorer';
 import { MonitoringDashboard } from './MonitoringDashboard';
+import GraphTab from './GraphTab';
 
-type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring';
+type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph';
 
 interface AdminLayoutProps {
     onBack: () => void;
@@ -23,6 +24,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
         { id: 'knowledge' as const, label: 'Knowledge Base', icon: BookOpen },
         { id: 'tools' as const, label: 'Developer Tools', icon: Wrench },
         { id: 'monitoring' as const, label: 'System Monitoring', icon: Activity },
+        { id: 'graph' as const, label: 'Knowledge Graph', icon: Share2 },
     ];
 
     return (
@@ -73,6 +75,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
                     {activeTab === 'knowledge' && <KnowledgeExplorer />}
                     {activeTab === 'tools' && <DeveloperToolsPanel />}
                     {activeTab === 'monitoring' && <MonitoringDashboard />}
+                    {activeTab === 'graph' && <GraphTab />}
                 </div>
             </main>
         </div>

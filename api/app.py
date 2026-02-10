@@ -14,8 +14,9 @@ from rag.domain_aware_retriever import DomainAwareRetriever
 from domain_knowledge.ingestion.database_schema_ingester import DatabaseSchemaIngester
 from domain_knowledge.ingestion.component_library_ingester import ComponentLibraryIngester
 from rag.vector_store import ChromaVectorStore
-from api.event_bus import bus, Event, EventType
 from api.admin_routes import router as admin_router
+from api.vision_routes import router as vision_router
+from api.ide_routes import router as ide_router
 
 # Basic auth helper
 import os
@@ -31,6 +32,8 @@ app = FastAPI(title="AI Code Orchestrator API v3.0", version="3.0.0")
 
 # Include admin routes
 app.include_router(admin_router)
+app.include_router(vision_router)
+app.include_router(ide_router)
 
 # Enable CORS for local UI
 app.add_middleware(
@@ -50,6 +53,9 @@ LAT = Histogram("aio_request_seconds", "Request latency seconds", ["path", "meth
 class RunRequest(BaseModel):
     request: str
     context: Optional[Dict[str, Any]] = None
+    deep_search: bool = False
+    retrieval_strategy: str = "local"
+    auto_fix: bool = False
 
 class IngestRequest(BaseModel):
     type: str # database, component_library
@@ -95,30 +101,31 @@ async def stream_logs(request: Request):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
+from api.shared import orchestrator_instance
+
 @app.post("/run")
 async def run_feature(req: RunRequest, request: Request):
     # check_auth(request) # Optional for local UI mode
     
-    # Run in background to not block, but for now we await to keep simple
-    # Ideally, we return a task ID and stream events
-    
     # Notify start
-    await bus.publish(Event(type=EventType.LOG, content=f"Starting request: {req.request}", agent="API"))
+    await bus.publish(Event(type=EventType.LOG, agent="API", content=f"Starting request: {req.request}"))
 
     try:
-        orchestrator = LifecycleOrchestrator()
-        # We need to inject the event bus into orchestrator to capture internal logs
-        # For now, we assume orchestrator logs to stdout/logger, which we might need to intercept
-        # OR we modify Orchestrator to accept an event_callback?
+        # Use global instance to preserve state for monitoring
+        global orchestrator_instance
         
-        # Temporary: Wrap execution and log result
-        result = await orchestrator.execute_request(req.request)
+        result = await orchestrator_instance.execute_request(
+            req.request,
+            deep_search=req.deep_search,
+            retrieval_strategy=req.retrieval_strategy,
+            auto_fix=req.auto_fix
+        )
         
-        await bus.publish(Event(type=EventType.DONE, content=result, agent="Orchestrator"))
+        await bus.publish(Event(type=EventType.DONE, agent="Orchestrator", content=result))
         return result
     except Exception as e:
         logging.error(f"Error running request: {e}")
-        await bus.publish(Event(type=EventType.ERROR, content=str(e), agent="Orchestrator"))
+        await bus.publish(Event(type=EventType.ERROR, agent="Orchestrator", content=str(e)))
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/ingest")

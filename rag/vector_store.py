@@ -22,6 +22,7 @@ import logging
 import json
 import numpy as np
 import hashlib
+from .reranker import CrossEncoderReranker
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,8 @@ class VectorStore(ABC):
         self,
         query: str,
         top_k: int = 5,
-        filter_metadata: Optional[Dict[str, Any]] = None
+        filter_metadata: Optional[Dict[str, Any]] = None,
+        use_reranking: bool = False
     ) -> List[SearchResult]:
         """Search for similar documents."""
         pass
@@ -129,10 +131,10 @@ class ChromaVectorStore(VectorStore):
         )
 
         self.embedding_function = embedding_function
-        logger.info(
-            f"Initialized ChromaDB collection '{collection_name}' "
-            f"at {persist_directory}"
-        )
+
+        
+        # Initialize Reranker (lazy loaded by the class itself)
+        self.reranker = CrossEncoderReranker()
 
     def add_documents(self, documents: List[Document]) -> None:
         """Add documents to Chroma collection."""
@@ -178,16 +180,20 @@ class ChromaVectorStore(VectorStore):
         self,
         query: str,
         top_k: int = 5,
-        filter_metadata: Optional[Dict[str, Any]] = None
+        filter_metadata: Optional[Dict[str, Any]] = None,
+        use_reranking: bool = False
     ) -> List[SearchResult]:
         """Search for similar documents in Chroma."""
         # Build where clause for metadata filtering
         where = filter_metadata if filter_metadata else None
 
+        # Fetch more candidates if reranking is enabled
+        search_limit = top_k * 10 if use_reranking else top_k
+
         # Query collection
         results = self.collection.query(
             query_texts=[query],
-            n_results=top_k,
+            n_results=search_limit,
             where=where
         )
 
@@ -212,6 +218,36 @@ class ChromaVectorStore(VectorStore):
                     score=score,
                     rank=rank + 1
                 ))
+
+        # Apply Re-ranking
+        if use_reranking and search_results:
+            logger.info(f"Re-ranking {len(search_results)} candidates for query: '{query}'")
+            # Prepare for reranker
+            docs_for_reranking = [
+                {
+                    "id": res.document.id,
+                    "text": res.document.text,
+                    "metadata": res.document.metadata,
+                    "score": res.score
+                }
+                for res in search_results
+            ]
+            
+            reranked = self.reranker.rerank(query, docs_for_reranking, top_k=top_k)
+            
+            # Map back to SearchResult
+            return [
+                SearchResult(
+                    document=Document(
+                        id=r.document_id,
+                        text=r.text,
+                        metadata=r.metadata
+                    ),
+                    score=r.score,
+                    rank=i + 1
+                )
+                for i, r in enumerate(reranked)
+            ]
 
         return search_results
 
@@ -348,9 +384,12 @@ class FaissVectorStore(VectorStore):
         self,
         query: str,
         top_k: int = 5,
-        filter_metadata: Optional[Dict[str, Any]] = None
+        filter_metadata: Optional[Dict[str, Any]] = None,
+        use_reranking: bool = False
     ) -> List[SearchResult]:
         """Search for similar documents in Faiss index."""
+        if use_reranking:
+            logger.warning("Re-ranking not yet implemented for Faiss. Ignoring flag.")
         if not self.embedding_function:
             raise ValueError("Embedding function required for search")
 
@@ -427,7 +466,7 @@ class FaissVectorStore(VectorStore):
             if doc and doc.metadata.get("content_hash") == content_hash:
                 return True
         return False
-旋
+
     def _save_index(self) -> None:
         """Save Faiss index and documents to disk."""
         import faiss
@@ -502,9 +541,12 @@ class InMemoryVectorStore(VectorStore):
         self,
         query: str,
         top_k: int = 5,
-        filter_metadata: Optional[Dict[str, Any]] = None
+        filter_metadata: Optional[Dict[str, Any]] = None,
+        use_reranking: bool = False
     ) -> List[SearchResult]:
         """Search using cosine similarity."""
+        if use_reranking:
+            logger.warning("Re-ranking not yet implemented for InMemoryStore. Ignoring flag.")
         if not self.embedding_function:
             raise ValueError("Embedding function required for search")
 
