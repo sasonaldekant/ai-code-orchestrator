@@ -11,12 +11,8 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-try:
-    from sentence_transformers import CrossEncoder # type: ignore
-    HAS_SENTENCE_TRANSFORMERS = True
-except ImportError:
-    logger.warning("sentence-transformers not found. Reranking will be simulated.")
-    HAS_SENTENCE_TRANSFORMERS = False
+# Lazy load to avoid crashes on incompatible environments
+HAS_SENTENCE_TRANSFORMERS = True
 
 @dataclass
 class RerankedResult:
@@ -44,10 +40,12 @@ class CrossEncoderReranker:
         if HAS_SENTENCE_TRANSFORMERS:
             try:
                 # Lazy loading to avoid startup overhead if not used
+                from sentence_transformers import CrossEncoder 
                 self.model = CrossEncoder(model_name, device=device)
                 logger.info(f"Loaded Cross-Encoder model: {model_name}")
             except Exception as e:
-                logger.error(f"Failed to load Cross-Encoder model: {e}")
+                logger.warning(f"Failed to load Cross-Encoder model (likely environment issue): {e}")
+                self.model = None
         
     def rerank(
         self, 

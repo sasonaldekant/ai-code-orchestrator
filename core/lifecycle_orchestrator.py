@@ -97,7 +97,10 @@ class LifecycleOrchestrator:
         user_request: str,
         deep_search: bool = False,
         retrieval_strategy: str = "local",
-        auto_fix: bool = False
+        auto_fix: bool = False,
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic",
     ) -> Dict[str, Any]:
         """
         Main entry point: break down request and execute tasks.
@@ -131,6 +134,9 @@ class LifecycleOrchestrator:
             question=user_request,
             deep_search=deep_search,
             retrieval_strategy=retrieval_strategy,
+            budget_limit=budget_limit,
+            consensus_mode=consensus_mode,
+            review_strategy=review_strategy,
         )
         
         if plan_result.status != PhaseStatus.COMPLETED:
@@ -151,7 +157,13 @@ class LifecycleOrchestrator:
         results = {}
         for milestone in self.milestones:
             await bus.publish(Event(type=EventType.MILESTONE, agent="Orchestrator", content=f"Starting Milestone: {milestone.id}"))
-            results[milestone.id] = await self.execute_milestone(milestone, auto_fix=auto_fix)
+            results[milestone.id] = await self.execute_milestone(
+                milestone, 
+                auto_fix=auto_fix,
+                budget_limit=budget_limit,
+                consensus_mode=consensus_mode,
+                review_strategy=review_strategy
+            )
             
             # Update plan status broadcast
             plan_data = {"milestones": [m.to_dict() for m in self.milestones]}
@@ -163,7 +175,14 @@ class LifecycleOrchestrator:
             "results": results
         }
 
-    async def execute_milestone(self, milestone: Milestone, auto_fix: bool = False) -> Dict[str, Any]:
+    async def execute_milestone(
+        self, 
+        milestone: Milestone, 
+        auto_fix: bool = False,
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic"
+    ) -> Dict[str, Any]:
         """
         Execute all tasks in a milestone, respecting dependencies.
         """
@@ -174,7 +193,13 @@ class LifecycleOrchestrator:
         # Simple sequential execution for now
         # TODO: Implement DAG topological sort for parallel execution
         for task in milestone.tasks:
-            task_result = await self.execute_task(task, auto_fix=auto_fix)
+            task_result = await self.execute_task(
+                task, 
+                auto_fix=auto_fix,
+                budget_limit=budget_limit,
+                consensus_mode=consensus_mode,
+                review_strategy=review_strategy
+            )
             results[task.id] = task_result
             if task.status == "failed":
                 milestone.status = "failed"
@@ -190,7 +215,14 @@ class LifecycleOrchestrator:
         milestone.status = "completed"
         return results
 
-    async def execute_task(self, task: Task, auto_fix: bool = False) -> Dict[str, Any]:
+    async def execute_task(
+        self, 
+        task: Task, 
+        auto_fix: bool = False,
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic"
+    ) -> Dict[str, Any]:
         """
         Execute a single task with domain context.
         """
@@ -210,14 +242,17 @@ class LifecycleOrchestrator:
         await bus.publish(Event(type=EventType.THOUGHT, agent=task.phase.capitalize(), content=f"Executing specialized agent workflow..."))
         
         if task.phase in ["architect", "implementation"]: # Phases suitable for review
-             phase_result = await self.orchestrator.run_phase_with_feedback(
+            phase_result = await self.orchestrator.run_phase_with_feedback(
                 phase=task.phase, # type: ignore
                 schema_name=f"{task.phase}_output",
                 context={
                     "task_description": task.description,
                     "domain_context": context.to_prompt_string(),
                 },
-                question=task.description
+                question=task.description,
+                budget_limit=budget_limit,
+                consensus_mode=consensus_mode,
+                review_strategy=review_strategy
             )
         else:
             # Simple execution for other phases
@@ -228,7 +263,10 @@ class LifecycleOrchestrator:
                     "task_description": task.description,
                     "domain_context": context.to_prompt_string(),
                 },
-                question=task.description
+                question=task.description,
+                budget_limit=budget_limit,
+                consensus_mode=consensus_mode,
+                review_strategy=review_strategy
             )
         
         if phase_result.status == PhaseStatus.COMPLETED:

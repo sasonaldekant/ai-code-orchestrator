@@ -22,6 +22,10 @@ class AnalystAgent:
     def __init__(self, orchestrator) -> None:
         self.orchestrator = orchestrator
         self.prompt_path = Path("prompts/phase_prompts/analyst.txt")
+        self.name = "Analyst"
+        self.description = "Analyzes requirements and produces detailed specifications."
+        self.tools = ["Requirement Analysis", "Pattern Recognition", "Risk Assessment"]
+        self.role = "analyst"
 
     async def execute(self, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> Dict[str, Any]:
         # Build prompt

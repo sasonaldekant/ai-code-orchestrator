@@ -49,7 +49,7 @@ def get_cost_manager():
         logger.error(f"Failed to import cost manager: {e}")
         return None
 
-async def run_request(request: str, enable_rag: bool = True):
+async def run_request(request: str, enable_rag: bool = True, deep_search: bool = False, auto_fix: bool = False, retrieval_strategy: str = "local"):
     """Execute a feature request workflow."""
     LifecycleOrchestrator = get_orchestrator()
     if not LifecycleOrchestrator:
@@ -58,7 +58,12 @@ async def run_request(request: str, enable_rag: bool = True):
     logger.info(f"Running request: {request}")
     
     orchestrator = LifecycleOrchestrator()
-    result = await orchestrator.execute_request(request)
+    result = await orchestrator.execute_request(
+        user_request=request,
+        deep_search=deep_search,
+        retrieval_strategy=retrieval_strategy,
+        auto_fix=auto_fix
+    )
     
     print("\n=== Execution Result ===")
     print(f"Status: {result.get('status', 'unknown')}")
@@ -178,11 +183,14 @@ def main():
     run_parser = subparsers.add_parser("run", help="Run a feature request")
     run_parser.add_argument("request", help="The feature request description")
     run_parser.add_argument("--no-rag", action="store_true", help="Disable RAG retrieval")
+    run_parser.add_argument("--auto-fix", action="store_true", help="Enable autonomous self-healing")
+    run_parser.add_argument("--deep-search", action="store_true", help="Enable agentic deep search")
+    run_parser.add_argument("--strategy", choices=["local", "hybrid", "external"], default="local", help="Retrieval strategy")
     
     # Ingest Command
     ingest_parser = subparsers.add_parser("ingest", help="Ingest domain knowledge")
     ingest_parser.add_argument("type", choices=["database", "component_library"], help="Type of source")
-    ingest_parser.add_argument("path", help="Path to source code/schema")
+    ingest_parser.add_argument("path", nargs="?", default=".", help="Path to source code/schema (default: current dir)")
     ingest_parser.add_argument("--collection", help="Vector DB collection name (defaults based on type)")
     ingest_parser.add_argument("--models-dir", help="Directory containing entity models (for database ingestion)")
     
@@ -197,7 +205,13 @@ def main():
     args = parser.parse_args()
     
     if args.command == "run":
-        asyncio.run(run_request(args.request, not args.no_rag))
+        asyncio.run(run_request(
+            request=args.request, 
+            enable_rag=not args.no_rag,
+            deep_search=args.deep_search,
+            auto_fix=args.auto_fix,
+            retrieval_strategy=args.strategy
+        ))
     elif args.command == "ingest":
         ingest_knowledge(args.type, args.path, args.collection, args.models_dir)
     elif args.command == "query":

@@ -23,6 +23,10 @@ class ArchitectAgent:
     def __init__(self, orchestrator) -> None:
         self.orchestrator = orchestrator
         self.prompt_path = Path("prompts/phase_prompts/architect.txt")
+        self.name = "Architect"
+        self.description = "Designs system architecture and data models."
+        self.tools = ["System Design", "Consensus Synthesis", "Data Modeling"]
+        self.role = "architect"
 
     async def execute(self, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

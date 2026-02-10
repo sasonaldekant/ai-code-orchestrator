@@ -292,17 +292,31 @@ def create_embeddings_provider(
     EmbeddingsProvider
         Configured embeddings provider
     """
+
     if provider_type == "openai":
-        model = model or "text-embedding-3-small"
-        provider = OpenAIEmbeddings(model=model, **kwargs)
+        try:
+            model = model or "text-embedding-3-small"
+            provider = OpenAIEmbeddings(model=model, **kwargs)
+        except ImportError:
+            logger.warning("OpenAI not available. Using MockEmbeddingsProvider.")
+            from rag.mock_embeddings import MockEmbeddingsProvider
+            provider = MockEmbeddingsProvider(model_name="mock-fallback")
+
     elif provider_type == "huggingface":
         model = model or "sentence-transformers/all-MiniLM-L6-v2"
-        provider = HuggingFaceEmbeddings(model_name=model, **kwargs)
+        try:
+            provider = HuggingFaceEmbeddings(model_name=model, **kwargs)
+        except Exception as e:
+            logger.warning(f"HuggingFace embeddings not available ({e}). Falling back to MockEmbeddingsProvider.")
+            from rag.mock_embeddings import MockEmbeddingsProvider
+            provider = MockEmbeddingsProvider(model_name=model)
+            
+    elif provider_type == "mock":
+        from rag.mock_embeddings import MockEmbeddingsProvider
+        provider = MockEmbeddingsProvider(model_name=model or "mock-model")
+        
     else:
-        raise ValueError(
-            f"Unknown provider type: {provider_type}. "
-            "Use 'openai' or 'huggingface'"
-        )
+        raise ValueError(f"Unknown provider type: {provider_type}")
     
     # Wrap with cache if enabled
     if use_cache:

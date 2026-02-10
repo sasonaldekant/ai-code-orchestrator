@@ -1,1 +1,383 @@
-"""\nProducer-Reviewer loop for iterative quality improvement.\n\nThis module implements a feedback loop where:\n1. A producer model (e.g., GPT-4o-mini) generates initial output\n2. A reviewer model (e.g., Claude Sonnet) provides detailed feedback\n3. The producer refines the output based on feedback\n4. Loop continues until quality threshold is met or max iterations reached\n\nTypical use cases:\n- Code generation with quality review\n- Architecture refinement\n- Documentation improvement\n- Test case enhancement\n\nVersion: 2.0.0\n\"""\n\nfrom __future__ import annotations\n\nimport asyncio\nimport logging\nimport json\nimport re\nfrom typing import List, Dict, Any, Optional, Callable\nfrom dataclasses import dataclass\nfrom enum import Enum\n\nlogger = logging.getLogger(__name__)\n\n\nclass QualityDimension(Enum):\n    \"\"\"Dimensions for quality evaluation.\"\"\"\n    CORRECTNESS = \"correctness\"\n    COMPLETENESS = \"completeness\"\n    CLARITY = \"clarity\"\n    BEST_PRACTICES = \"best_practices\"\n    PERFORMANCE = \"performance\"\n    SECURITY = \"security\"\n\n\n@dataclass\nclass ReviewFeedback:\n    \"\"\"Feedback from reviewer model.\"\"\"\n    overall_score: float  # 0.0-10.0\n    dimension_scores: Dict[str, float]\n    strengths: List[str]\n    weaknesses: List[str]\n    suggestions: List[str]\n    critical_issues: List[str]\n    approved: bool\n    reasoning: str\n\n\n@dataclass\nclass Iteration:\n    \"\"\"Single iteration of the producer-reviewer loop.\"\"\"\n    number: int\n    producer_output: str\n    review_feedback: Optional[ReviewFeedback]\n    producer_tokens: int\n    reviewer_tokens: int\n    improvement_delta: float  # Score change from previous iteration\n\n\n@dataclass\nclass ProducerReviewerResult:\n    \"\"\"Final result of the producer-reviewer loop.\"\"\"\n    final_output: str\n    iterations: List[Iteration]\n    final_score: float\n    converged: bool\n    reason: str  # \"threshold_met\", \"max_iterations\", \"no_improvement\"\n    total_tokens: int\n    total_cost: float\n\n\nclass ProducerReviewerLoop:\n    \"\"\"\n    Orchestrate iterative refinement through producer-reviewer feedback.\n    \n    The loop operates as follows:\n    1. Producer generates initial output\n    2. Reviewer evaluates and scores the output\n    3. If score < threshold, reviewer provides actionable feedback\n    4. Producer revises output based on feedback\n    5. Repeat until threshold met or max iterations reached\n    \n    Example\n    -------\n    >>> from core.llm_client_v2 import LLMClient\n    >>> from core.cost_manager import CostManager\n    >>> \n    >>> cost_mgr = CostManager()\n    >>> llm_client = LLMClient(cost_mgr)\n    >>> loop = ProducerReviewerLoop(llm_client, cost_mgr)\n    >>> \n    >>> result = await loop.run(\n    ...     task=\"Implement a user authentication controller in C#\",\n    ...     producer_model=\"gpt-4o-mini\",\n    ...     reviewer_model=\"claude-3-5-sonnet\",\n    ...     quality_threshold=8.5,\n    ...     max_iterations=3\n    ... )\n    >>> print(f\"Final score: {result.final_score}\")\n    >>> print(f\"Iterations: {len(result.iterations)}\")\n    \"\"\"\n    \n    def __init__(self, llm_client: Any, cost_manager: Any):\n        self.llm_client = llm_client\n        self.cost_manager = cost_manager\n    \n    async def run(\n        self,\n        task: str,\n        producer_model: str,\n        reviewer_model: str,\n        quality_threshold: float = 8.0,\n        max_iterations: int = 3,\n        context: Optional[str] = None,\n        evaluation_criteria: Optional[List[QualityDimension]] = None,\n        custom_reviewer_prompt: Optional[str] = None\n    ) -> ProducerReviewerResult:\n        \"\"\"\n        Execute the producer-reviewer loop.\n        \n        Parameters\n        ----------\n        task : str\n            The task description for the producer.\n        producer_model : str\n            Model identifier for the producer (e.g., \"gpt-4o-mini\").\n        reviewer_model : str\n            Model identifier for the reviewer (e.g., \"claude-3-5-sonnet\").\n        quality_threshold : float\n            Minimum score (0-10) to accept output (default: 8.0).\n        max_iterations : int\n            Maximum refinement iterations (default: 3).\n        context : str, optional\n            Additional context for the task.\n        evaluation_criteria : list, optional\n            Specific quality dimensions to evaluate.\n        custom_reviewer_prompt : str, optional\n            Custom prompt template for the reviewer.\n        \n        Returns\n        -------\n        ProducerReviewerResult\n            Final output with iteration history and metrics.\n        \"\"\"\n        logger.info(\n            f\"Starting producer-reviewer loop: {producer_model} → {reviewer_model}, \"\n            f\"threshold={quality_threshold}, max_iter={max_iterations}\"\n        )\n        \n        iterations = []\n        previous_score = 0.0\n        feedback_history = []\n        \n        for iteration_num in range(1, max_iterations + 1):\n            logger.info(f\"Iteration {iteration_num}/{max_iterations}\")\n            \n            # Producer generates output\n            producer_output, producer_tokens = await self._produce(\n                task=task,\n                model=producer_model,\n                context=context,\n                previous_feedback=feedback_history[-1] if feedback_history else None\n            )\n            \n            # Reviewer evaluates output\n            review_feedback, reviewer_tokens = await self._review(\n                task=task,\n                output=producer_output,\n                model=reviewer_model,\n                evaluation_criteria=evaluation_criteria,\n                custom_prompt=custom_reviewer_prompt\n            )\n            \n            # Calculate improvement\n            improvement = review_feedback.overall_score - previous_score\n            \n            # Record iteration\n            iteration = Iteration(\n                number=iteration_num,\n                producer_output=producer_output,\n                review_feedback=review_feedback,\n                producer_tokens=producer_tokens,\n                reviewer_tokens=reviewer_tokens,\n                improvement_delta=improvement\n            )\n            iterations.append(iteration)\n            feedback_history.append(review_feedback)\n            \n            logger.info(\n                f\"Iteration {iteration_num}: score={review_feedback.overall_score:.1f}, \"\n                f\"improvement={improvement:+.1f}, approved={review_feedback.approved}\"\n            )\n            \n            # Check convergence criteria\n            if review_feedback.approved and review_feedback.overall_score >= quality_threshold:\n                return self._build_result(\n                    iterations=iterations,\n                    reason=\"threshold_met\",\n                    converged=True\n                )\n            \n            # Check for diminishing returns\n            if iteration_num > 1 and improvement < 0.5:\n                logger.warning(\"Minimal improvement detected, stopping early\")\n                return self._build_result(\n                    iterations=iterations,\n                    reason=\"no_improvement\",\n                    converged=False\n                )\n            \n            previous_score = review_feedback.overall_score\n        \n        # Max iterations reached\n        return self._build_result(\n            iterations=iterations,\n            reason=\"max_iterations\",\n            converged=False\n        )\n    \n    async def _produce(\n        self,\n        task: str,\n        model: str,\n        context: Optional[str],\n        previous_feedback: Optional[ReviewFeedback]\n    ) -> tuple[str, int]:\n        \"\"\"Generate or refine output using producer model.\"\"\"\n        messages = []\n        \n        if context:\n            messages.append({\n                \"role\": \"system\",\n                \"content\": f\"Context:\\n{context}\"\n            })\n        \n        if previous_feedback:\n            # Refinement iteration\n            feedback_text = self._format_feedback(previous_feedback)\n            messages.append({\n                \"role\": \"user\",\n                \"content\": f\"\"\"Task: {task}\n\nPrevious output received the following feedback:\n{feedback_text}\n\nPlease revise your output to address all feedback points.\n\"\"\"\n            })\n        else:\n            # Initial generation\n            messages.append({\n                \"role\": \"user\",\n                \"content\": task\n            })\n        \n        response = await self.llm_client.complete(\n            messages=messages,\n            model=model,\n            temperature=0.0,\n            max_tokens=8000\n        )\n        \n        return response.content, response.tokens_used[\"total\"]\n    \n    async def _review(\n        self,\n        task: str,\n        output: str,\n        model: str,\n        evaluation_criteria: Optional[List[QualityDimension]],\n        custom_prompt: Optional[str]\n    ) -> tuple[ReviewFeedback, int]:\n        \"\"\"Evaluate output using reviewer model.\"\"\"\n        if custom_prompt:\n            review_prompt = custom_prompt.format(task=task, output=output)\n        else:\n            review_prompt = self._build_default_review_prompt(\n                task, output, evaluation_criteria\n            )\n        \n        response = await self.llm_client.complete(\n            messages=[{\"role\": \"user\", \"content\": review_prompt}],\n            model=model,\n            temperature=0.0,\n            max_tokens=4000\n        )\n        \n        feedback = self._parse_review_response(response.content)\n        return feedback, response.tokens_used[\"total\"]\n    \n    def _build_default_review_prompt(\n        self,\n        task: str,\n        output: str,\n        criteria: Optional[List[QualityDimension]]\n    ) -> str:\n        \"\"\"Build default review prompt with evaluation criteria.\"\"\"\n        criteria_list = criteria or [\n            QualityDimension.CORRECTNESS,\n            QualityDimension.COMPLETENESS,\n            QualityDimension.CLARITY,\n            QualityDimension.BEST_PRACTICES\n        ]\n        \n        criteria_text = \"\\n\".join([\n            f\"- {c.value.replace('_', ' ').title()}\" for c in criteria_list\n        ])\n        \n        return f\"\"\"You are an expert code reviewer. Evaluate the following output.\n\nTask:\n{task}\n\nOutput to review:\n```\n{output}\n```\n\nEvaluation criteria:\n{criteria_text}\n\nProvide your review in JSON format:\n{{\n  \"overall_score\": 8.5,  // 0.0-10.0\n  \"dimension_scores\": {{\n    \"correctness\": 9.0,\n    \"completeness\": 8.0,\n    \"clarity\": 9.0,\n    \"best_practices\": 8.0\n  }},\n  \"strengths\": [\"Point 1\", \"Point 2\"],\n  \"weaknesses\": [\"Issue 1\", \"Issue 2\"],\n  \"suggestions\": [\"Improvement 1\", \"Improvement 2\"],\n  \"critical_issues\": [\"Blocker 1\"],  // Empty if none\n  \"approved\": false,  // true if score >= 8.0 and no critical issues\n  \"reasoning\": \"Detailed explanation...\"\n}}\n\"\"\"\n    \n    def _parse_review_response(self, content: str) -> ReviewFeedback:\n        \"\"\"Parse reviewer's JSON response into ReviewFeedback object.\"\"\"\n        try:\n            # Extract JSON from markdown if present\n            if \"```json\" in content:\n                content = content.split(\"```json\")[1].split(\"```\")[0]\n            elif \"```\" in content:\n                content = content.split(\"```\")[1].split(\"```\")[0]\n            \n            data = json.loads(content.strip())\n            \n            return ReviewFeedback(\n                overall_score=float(data.get(\"overall_score\", 5.0)),\n                dimension_scores=data.get(\"dimension_scores\", {}),\n                strengths=data.get(\"strengths\", []),\n                weaknesses=data.get(\"weaknesses\", []),\n                suggestions=data.get(\"suggestions\", []),\n                critical_issues=data.get(\"critical_issues\", []),\n                approved=data.get(\"approved\", False),\n                reasoning=data.get(\"reasoning\", \"\")\n            )\n        except (json.JSONDecodeError, KeyError, ValueError) as e:\n            logger.error(f\"Failed to parse review response: {e}\")\n            # Return low-quality feedback as fallback\n            return ReviewFeedback(\n                overall_score=5.0,\n                dimension_scores={},\n                strengths=[],\n                weaknesses=[\"Unable to parse review\"],\n                suggestions=[],\n                critical_issues=[\"Review parsing failed\"],\n                approved=False,\n                reasoning=\"Failed to parse structured review\"\n            )\n    \n    def _format_feedback(self, feedback: ReviewFeedback) -> str:\n        \"\"\"Format feedback for producer's consumption.\"\"\"\n        lines = [\n            f\"Overall Score: {feedback.overall_score}/10.0\",\n            f\"Approved: {feedback.approved}\",\n            \"\"\n        ]\n        \n        if feedback.critical_issues:\n            lines.append(\"🚨 Critical Issues:\")\n            for issue in feedback.critical_issues:\n                lines.append(f\"  - {issue}\")\n            lines.append(\"\")\n        \n        if feedback.weaknesses:\n            lines.append(\"⚠️  Weaknesses:\")\n            for weakness in feedback.weaknesses:\n                lines.append(f\"  - {weakness}\")\n            lines.append(\"\")\n        \n        if feedback.suggestions:\n            lines.append(\"💡 Suggestions:\")\n            for suggestion in feedback.suggestions:\n                lines.append(f\"  - {suggestion}\")\n            lines.append(\"\")\n        \n        lines.append(f\"Reasoning: {feedback.reasoning}\")\n        \n        return \"\\n\".join(lines)\n    \n    def _build_result(\n        self,\n        iterations: List[Iteration],\n        reason: str,\n        converged: bool\n    ) -> ProducerReviewerResult:\n        \"\"\"Build final result from iteration history.\"\"\"\n        final_iteration = iterations[-1]\n        total_tokens = sum(\n            it.producer_tokens + it.reviewer_tokens for it in iterations\n        )\n        total_cost = self.cost_manager.get_cumulative_cost()\n        \n        return ProducerReviewerResult(\n            final_output=final_iteration.producer_output,\n            iterations=iterations,\n            final_score=final_iteration.review_feedback.overall_score,\n            converged=converged,\n            reason=reason,\n            total_tokens=total_tokens,\n            total_cost=total_cost\n        )\n
+"""
+Producer-Reviewer loop for iterative quality improvement.
+
+This module implements a feedback loop where:
+1. A producer model (e.g., GPT-4o-mini) generates initial output
+2. A reviewer model (e.g., Claude Sonnet) provides detailed feedback
+3. The producer refines the output based on feedback
+4. Loop continues until quality threshold is met or max iterations reached
+
+Typical use cases:
+- Code generation with quality review
+- Architecture refinement
+- Documentation improvement
+- Test case enhancement
+
+Version: 2.0.0
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import json
+import re
+from typing import List, Dict, Any, Optional, Callable
+from dataclasses import dataclass
+from enum import Enum
+
+logger = logging.getLogger(__name__)
+
+
+class QualityDimension(Enum):
+    """Dimensions for quality evaluation."""
+    CORRECTNESS = "correctness"
+    COMPLETENESS = "completeness"
+    CLARITY = "clarity"
+    BEST_PRACTICES = "best_practices"
+    PERFORMANCE = "performance"
+    SECURITY = "security"
+
+
+@dataclass
+class ReviewFeedback:
+    """Feedback from reviewer model."""
+    overall_score: float  # 0.0-10.0
+    dimension_scores: Dict[str, float]
+    strengths: List[str]
+    weaknesses: List[str]
+    suggestions: List[str]
+    critical_issues: List[str]
+    approved: bool
+    reasoning: str
+
+
+@dataclass
+class Iteration:
+    """Single iteration of the producer-reviewer loop."""
+    number: int
+    producer_output: str
+    review_feedback: Optional[ReviewFeedback]
+    producer_tokens: int
+    reviewer_tokens: int
+    improvement_delta: float  # Score change from previous iteration
+
+
+@dataclass
+class ProducerReviewerResult:
+    """Final result of the producer-reviewer loop."""
+    final_output: str
+    iterations: List[Iteration]
+    final_score: float
+    converged: bool
+    reason: str  # "threshold_met", "max_iterations", "no_improvement"
+    total_tokens: int
+    total_cost: float
+
+
+class ProducerReviewerLoop:
+    """
+    Orchestrate iterative refinement through producer-reviewer feedback.
+    
+    The loop operates as follows:
+    1. Producer generates initial output
+    2. Reviewer evaluates and scores the output
+    3. If score < threshold, reviewer provides actionable feedback
+    4. Producer revises output based on feedback
+    5. Repeat until threshold met or max iterations reached
+    """
+    
+    def __init__(self, llm_client: Any, cost_manager: Any):
+        self.llm_client = llm_client
+        self.cost_manager = cost_manager
+    
+    async def run(
+        self,
+        task: str,
+        producer_model: str,
+        reviewer_model: str,
+        quality_threshold: float = 8.0,
+        max_iterations: int = 3,
+        context: Optional[str] = None,
+        evaluation_criteria: Optional[List[QualityDimension]] = None,
+        custom_reviewer_prompt: Optional[str] = None
+    ) -> ProducerReviewerResult:
+        """
+        Execute the producer-reviewer loop.
+        """
+        logger.info(
+            f"Starting producer-reviewer loop: {producer_model} → {reviewer_model}, "
+            f"threshold={quality_threshold}, max_iter={max_iterations}"
+        )
+        
+        iterations = []
+        previous_score = 0.0
+        feedback_history = []
+        
+        for iteration_num in range(1, max_iterations + 1):
+            logger.info(f"Iteration {iteration_num}/{max_iterations}")
+            
+            # Producer generates output
+            producer_output, producer_tokens = await self._produce(
+                task=task,
+                model=producer_model,
+                context=context,
+                previous_feedback=feedback_history[-1] if feedback_history else None
+            )
+            
+            # Reviewer evaluates output
+            review_feedback, reviewer_tokens = await self._review(
+                task=task,
+                output=producer_output,
+                model=reviewer_model,
+                evaluation_criteria=evaluation_criteria,
+                custom_prompt=custom_reviewer_prompt
+            )
+            
+            # Calculate improvement
+            improvement = review_feedback.overall_score - previous_score
+            
+            # Record iteration
+            iteration = Iteration(
+                number=iteration_num,
+                producer_output=producer_output,
+                review_feedback=review_feedback,
+                producer_tokens=producer_tokens,
+                reviewer_tokens=reviewer_tokens,
+                improvement_delta=improvement
+            )
+            iterations.append(iteration)
+            feedback_history.append(review_feedback)
+            
+            logger.info(
+                f"Iteration {iteration_num}: score={review_feedback.overall_score:.1f}, "
+                f"improvement={improvement:+.1f}, approved={review_feedback.approved}"
+            )
+            
+            # Check convergence criteria
+            if review_feedback.approved and review_feedback.overall_score >= quality_threshold:
+                return self._build_result(
+                    iterations=iterations,
+                    reason="threshold_met",
+                    converged=True
+                )
+            
+            # Check for diminishing returns
+            if iteration_num > 1 and improvement < 0.5:
+                logger.warning("Minimal improvement detected, stopping early")
+                return self._build_result(
+                    iterations=iterations,
+                    reason="no_improvement",
+                    converged=False
+                )
+            
+            previous_score = review_feedback.overall_score
+        
+        # Max iterations reached
+        return self._build_result(
+            iterations=iterations,
+            reason="max_iterations",
+            converged=False
+        )
+    
+    async def _produce(
+        self,
+        task: str,
+        model: str,
+        context: Optional[str],
+        previous_feedback: Optional[ReviewFeedback]
+    ) -> tuple[str, int]:
+        """Generate or refine output using producer model."""
+        messages = []
+        
+        if context:
+            messages.append({
+                "role": "system",
+                "content": f"Context:\n{context}"
+            })
+        
+        if previous_feedback:
+            # Refinement iteration
+            feedback_text = self._format_feedback(previous_feedback)
+            messages.append({
+                "role": "user",
+                "content": f"Task: {task}\n\nPrevious output received the following feedback:\n{feedback_text}\n\nPlease revise your output to address all feedback points."
+            })
+        else:
+            # Initial generation
+            messages.append({
+                "role": "user",
+                "content": task
+            })
+        
+        response = await self.llm_client.complete(
+            messages=messages,
+            model=model,
+            temperature=0.0,
+            max_tokens=8000
+        )
+        
+        return response.content, response.tokens_used.get("total", 0)
+    
+    async def _review(
+        self,
+        task: str,
+        output: str,
+        model: str,
+        evaluation_criteria: Optional[List[QualityDimension]],
+        custom_prompt: Optional[str]
+    ) -> tuple[ReviewFeedback, int]:
+        """Evaluate output using reviewer model."""
+        if custom_prompt:
+            review_prompt = custom_prompt.format(task=task, output=output)
+        else:
+            review_prompt = self._build_default_review_prompt(
+                task, output, evaluation_criteria
+            )
+        
+        response = await self.llm_client.complete(
+            messages=[{"role": "user", "content": review_prompt}],
+            model=model,
+            temperature=0.0,
+            max_tokens=4000
+        )
+        
+        feedback = self._parse_review_response(response.content)
+        return feedback, response.tokens_used.get("total", 0)
+    
+    def _build_default_review_prompt(
+        self,
+        task: str,
+        output: str,
+        criteria: Optional[List[QualityDimension]]
+    ) -> str:
+        """Build default review prompt with evaluation criteria."""
+        criteria_list = criteria or [
+            QualityDimension.CORRECTNESS,
+            QualityDimension.COMPLETENESS,
+            QualityDimension.CLARITY,
+            QualityDimension.BEST_PRACTICES
+        ]
+        
+        criteria_text = "\n".join([
+            f"- {c.value.replace('_', ' ').title()}" for c in criteria_list
+        ])
+        
+        return f"""You are an expert code reviewer. Evaluate the following output.
+
+Task:
+{task}
+
+Output to review:
+```
+{output}
+```
+
+Evaluation criteria:
+{criteria_text}
+
+Provide your review in JSON format:
+{{
+  "overall_score": 8.5,  // 0.0-10.0
+  "dimension_scores": {{
+    "correctness": 9.0,
+    "completeness": 8.0,
+    "clarity": 9.0,
+    "best_practices": 8.0
+  }},
+  "strengths": ["Point 1", "Point 2"],
+  "weaknesses": ["Issue 1", "Issue 2"],
+  "suggestions": ["Improvement 1", "Improvement 2"],
+  "critical_issues": ["Blocker 1"],  // Empty if none
+  "approved": false,  // true if score >= 8.0 and no critical issues
+  "reasoning": "Detailed explanation..."
+}}
+"""
+    
+    def _parse_review_response(self, content: str) -> ReviewFeedback:
+        """Parse reviewer's JSON response into ReviewFeedback object."""
+        try:
+            # Extract JSON from markdown if present
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+            
+            data = json.loads(content.strip())
+            
+            return ReviewFeedback(
+                overall_score=float(data.get("overall_score", 5.0)),
+                dimension_scores=data.get("dimension_scores", {}),
+                strengths=data.get("strengths", []),
+                weaknesses=data.get("weaknesses", []),
+                suggestions=data.get("suggestions", []),
+                critical_issues=data.get("critical_issues", []),
+                approved=data.get("approved", False),
+                reasoning=data.get("reasoning", "")
+            )
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.error(f"Failed to parse review response: {e}")
+            # Return low-quality feedback as fallback
+            return ReviewFeedback(
+                overall_score=5.0,
+                dimension_scores={},
+                strengths=[],
+                weaknesses=["Unable to parse review"],
+                suggestions=[],
+                critical_issues=["Review parsing failed"],
+                approved=False,
+                reasoning="Failed to parse structured review"
+            )
+    
+    def _format_feedback(self, feedback: ReviewFeedback) -> str:
+        """Format feedback for producer's consumption."""
+        lines = [
+            f"Overall Score: {feedback.overall_score}/10.0",
+            f"Approved: {feedback.approved}",
+            ""
+        ]
+        
+        if feedback.critical_issues:
+            lines.append("🚨 Critical Issues:")
+            for issue in feedback.critical_issues:
+                lines.append(f"  - {issue}")
+            lines.append("")
+        
+        if feedback.weaknesses:
+            lines.append("⚠️  Weaknesses:")
+            for weakness in feedback.weaknesses:
+                lines.append(f"  - {weakness}")
+            lines.append("")
+        
+        if feedback.suggestions:
+            lines.append("💡 Suggestions:")
+            for suggestion in feedback.suggestions:
+                lines.append(f"  - {suggestion}")
+            lines.append("")
+        
+        lines.append(f"Reasoning: {feedback.reasoning}")
+        
+        return "\n".join(lines)
+    
+    def _build_result(
+        self,
+        iterations: List[Iteration],
+        reason: str,
+        converged: bool
+    ) -> ProducerReviewerResult:
+        """Build final result from iteration history."""
+        final_iteration = iterations[-1]
+        total_tokens = sum(
+            it.producer_tokens + it.reviewer_tokens for it in iterations
+        )
+        total_cost = self.cost_manager.get_cumulative_cost()
+        
+        return ProducerReviewerResult(
+            final_output=final_iteration.producer_output,
+            iterations=iterations,
+            final_score=final_iteration.review_feedback.overall_score if final_iteration.review_feedback else 0.0,
+            converged=converged,
+            reason=reason,
+            total_tokens=total_tokens,
+            total_cost=total_cost
+        )

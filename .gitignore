@@ -1,22 +1,37 @@
-outputs/*
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+venv_311/
+ENV/
+
+# Logs and databases
+*.log
 stress_test.log
 trace.jsonl
-agents/phase_agents/__pycache__/
-rag/chroma_db/
-api/__pycache__/
-core/__pycache__/
-agents/specialist_agents/__pycache__/
-rag/__pycache__/
-domain_knowledge/ingestion/__pycache__/
-domain_knowledge/__pycache__/
-core/agents/specialist_agents/__pycache__/
-core/graph/__pycache__/
-core/memory/__pycache__/
-core/__pycache__/
-rag/test_chroma_rerank/
-tests/__pycache__/
-core/__pycache__/lifecycle_orchestrator.cpython-313.pyc
-core/__pycache__/orchestrator_v2.cpython-313.pyc
-core/agent/__pycache__/
-core/agent/__pycache__/orchestrator_v2.cpython-313.pyc
-agents/__pycache__/
+experience.db
+cost_history/
+**/chroma_db/
+**/test_chroma_rerank/
+
+# UI
+node_modules/
+ui/node_modules/
+ui/dist/
+dist/
+
+# Configuration
+.env
+**/.env
+**/.env.local
+
+# Project specific
+outputs/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
