@@ -7,7 +7,7 @@ from pathlib import Path
 
 router = APIRouter(prefix="/config", tags=["config"])
 
-CONFIG_PATH = Path("config/model_mapping.yaml")
+CONFIG_PATH = Path("config/model_mapping_v2.yaml")
 ENV_PATH = Path(".env")
 
 class ModelConfig(BaseModel):
@@ -28,7 +28,7 @@ def load_yaml_config():
 
 def save_yaml_config(data: Dict):
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        yaml.dump(data, f, default_flow_style=False)
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
 def update_env_file(api_keys: Dict[str, str]):
     # Simple .env updater - in production use python-dotenv or similar
@@ -48,8 +48,7 @@ def update_env_file(api_keys: Dict[str, str]):
         if not value or value.strip() == "": continue
         
         # Masked value check (don't save if it's ****)
-        if value.startswith("sk-") and "*" in value: continue
-        if all(c == '*' for c in value): continue
+        if "*" in value: continue
 
         line_content = f"{key}={value}\n"
         if key in current_keys:
@@ -69,13 +68,15 @@ async def get_settings():
         api_keys = {
             "OPENAI_API_KEY": "sk-****" if os.getenv("OPENAI_API_KEY") else "",
             "ANTHROPIC_API_KEY": "sk-****" if os.getenv("ANTHROPIC_API_KEY") else "",
-            "GOOGLE_API_KEY": "AIza****" if os.getenv("GOOGLE_API_KEY") else ""
+            "GOOGLE_API_KEY": "AIza****" if os.getenv("GOOGLE_API_KEY") else "",
+            "PERPLEXITY_API_KEY": "pplx-****" if os.getenv("PERPLEXITY_API_KEY") else ""
         }
         
         return {
             "models": config,
             "api_keys": api_keys
         }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

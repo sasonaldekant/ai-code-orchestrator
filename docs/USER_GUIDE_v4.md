@@ -24,7 +24,7 @@ This guide provides instructions on how to use the AI Code Orchestrator v4.0 (Bl
 
 - Python 3.10+
 - Node.js 18+ (for GUI)
-- API Keys for OpenAI, Anthropic, or Google Gemini.
+- API Keys for OpenAI, Anthropic, Google Gemini, or **Perplexity** (for Deep Research).
 
 ### Setup
 
@@ -50,6 +50,7 @@ This guide provides instructions on how to use the AI Code Orchestrator v4.0 (Bl
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=sk-ant-...
    GOOGLE_API_KEY=...
+   PERPLEXITY_API_KEY=pplx-...
    ```
 
 4. Start the system:
@@ -194,8 +195,7 @@ The system remembers how it fixed bugs in the past.
 
 ---
 
-## 10. Advanced Features (Legacy v3)
-
+- **Perplexity Deep Research**: Integrated via API for the `code_research` specialty. It provides up-to-date information on libraries, security patches, and community best practices by searching the live web.
 - **RAG Ingestion**: Ingest knowledge using `python manage.py ingest`.
 - **Domain-Aware Retrieval**: Context-aware context building.
 - **Producer-Reviewer Loop**: Automated code review.
