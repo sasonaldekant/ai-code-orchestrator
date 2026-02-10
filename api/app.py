@@ -17,6 +17,7 @@ from rag.vector_store import ChromaVectorStore
 from api.admin_routes import router as admin_router
 from api.vision_routes import router as vision_router
 from api.ide_routes import router as ide_router
+from api.event_bus import bus, Event, EventType
 
 # Basic auth helper
 import os
