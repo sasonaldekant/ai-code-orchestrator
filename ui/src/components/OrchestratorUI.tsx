@@ -40,59 +40,59 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
         if (!prompt.trim()) return;
 
         setIsLoading(true);
-        setLogs([]); // Clear for new run
+        clearLogs(); // Clear for new run
 
         try {
+            let finalPrompt = prompt;
+
+            // [Phase 16] Vision Analysis (if image present)
+            if (selectedImage) {
+                try {
+                    const visionResp = await fetch('http://localhost:8000/vision/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: selectedImage,
+                            prompt: "Analyze this image in the context of software development. If it's a UI mockup, describe the components and layout. If it's an error, identify the issue."
+                        })
+                    });
+
+                    if (visionResp.ok) {
+                        const visionData = await visionResp.json();
+                        if (visionData.success && visionData.analysis) {
+                            finalPrompt += `
+
+[Vision Analysis Context]:
+${visionData.analysis}`;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Vision analysis failed", err);
+                    // Continue without visual context.
+                }
+            }
+
             const resp = await fetch('http://localhost:8000/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    let finalPrompt = prompt;
+                    request: finalPrompt,
+                    deep_search: deepSearch,
+                    retrieval_strategy: retrievalStrategy,
+                    auto_fix: autoFix
+                })
+            });
 
-                    // [Phase 16] Vision Analysis (if image present)
-                    if(selectedImage) {
-                        try {
-                            const visionResp = await fetch('http://localhost:8000/vision/analyze', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    image: selectedImage,
-                                    prompt: "Analyze this image in the context of software development. If it's a UI mockup, describe the components and layout. If it's an error, identify the issue."
-                                })
-                            });
-                            if (visionResp.ok) {
-                                const visionData = await visionResp.json();
-                                if (visionData.success && visionData.analysis) {
-                                    finalPrompt += `\n\n[Vision Analysis Context]:\n${visionData.analysis}`;
-                                }
-                            }
-                        } catch (err) {
-                            console.error("Vision analysis failed", err);
-                            // Continue without visual context or alert user?
-                            // For now, continue but maybe log it.
-                        }
-                    }
-
-            const resp = await fetch('http://localhost:8000/run', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            request: finalPrompt,
-                            deep_search: deepSearch,
-                            retrieval_strategy: retrievalStrategy,
-                            auto_fix: autoFix
-                        })
-                    });
-                    if(!resp.ok) throw new Error("Failed to start");
-            } catch (e) {
-                console.error(e);
-                alert("Error starting request. Check console.");
-            } finally {
-                setIsLoading(false);
-                setPrompt("");
-                setSelectedImage(null);
-            }
-        };
+            if (!resp.ok) throw new Error('Failed to start');
+        } catch (e) {
+            console.error(e);
+            alert('Error starting request. Check console.');
+        } finally {
+            setIsLoading(false);
+            setPrompt('');
+            setSelectedImage(null);
+        }
+    };
 
         // Auto-scroll to bottom of logs
         React.useEffect(() => {
