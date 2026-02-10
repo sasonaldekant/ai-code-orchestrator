@@ -21,6 +21,7 @@ from typing import List, Dict, Any, Optional
 import logging
 import json
 import numpy as np
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,11 @@ class VectorStore(ABC):
         """Get collection statistics."""
         pass
 
+    @abstractmethod
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content with the given hash already exists in the store."""
+        pass
+
 
 class ChromaVectorStore(VectorStore):
     """
@@ -135,6 +141,12 @@ class ChromaVectorStore(VectorStore):
 
         ids = [doc.id for doc in documents]
         texts = [doc.text for doc in documents]
+        
+        # Ensure content_hash is in metadata for duplicate detection
+        for doc in documents:
+            if "content_hash" not in doc.metadata:
+                doc.metadata["content_hash"] = hashlib.md5(doc.text.encode()).hexdigest()
+        
         metadatas = [doc.metadata for doc in documents]
 
         # Generate embeddings if not provided
@@ -239,6 +251,14 @@ class ChromaVectorStore(VectorStore):
             "count": count,
             "persist_directory": str(self.persist_directory)
         }
+
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in Chroma using metadata filtering."""
+        results = self.collection.get(
+            where={"content_hash": content_hash},
+            limit=1
+        )
+        return len(results['ids']) > 0
 
 
 class FaissVectorStore(VectorStore):
@@ -401,6 +421,13 @@ class FaissVectorStore(VectorStore):
             "persist_path": str(self.persist_path) if self.persist_path else None
         }
 
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in Faiss documents."""
+        for doc in self.documents:
+            if doc and doc.metadata.get("content_hash") == content_hash:
+                return True
+        return False
+旋
     def _save_index(self) -> None:
         """Save Faiss index and documents to disk."""
         import faiss
@@ -537,3 +564,7 @@ class InMemoryVectorStore(VectorStore):
             "count": len(self.documents),
             "type": "in_memory"
         }
+
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in-memory."""
+        return any(d.metadata.get("content_hash") == content_hash for d in self.documents)

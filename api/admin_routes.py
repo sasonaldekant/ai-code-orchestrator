@@ -230,7 +230,9 @@ async def validate_ingestion(req: IngestionValidateRequest):
         info["path_exists"] = True
         info["is_directory"] = source_path.is_dir()
     
-    # Type-specific validation
+    # Type-specific validation and dynamic recommendations
+    chunker = ChunkingEngine()
+    
     if req.type == "database":
         if not req.models_dir:
             warnings.append("models_dir not specified, using path as models directory")
@@ -239,16 +241,26 @@ async def validate_ingestion(req: IngestionValidateRequest):
         if not models_path.exists():
             errors.append(f"Models directory does not exist: {models_path}")
         else:
-            # Count .cs files
+            # Count .cs files and get recommendations
             cs_files = list(models_path.glob("**/*.cs"))
             info["cs_files_found"] = len(cs_files)
             info["estimated_entities"] = len([f for f in cs_files if not f.name.endswith(".g.cs")])
             
+            # Get recommendations for a representative sample
+            if cs_files:
+                sample_content = cs_files[0].read_text(errors="ignore")[:2000]
+                recs = chunker.get_recommendations(sample_content, str(cs_files[0]))
+                warnings.extend([r for r in recs if "Consider" in r or "Recommend" in r or "Generated" in r])
+
     elif req.type == "component_library":
         if source_path.is_dir():
             # Count TSX/JSX files
             tsx_files = list(source_path.glob("**/*.tsx")) + list(source_path.glob("**/*.jsx"))
             info["component_files_found"] = len(tsx_files)
+            if tsx_files:
+                sample_content = tsx_files[0].read_text(errors="ignore")[:2000]
+                recs = chunker.get_recommendations(sample_content, str(tsx_files[0]))
+                warnings.extend([r for r in recs if "Consider" in r or "Recommend" in r])
         else:
             errors.append("Component library path must be a directory")
     
@@ -270,6 +282,12 @@ async def validate_ingestion(req: IngestionValidateRequest):
             for f in filtered_files:
                 ext = f.suffix
                 info["file_types"][ext] = info["file_types"].get(ext, 0) + 1
+            
+            # Get recommendations for the project
+            if filtered_files:
+                sample_content = filtered_files[0].read_text(errors="ignore")[:2000]
+                recs = chunker.get_recommendations(sample_content, str(filtered_files[0]))
+                warnings.extend([r for r in recs])
             
             # Estimate based on files and average size
             info["estimated_documents"] = len(filtered_files) * 3  # ~3 chunks per file
@@ -344,6 +362,9 @@ async def execute_ingestion(req: IngestionExecuteRequest):
             
             # Create documents from each file
             chunker = ChunkingEngine()
+            store = ChromaVectorStore(collection_name=collection_name)
+            
+            duplicates_skipped = 0
             for file_path in filtered_files:
                 try:
                     content = file_path.read_text(encoding="utf-8", errors="ignore")
@@ -358,19 +379,27 @@ async def execute_ingestion(req: IngestionExecuteRequest):
                     )
                     
                     for chunk in chunks:
+                        content_hash = hashlib.md5(chunk.content.encode()).hexdigest()
+                        
+                        # Check for duplicates (P3 Feature)
+                        if store.check_content_exists(content_hash):
+                            duplicates_skipped += 1
+                            continue
+                            
                         documents.append({
                             "content": chunk.content,
                             "metadata": {
                                 **chunk.metadata,
                                 "file": str(rel_path),
                                 "type": file_path.suffix,
-                                "source": "project_codebase"
+                                "source": "project_codebase",
+                                "content_hash": content_hash
                             }
                         })
                 except Exception as e:
-                    logger.warning(f"Could not read file {file_path}: {e}")
-                except Exception as e:
-                    logger.warning(f"Could not read file {file_path}: {e}")
+                    logger.warning(f"Could not read/process file {file_path}: {e}")
+            
+            info["duplicates_skipped"] = duplicates_skipped
         
         # Store in vector DB
         store = ChromaVectorStore(collection_name=collection_name)

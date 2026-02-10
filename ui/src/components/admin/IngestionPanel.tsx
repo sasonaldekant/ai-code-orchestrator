@@ -193,9 +193,15 @@ export function IngestionPanel() {
 
                 {/* Chunk Settings */}
                 <div className="pt-4 border-t border-border">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-                        Chunk Settings
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                            Chunk Settings
+                        </h3>
+                        <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
+                            <Zap className="w-3 h-3" />
+                            Auto-Chunking Active (v3.0)
+                        </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">Chunk Size (chars)</label>
@@ -217,7 +223,7 @@ export function IngestionPanel() {
                         </div>
                     </div>
                 </div>
-
+                旋
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
                     <button
@@ -300,30 +306,30 @@ export function IngestionPanel() {
                     )}
 
                     {/* Optimization Recommendations */}
-                    {validation.valid && (
+                    {validation.valid && (validation.warnings.length > 0 || chunkSize > 1000 || chunkOverlap > 150) && (
                         <div className="mt-4 bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Zap className="w-4 h-4 text-amber-500" />
-                                <h4 className="text-sm font-semibold text-amber-500">Optimization Recommendations</h4>
+                                <h4 className="text-sm font-semibold text-amber-500">Optimization Advisor (Phase 10)</h4>
                             </div>
-                            <ul className="text-sm text-muted-foreground space-y-1">
-                                {chunkSize === 800 && (
-                                    <li>✓ Current chunk size (800) is optimal for most use cases</li>
-                                )}
+                            <ul className="text-sm text-zinc-300 space-y-1">
+                                {validation.warnings.map((w, i) => (
+                                    <li key={i} className="flex gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        <span>{w}</span>
+                                    </li>
+                                ))}
                                 {chunkSize > 1000 && (
-                                    <li>⚠ Consider reducing chunk size to 800 for better retrieval accuracy</li>
+                                    <li className="flex gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        <span>Consider reducing chunk size to 800 for better retrieval accuracy.</span>
+                                    </li>
                                 )}
                                 {chunkOverlap > 150 && (
-                                    <li>⚠ Consider reducing overlap to 100-120 for ~10% token savings</li>
-                                )}
-                                {chunkOverlap < 100 && (
-                                    <li>⚠ Overlap below 100 may cause context loss between chunks</li>
-                                )}
-                                {(validation.info.cs_files_found || 0) > 50 && (
-                                    <li>💡 Large codebase detected: consider filtering generated files (*.g.cs)</li>
-                                )}
-                                {(validation.info.estimated_tokens || 0) > 50000 && (
-                                    <li>💡 High token count: consider splitting into multiple collections</li>
+                                    <li className="flex gap-2">
+                                        <span className="text-amber-500">•</span>
+                                        <span>Consider reducing overlap to 100-120 for ~10% token savings.</span>
+                                    </li>
                                 )}
                             </ul>
                         </div>
@@ -345,15 +351,23 @@ export function IngestionPanel() {
                         ) : (
                             <AlertCircle className="w-5 h-5 text-red-500" />
                         )}
-                        <h3 className="font-semibold">
+                        <h3 className="font-semibold text-white">
                             {result.success ? 'Ingestion Complete!' : 'Ingestion Failed'}
                         </h3>
                     </div>
                     {result.success ? (
-                        <p className="text-sm text-muted-foreground mt-2">
-                            Successfully ingested <strong>{result.documents_ingested}</strong> documents
-                            into collection <code className="bg-muted px-1 rounded">{result.collection}</code>
-                        </p>
+                        <div className="mt-3 space-y-2">
+                            <p className="text-sm text-zinc-300">
+                                Successfully indexed <strong>{result.documents_ingested}</strong> documents
+                                into <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-primary">{result.collection}</code>
+                            </p>
+                            {result.validation?.duplicates_skipped > 0 && (
+                                <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-400/10 w-fit px-2 py-1 rounded">
+                                    <Zap className="w-3 h-3" />
+                                    <span>P3 Similarity Engine: Skipped {result.validation.duplicates_skipped} duplicate chunks</span>
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         <p className="text-sm text-red-400 mt-2">{result.error}</p>
                     )}
