@@ -32,17 +32,27 @@ routing:
       temperature: 0.0
       max_tokens: 4000
       provider: openai
-  speciality:
+  specialty:
     backend:
       model: gpt-4o
       temperature: 0.0
       max_tokens: 8000
       provider: openai
+      efcore:
+        model: gpt-4o
+        temperature: 0.0
+        max_tokens: 8000
+        provider: openai
     frontend:
       model: gpt-4o-mini
       temperature: 0.0
       max_tokens: 6000
       provider: openai
+      react:
+        model: gpt-4o-mini
+        temperature: 0.0
+        max_tokens: 6000
+        provider: openai
     review:
       model: claude-3-5-sonnet
       temperature: 0.0

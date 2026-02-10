@@ -1,0 +1,56 @@
+
+# AI Code Orchestrator - Best Practices & Prevention Rules
+
+version: "1.0.0"
+
+global:
+  rules:
+    - id: "no_hardcoded_secrets"
+      description: "Do not hardcode API keys or passwords."
+      pattern: "(api_val|secret|password)\\s*=\\s*['\"]\\w+['\"]"
+      fix: "Use environment variables (os.environ or dotenv)."
+    
+    - id: "error_handling"
+      description: "Always catch specific exceptions."
+      pattern: "except:\\s*pass"
+      fix: "Log the error or handle specific exception types."
+
+languages:
+  python:
+    rules:
+      - id: "docstring_required"
+        description: "Public functions must have docstrings."
+        check: "ast_docstring_check"
+      
+      - id: "type_hints"
+        description: "Use type hints for function arguments and return types."
+        check: "mypy_or_ast"
+
+  typescript:
+    rules:
+      - id: "no_any"
+        description: "Avoid using 'any' type."
+        pattern: ":\\s*any"
+        fix: "Define an interface or type alias."
+      
+      - id: "strict_null_checks"
+        description: "Handle null/undefined explicitly."
+        check: "tsconfig_strict"
+
+  csharp:
+    rules:
+      - id: "async_suffix"
+        description: "Async methods should end with 'Async'."
+        pattern: "async Task.*\\s(\\w+)\\("
+        fix: "Rename method to {match}Async."
+
+prevention:
+  patterns:
+    - error_type: "NameError"
+      action: "inject_context: 'Remember to import all used modules.'"
+    
+    - error_type: "AttributeError"
+      action: "inject_context: 'Check object types and available methods carefully.'"
+
+    - error_type: "boto3.exceptions.ClientError"
+      action: "inject_context: 'Ensure AWS credentials are set and permissions are correct.'"

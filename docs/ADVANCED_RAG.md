@@ -8,7 +8,9 @@ The Advanced RAG feature provides intelligent knowledge retrieval to enrich LLM 
 
 - **ChromaDB** - Persistent vector database
 - **Sentence Transformers** - State-of-the-art embeddings
-- **Smart Chunking** - Context-aware document splitting
+- **Strategic Auto-Chunking (Phase 10)** - Logic-aware document splitting (Functions/Classes)
+- **Optimization Advisor** - Proactive token-saving recommendations
+- **Document Management** - Fine-grained retrieval and deletion
 - **Hybrid Search** - Combines semantic + keyword matching
 
 ## Architecture
@@ -45,39 +47,44 @@ The Advanced RAG feature provides intelligent knowledge retrieval to enrich LLM 
 
 ## Components
 
-### 1. Document Chunker (`utils/document_chunker.py`)
+### 1. Chunking Engine (`core/chunking/engine.py`) [NEW in v3.0 Phase 10]
 
-Smart chunking with multiple strategies:
+The enterprise-grade replacement for legacy chunkers. It provides strategic, logic-aware splitting.
 
-**Code Strategy:**
-- Preserves function/class boundaries
-- Respects syntactic structure
-- Falls back to sliding window for large blocks
+**Code Strategy (`CodeChunker`):**
 
-**Markdown Strategy:**
-- Preserves section structure
-- Keeps headers with content
-- Maintains hierarchical context
+- **Logic-Aware**: Identifies function and class boundaries using regex patterns.
+- **Self-Contained**: Ensures chunks are logically meaningful, reducing hallucination.
+- **Multi-Language**: Supports Python, C#, TypeScript, JavaScript, and more.
 
-**Text Strategy:**
-- Sentence-aware splitting
-- Configurable overlap
-- Token-based sizing
+**Text Strategy (`TextChunker`):**
+
+- **Recursive Splitting**: Smart paragraph and sentence-level splitting.
+- **Configurable**: Fine-tuned control over `chunk_size` and `overlap`.
+
+**Optimization Advisor:**
+Built-in logic to analyze content and suggest optimal parameters:
+
+- Detects generated files (e.g., `.g.cs`) and suggests exclusion.
+- Recommends size-specific chunking strategies.
 
 **Usage:**
+
 ```python
-from utils.document_chunker import DocumentChunker
+from core.chunking.engine import ChunkingEngine
 
-chunker = DocumentChunker(
-    chunk_size=512,      # tokens
-    chunk_overlap=50,    # tokens
-)
-
-chunks = chunker.chunk_document(
+engine = ChunkingEngine()
+chunks = engine.chunk_content(
     content=code_content,
-    metadata={"source": "main.py", "language": "python"},
-    strategy="code",
+    file_path="src/service.cs",
+    chunk_size=1000,
+    overlap=120
 )
+
+# Get proactive advice
+recommendations = engine.get_recommendations(code_content, "src/service.cs")
+for rec in recommendations:
+    print(f"Advice: {rec}")
 ```
 
 ### 2. Enhanced RAG Retriever (`core/retriever_v2.py`)
@@ -85,6 +92,7 @@ chunks = chunker.chunk_document(
 Vector database-backed retrieval with ChromaDB:
 
 **Features:**
+
 - Semantic search using sentence transformers
 - Keyword-based exact matching
 - Hybrid search with configurable weights
@@ -92,6 +100,7 @@ Vector database-backed retrieval with ChromaDB:
 - Reciprocal rank fusion for result combination
 
 **Usage:**
+
 ```python
 from core.retriever_v2 import EnhancedRAGRetriever
 
@@ -135,12 +144,14 @@ results = retriever.retrieve(
 Combines static configuration with dynamic RAG retrieval:
 
 **Features:**
+
 - Automatic knowledge retrieval based on query
 - Static schema/rules loading
 - Context formatting for LLM prompts
 - RAG statistics tracking
 
 **Usage:**
+
 ```python
 from core.context_manager_v2 import EnhancedContextManager
 from pathlib import Path
@@ -175,6 +186,7 @@ context_mgr.add_domain_knowledge(
 CLI tool for populating the vector database:
 
 **Features:**
+
 - Index from files, directories, or JSON
 - Auto-detect chunking strategy from file type
 - Pattern-based file filtering
@@ -182,7 +194,7 @@ CLI tool for populating the vector database:
 
 **Usage:**
 
-```bash
+````bash
 # Index a single file
 python scripts/build_rag_index.py --file path/to/document.md
 
@@ -200,14 +212,40 @@ python scripts/build_rag_index.py --directory ./docs --reset
 # Show statistics
 python scripts/build_rag_index.py --stats
 
-# Custom configuration
-python scripts/build_rag_index.py \
-    --directory ./src \
-    --collection "my_project" \
-    --persist-dir "./vector_db" \
-    --chunk-size 1024 \
-    --chunk-overlap 100 \
-    --verbose
+### 5. RAG Management API [NEW Phase 10 Extension]
+
+Exposes fine-grained control over the vector store.
+
+**Endpoints:**
+- `GET /admin/collections/{name}/documents`: Browse documents with pagination.
+- `DELETE /admin/collections/{name}/documents/{doc_id}`: Remove specific stale or invalid chunks.
+
+**Direct Usage (VectorStore):**
+```python
+from rag.vector_store import ChromaVectorStore
+
+store = ChromaVectorStore(collection_name="code_docs")
+
+# Browse documents
+docs = store.get_documents(limit=10, offset=0)
+
+# Delete invalid chunk
+store.delete_document("chunk_id_123")
+````
+
+### 6. Agent Helper (`core/agent_helper.py`) [NEW]
+
+Utility for specialist agents to handle inputs exceeding LLM context windows.
+
+```python
+from core.agent_helper import AgentHelper
+
+helper = AgentHelper()
+results = await helper.process_large_content(
+    content=massive_file_content,
+    file_path="big_script.py",
+    process_fn=my_agent_method
+)
 ```
 
 ## Installation
@@ -286,9 +324,9 @@ client = EnhancedLLMClient()
 response = client.complete(
     prompt=f"""
     {context.to_prompt_context()}
-    
+
     Task: {user_query}
-    
+
     Generate implementation following the retrieved patterns and rules.
     """,
     provider="anthropic",
@@ -300,33 +338,36 @@ response = client.complete(
 
 ### Chunking Strategies Performance
 
-| Strategy | Speed | Context Quality | Best For |
-|----------|-------|-----------------|----------|
-| **Text** | Fast | Good | Documentation, READMEs |
-| **Markdown** | Medium | Excellent | Structured docs |
-| **Code** | Medium | Excellent | Source code |
+| Strategy     | Speed  | Context Quality | Best For               |
+| ------------ | ------ | --------------- | ---------------------- |
+| **Text**     | Fast   | Good            | Documentation, READMEs |
+| **Markdown** | Medium | Excellent       | Structured docs        |
+| **Code**     | Medium | Excellent       | Source code            |
 
 ### Embedding Model Options
 
-| Model | Dimensions | Speed | Quality |
-|-------|-----------|-------|--------|
-| `all-MiniLM-L6-v2` | 384 | Fast | Good |
-| `all-mpnet-base-v2` | 768 | Medium | Better |
-| `instructor-large` | 768 | Slow | Best |
+| Model               | Dimensions | Speed  | Quality |
+| ------------------- | ---------- | ------ | ------- |
+| `all-MiniLM-L6-v2`  | 384        | Fast   | Good    |
+| `all-mpnet-base-v2` | 768        | Medium | Better  |
+| `instructor-large`  | 768        | Slow   | Best    |
 
 Default: `all-MiniLM-L6-v2` (good balance)
 
 ### Search Strategy Comparison
 
 **Semantic Only:**
+
 - Best for: Conceptual queries
 - Example: "How to handle authentication?"
 
 **Keyword Only:**
+
 - Best for: Exact matches
 - Example: "UserController.login method"
 
 **Hybrid (Recommended):**
+
 - Best for: General queries
 - Combines strengths of both
 - Configurable weight (default: 70% semantic, 30% keyword)
@@ -344,6 +385,7 @@ chunker = DocumentChunker(
 ```
 
 **Guidelines:**
+
 - **Small chunks (256-512)**: Better precision, more chunks
 - **Large chunks (1024-2048)**: More context, fewer chunks
 - **Overlap (10-20%)**: Prevents context loss at boundaries
@@ -360,6 +402,7 @@ results = retriever.hybrid_retrieve(
 ```
 
 **Guidelines:**
+
 - **top_k**: 3-5 for focused context, 10-15 for comprehensive
 - **semantic_weight**: 0.7-0.8 for general queries, 0.5-0.6 for code search
 
@@ -463,6 +506,7 @@ retriever.add_documents_batch(documents, chunking_strategy="text")
 ### Issue: ChromaDB persistence errors
 
 **Solution:** Ensure directory permissions:
+
 ```bash
 chmod 755 ./chroma_db
 ```
@@ -470,6 +514,7 @@ chmod 755 ./chroma_db
 ### Issue: Out of memory with large files
 
 **Solution:** Reduce chunk size:
+
 ```python
 retriever = EnhancedRAGRetriever(
     chunk_size=256,  # Smaller chunks
@@ -480,6 +525,7 @@ retriever = EnhancedRAGRetriever(
 ### Issue: Slow retrieval
 
 **Solution:** Use smaller embedding model or limit top_k:
+
 ```python
 retriever = EnhancedRAGRetriever(
     embedding_model="all-MiniLM-L6-v2",  # Fastest
@@ -491,6 +537,7 @@ results = retriever.retrieve(query, top_k=3)  # Fewer results
 ### Issue: Poor retrieval quality
 
 **Solutions:**
+
 1. Use hybrid search instead of semantic-only
 2. Increase semantic_weight for conceptual queries
 3. Add more specific metadata for filtering
@@ -499,6 +546,7 @@ results = retriever.retrieve(query, top_k=3)  # Fewer results
 ## Migration from v1
 
 Old retriever (`core/retriever.py`):
+
 ```python
 from core.retriever import RAGRetriever
 
@@ -507,6 +555,7 @@ results = retriever.retrieve(query, top_k=3)
 ```
 
 New retriever (`core/retriever_v2.py`):
+
 ```python
 from core.retriever_v2 import EnhancedRAGRetriever
 
@@ -518,6 +567,7 @@ results = retriever.hybrid_retrieve(query, top_k=3)
 ```
 
 **Key Differences:**
+
 - Vector database instead of JSON files
 - Semantic search instead of keyword-only
 - Hybrid search capability

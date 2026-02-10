@@ -21,6 +21,7 @@ from typing import List, Dict, Any, Optional
 import logging
 import json
 import numpy as np
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +67,23 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
+    def delete_document(self, document_id: str) -> None:
+        """Delete a single document by ID."""
+        pass
+
+    @abstractmethod
+    def get_documents(self, limit: int = 10, offset: int = 0) -> List[Document]:
+        """Retrieve a list of documents from the store."""
+        pass
+
+    @abstractmethod
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get collection statistics."""
+        pass
+
+    @abstractmethod
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content with the given hash already exists in the store."""
         pass
 
 
@@ -100,12 +116,11 @@ class ChromaVectorStore(VectorStore):
         self.persist_directory = Path(persist_directory)
         self.persist_directory.mkdir(parents=True, exist_ok=True)
 
-        # Initialize Chroma client with persistent storage
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=str(self.persist_directory),
-            anonymized_telemetry=False
-        ))
+        # Initialize Chroma client with persistent storage (modern API)
+        self.client = chromadb.PersistentClient(
+            path=str(self.persist_directory),
+            settings=Settings(anonymized_telemetry=False)
+        )
 
         # Get or create collection
         self.collection = self.client.get_or_create_collection(
@@ -126,6 +141,12 @@ class ChromaVectorStore(VectorStore):
 
         ids = [doc.id for doc in documents]
         texts = [doc.text for doc in documents]
+        
+        # Ensure content_hash is in metadata for duplicate detection
+        for doc in documents:
+            if "content_hash" not in doc.metadata:
+                doc.metadata["content_hash"] = hashlib.md5(doc.text.encode()).hexdigest()
+        
         metadatas = [doc.metadata for doc in documents]
 
         # Generate embeddings if not provided
@@ -199,6 +220,29 @@ class ChromaVectorStore(VectorStore):
         self.client.delete_collection(name=self.collection_name)
         logger.info(f"Deleted Chroma collection '{self.collection_name}'")
 
+    def delete_document(self, document_id: str) -> None:
+        """Delete a single document by ID from Chroma."""
+        self.collection.delete(ids=[document_id])
+        logger.info(f"Deleted document '{document_id}' from Chroma collection '{self.collection_name}'")
+
+    def get_documents(self, limit: int = 10, offset: int = 0) -> List[Document]:
+        """Retrieve a list of documents from Chroma."""
+        results = self.collection.get(
+            limit=limit,
+            offset=offset,
+            include=['documents', 'metadatas']
+        )
+        
+        documents = []
+        if results['ids']:
+            for doc_id, text, metadata in zip(results['ids'], results['documents'], results['metadatas']):
+                documents.append(Document(
+                    id=doc_id,
+                    text=text,
+                    metadata=metadata or {}
+                ))
+        return documents
+
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get Chroma collection statistics."""
         count = self.collection.count()
@@ -207,6 +251,14 @@ class ChromaVectorStore(VectorStore):
             "count": count,
             "persist_directory": str(self.persist_directory)
         }
+
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in Chroma using metadata filtering."""
+        results = self.collection.get(
+            where={"content_hash": content_hash},
+            limit=1
+        )
+        return len(results['ids']) > 0
 
 
 class FaissVectorStore(VectorStore):
@@ -345,6 +397,22 @@ class FaissVectorStore(VectorStore):
             self.persist_path.unlink()
         logger.info("Deleted Faiss index")
 
+    def delete_document(self, document_id: str) -> None:
+        """Delete document from Faiss (requires rebuild, simulating for now)."""
+        logger.warning("Deleting individual documents from Faiss requires index rebuild. Not yet fully optimized.")
+        if document_id in self.doc_id_to_idx:
+            idx = self.doc_id_to_idx.pop(document_id)
+            # In a real app, we'd rebuild or use IndexIDMap. 
+            # For now, we just remove from our tracking.
+            self.documents[idx] = None 
+            if self.persist_path:
+                self._save_index()
+
+    def get_documents(self, limit: int = 10, offset: int = 0) -> List[Document]:
+        """Simple document retrieval for Faiss."""
+        valid_docs = [d for d in self.documents if d is not None]
+        return valid_docs[offset:offset + limit]
+
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get Faiss index statistics."""
         return {
@@ -353,6 +421,13 @@ class FaissVectorStore(VectorStore):
             "persist_path": str(self.persist_path) if self.persist_path else None
         }
 
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in Faiss documents."""
+        for doc in self.documents:
+            if doc and doc.metadata.get("content_hash") == content_hash:
+                return True
+        return False
+旋
     def _save_index(self) -> None:
         """Save Faiss index and documents to disk."""
         import faiss
@@ -474,9 +549,22 @@ class InMemoryVectorStore(VectorStore):
         self.documents.clear()
         logger.info("Cleared in-memory vector store")
 
+    def delete_document(self, document_id: str) -> None:
+        """Delete from in-memory store."""
+        self.documents = [d for d in self.documents if d.id != document_id]
+        logger.info(f"Deleted document {document_id} from in-memory store.")
+
+    def get_documents(self, limit: int = 10, offset: int = 0) -> List[Document]:
+        """Retrieve from in-memory store."""
+        return self.documents[offset:offset + limit]
+
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get store statistics."""
         return {
             "count": len(self.documents),
             "type": "in_memory"
         }
+
+    def check_content_exists(self, content_hash: str) -> bool:
+        """Check if content hash exists in-memory."""
+        return any(d.metadata.get("content_hash") == content_hash for d in self.documents)

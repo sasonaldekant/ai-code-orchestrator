@@ -1,0 +1,14 @@
+outputs/*
+stress_test.log
+trace.jsonl
+agents/phase_agents/__pycache__/*
+rag/chroma_db/*
+agents/phase_agents/__pycache__/*
+api/__pycache__/*
+core/__pycache__/*
+agents/specialist_agents/__pycache__/*
+rag/__pycache__/*
+domain_knowledge/ingestion/__pycache__/*
+domain_knowledge/__pycache__/*
+core/__pycache__/lifecycle_orchestrator.cpython-313.pyc
+core/__pycache__/orchestrator_v2.cpython-313.pyc
