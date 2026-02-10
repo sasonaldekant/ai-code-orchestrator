@@ -15,6 +15,7 @@ from typing import Optional, List, Dict, Any
 import yaml
 import os
 import logging
+import hashlib
 from pathlib import Path
 
 from rag.vector_store import ChromaVectorStore, Document
@@ -328,6 +329,7 @@ async def execute_ingestion(req: IngestionExecuteRequest):
     validation = await validate_ingestion(req)
     if not validation["valid"]:
         raise HTTPException(status_code=400, detail={"errors": validation["errors"]})
+    info = dict(validation.get("info", {}))
     
     try:
         documents = []
@@ -386,16 +388,17 @@ async def execute_ingestion(req: IngestionExecuteRequest):
                             duplicates_skipped += 1
                             continue
                             
-                        documents.append({
-                            "content": chunk.content,
-                            "metadata": {
+                        documents.append(Document(
+                            id=f"code_{content_hash}_{len(documents)}",
+                            text=chunk.content,
+                            metadata={
                                 **chunk.metadata,
                                 "file": str(rel_path),
                                 "type": file_path.suffix,
                                 "source": "project_codebase",
                                 "content_hash": content_hash
                             }
-                        })
+                        ))
                 except Exception as e:
                     logger.warning(f"Could not read/process file {file_path}: {e}")
             
