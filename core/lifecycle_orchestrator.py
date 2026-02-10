@@ -22,7 +22,7 @@ from core.code_evaluator import CodeEvaluator
 from core.error_tracker import ErrorTracker
 from core.guardrails import GuardrailMonitor, Action
 from agents.specialist_agents.test_generator import TestGeneratorAgent
-from agents.specialist_agents.repair_agent import RepairAgent
+from core.agents.specialist_agents.repair_agent import RepairAgent
 from api.event_bus import bus, Event, EventType
 from core.memory.experience_db import ExperienceDB
 

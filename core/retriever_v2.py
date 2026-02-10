@@ -94,6 +94,36 @@ class EnhancedRAGRetriever:
         )
         return len(chunks)
 
+    def add_documents_batch(self, documents: List[Dict[str, Any]], chunking_strategy: Literal["code", "markdown", "text"] = "text") -> int:
+        """Add multiple documents in a single batch."""
+        total_chunks = 0
+        for doc in documents:
+            total_chunks += self.add_document(
+                content=doc["content"],
+                metadata=doc.get("metadata"),
+                doc_id=doc.get("id"),
+                chunking_strategy=chunking_strategy
+            )
+        return total_chunks
+
+    def get_collection_stats(self) -> Dict[str, Any]:
+        """Return statistics about the current collection."""
+        count = self.collection.count()
+        return {
+            "document_count": count,
+            "collection_name": self.collection.name,
+            "persist_directory": str(self.persist_path)
+        }
+
+    def reset_collection(self) -> None:
+        """Clear all documents from the collection."""
+        # ChromaDB delete with empty where usually requires an ID list or specific filter
+        # But we can just use delete(where={}) if supported, or delete by IDs
+        results = self.collection.get()
+        if results['ids']:
+            self.collection.delete(ids=results['ids'])
+        logger.info(f"Reset collection {self.collection.name}")
+
     def retrieve(
         self, 
         query: str, 

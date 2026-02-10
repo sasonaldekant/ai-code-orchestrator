@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import type { LogEvent, ImplementationPlan } from '../lib/types';
+import * as React from 'react';
+import { useState } from 'react';
+import type { Milestone, Task } from '../lib/types';
 import { useLogStream } from '../hooks/useLogStream';
-import { Send, Upload, SquareCode, Activity, Play, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon } from 'lucide-react';
+import { Send, SquareCode, Activity, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { ThinkingBlock } from './ThinkingBlock';
 import { KnowledgeTab } from './KnowledgeTab';
@@ -13,8 +14,7 @@ interface OrchestratorUIProps {
     onOpenSettings?: () => void;
 }
 
-
-export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
+export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: OrchestratorUIProps) {
     const { logs, isConnected, plan, clearLogs } = useLogStream();
     const [prompt, setPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +51,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
         if (!prompt.trim()) return;
 
         setIsLoading(true);
-        // setLogs([]); // useLogStream handles this or we can add clearLogs()
+        clearLogs(); // Clear for new run
 
         try {
             let finalPrompt = prompt;
@@ -75,6 +75,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
                     }
                 } catch (err) {
                     console.error("Vision analysis failed", err);
+                    // Continue without visual context.
                 }
             }
 
@@ -128,7 +129,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
 
                         {plan ? (
                             <div className="space-y-3">
-                                {plan.milestones.map((milestone, i) => (
+                                {plan.milestones.map((milestone: Milestone, i: number) => (
                                     <div key={i} className="bg-card border border-border rounded-md p-3 text-sm">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="font-semibold">{milestone.id}</span>
@@ -140,7 +141,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
                                             )}>{milestone.status}</span>
                                         </div>
                                         <div className="space-y-1 pl-1 border-l-2 border-border/50 ml-1 mt-2">
-                                            {milestone.tasks.map((task, j) => (
+                                            {milestone.tasks.map((task: Task, j: number) => (
                                                 <div key={j} className="text-xs text-muted-foreground flex items-center gap-2 truncate">
                                                     <div className={clsx("w-1.5 h-1.5 rounded-full",
                                                         task.status === 'completed' ? "bg-primary" :
@@ -326,8 +327,8 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
 
                             <textarea
                                 value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                onKeyDown={(e) => {
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
+                                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
                                         if (!isLoading) handleSubmit(e);

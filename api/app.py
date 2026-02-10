@@ -19,6 +19,7 @@ from api.vision_routes import router as vision_router
 from api.ide_routes import router as ide_router
 from api.config_routes import router as config_router
 from api.agent_routes import router as agent_router
+from api.event_bus import bus, Event, EventType
 
 # Basic auth helper
 import os

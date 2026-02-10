@@ -183,7 +183,6 @@ class SwarmManagerAgent:
                     schema_name=self._get_schema_for_agent(agent_type),
                     context=context,
                     question=description,
-                    model_override=model_override # Pass override if complex
                 )
             else:
                 logger.warning(f"SwarmManager: Agent type '{agent_type}' execution logic not fully integrated.")

@@ -1,6 +1,16 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Upload, Database, FileCode, CheckCircle, AlertCircle, RefreshCw, Search, X } from 'lucide-react';
 import clsx from 'clsx';
+
+interface SearchResult {
+    score: number;
+    text: string;
+    metadata?: {
+        source?: string;
+        [key: string]: any;
+    };
+}
 
 export function KnowledgeTab() {
     const [ingestType, setIngestType] = useState<'database' | 'component_library'>('database');
@@ -10,7 +20,7 @@ export function KnowledgeTab() {
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [collections, setCollections] = useState<string[]>([]);
     const [testQuery, setTestQuery] = useState('');
-    const [testResults, setTestResults] = useState<any[]>([]);
+    const [testResults, setTestResults] = useState<SearchResult[]>([]);
     const [isTesting, setIsTesting] = useState(false);
 
     const fetchCollections = () => {
@@ -144,7 +154,7 @@ export function KnowledgeTab() {
                                 <input
                                     type="text"
                                     value={path}
-                                    onChange={(e) => setPath(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPath(e.target.value)}
                                     placeholder={ingestType === 'database' ? "e.g., /src/backend" : "e.g., /src/components"}
                                     className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-1 focus:ring-primary outline-none"
                                     required
@@ -157,7 +167,7 @@ export function KnowledgeTab() {
                                 <input
                                     type="text"
                                     value={collectionName}
-                                    onChange={(e) => setCollectionName(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCollectionName(e.target.value)}
                                     placeholder="Auto-generated if empty"
                                     className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-1 focus:ring-primary outline-none"
                                 />
@@ -200,7 +210,7 @@ export function KnowledgeTab() {
                             <input
                                 type="text"
                                 value={testQuery}
-                                onChange={(e) => setTestQuery(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTestQuery(e.target.value)}
                                 placeholder="Search query..."
                                 className="flex-1 px-3 py-2 bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-primary"
                             />
@@ -211,7 +221,7 @@ export function KnowledgeTab() {
 
                         {testResults.length > 0 && (
                             <div className="mt-4 space-y-3">
-                                {testResults.map((res, i) => (
+                                {testResults.map((res: SearchResult, i: number) => (
                                     <div key={i} className="p-3 bg-muted/30 rounded-md border border-border text-sm">
                                         <div className="font-semibold text-xs text-primary mb-1 uppercase tracking-wider">
                                             Score: {(res.score * 100).toFixed(1)}%
@@ -264,7 +274,7 @@ export function KnowledgeTab() {
                                 <p className="text-xs italic">No collections found.</p>
                             ) : (
                                 <div className="space-y-2 text-left">
-                                    {collections.map(col => (
+                                    {collections.map((col: string) => (
                                         <div key={col} className="flex justify-between items-center text-xs font-mono bg-background p-2 rounded border border-border/50">
                                             <span>{col}</span>
                                             <button
