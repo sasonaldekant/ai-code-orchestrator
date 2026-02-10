@@ -500,4 +500,40 @@ class InMemoryVectorStore(VectorStore):
                 doc_embedding = np.array(doc.embedding)
                 # Cosine similarity
                 similarity = np.dot(query_embedding, doc_embedding) / (
-                    np.linalg.norm(query_embedding) * np.lin
+                    np.linalg.norm(query_embedding) * np.linalg.norm(doc_embedding)
+                )
+                similarities.append((similarity, doc))
+
+        # Sort by similarity
+        similarities.sort(key=lambda x: x[0], reverse=True)
+
+        # Convert to SearchResult objects
+        return [
+            SearchResult(
+                document=doc,
+                score=float(score),
+                rank=rank + 1
+            )
+            for rank, (score, doc) in enumerate(similarities[:top_k])
+        ]
+
+    def delete_collection(self) -> None:
+        """Clear in-memory store."""
+        self.documents.clear()
+        logger.info("Cleared in-memory vector store")
+
+    def delete_document(self, document_id: str) -> None:
+        """Delete from in-memory store."""
+        self.documents = [d for d in self.documents if d.id != document_id]
+        logger.info(f"Deleted document {document_id} from in-memory store.")
+
+    def get_documents(self, limit: int = 10, offset: int = 0) -> List[Document]:
+        """Retrieve from in-memory store."""
+        return self.documents[offset:offset + limit]
+
+    def get_collection_stats(self) -> Dict[str, Any]:
+        """Get store statistics."""
+        return {
+            "count": len(self.documents),
+            "type": "in_memory"
+        }

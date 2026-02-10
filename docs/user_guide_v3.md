@@ -270,11 +270,34 @@ For critical phases (like Architecture), enable Consensus Mode:
 | Top-K Results     | RAG documents retrieved | 4-6         |
 | Max Workers       | Parallel LLM calls      | 2-4         |
 
-### 6.4 Knowledge Explorer
+### 6.4 Knowledge Explorer (Enhanced)
 
-- View all RAG collections
-- Test queries before running orchestrator
-- Delete outdated collections
+The Knowledge Explorer has been upgraded with document-level management capabilities:
+
+- **Browse Documents**: View a paginated list of all text chunks currently indexed in a collection.
+- **Inspect Metadata**: See exactly what source file and line range each chunk originated from.
+- **Delete Specific Documents**: Identify "dirty" or unnecessary documents and remove them without needing to reset the entire collection.
+
+#### How to use:
+
+1. Navigate to **"Knowledge Explorer"** in the Admin Panel.
+2. Select a collection from the dropdown.
+3. Click **"Browse Documents"** to view individual chunks.
+4. Use the **"Delete"** icon next to a document to remove it permanently.
+
+### 6.5 Auto-Chunking & Optimization (Phase 10)
+
+The system now uses a `ChunkingEngine` that understands code structure.
+
+#### Benefits:
+
+- **Higher Accuracy**: Instead of splitting randomly, the AI keeps functions and classes together.
+- **Lower Cost**: The **Optimization Advisor** warns you if you are indexing redundant files (like `.g.cs`) and suggests exclusion patterns.
+
+#### Configuration in UI:
+
+- **Strategic Mode**: Automatically enabled for supported file types (`.py`, `.cs`, `.ts`, etc.).
+- **Validation Report**: Before ingestion, review the advisor's recommendations to save tokens.
 
 ---
 
@@ -580,16 +603,16 @@ You can adjust limits in `config/guardrails.yaml` (future) or via environment va
 
 ### Common Issues
 
-| Problem               | Solution                                  |
-| --------------------- | ----------------------------------------- |
-| "No documents found"  | Re-ingest RAG collection                  |
-| "Connection refused"  | Start backend on port 8000                |
-| "Cost limit exceeded" | Increase budget in Admin Panel            |
-| "Validation failed"   | Check output schema in logs               |
-| "Slow response"       | Reduce Max Workers, check API rate limits |
-| "Verification failed" | Check test output in logs                 |
-| "Write failed"        | Check file permissions and path           |
-| "Safety Violation"    | Fix imports or simplify task complexity   |
+| Problem               | Solution                                             |
+| --------------------- | ---------------------------------------------------- |
+| "No documents found"  | Re-ingest RAG collection or check Knowledge Explorer |
+| "Connection refused"  | Start backend on port 8000                           |
+| "Cost limit exceeded" | Increase budget in Admin Panel                       |
+| "Validation failed"   | Check Advisor report in ingestion tab                |
+| "Slow response"       | Reduce Max Workers, check API rate limits            |
+| "Verification failed" | Check test output in logs                            |
+| "Write failed"        | Check file permissions and path                      |
+| "Safety Violation"    | Fix imports or simplify task complexity              |
 
 ### Getting Help
 
