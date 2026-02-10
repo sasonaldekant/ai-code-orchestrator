@@ -17,6 +17,8 @@ from rag.vector_store import ChromaVectorStore
 from api.admin_routes import router as admin_router
 from api.vision_routes import router as vision_router
 from api.ide_routes import router as ide_router
+from api.config_routes import router as config_router
+from api.agent_routes import router as agent_router
 from api.event_bus import bus, Event, EventType
 
 # Basic auth helper
@@ -32,9 +34,14 @@ def check_auth(req: Request):
 app = FastAPI(title="AI Code Orchestrator API v3.0", version="3.0.0")
 
 # Include admin routes
+from api.knowledge_routes import router as knowledge_router
+
 app.include_router(admin_router)
 app.include_router(vision_router)
 app.include_router(ide_router)
+app.include_router(config_router)
+app.include_router(agent_router)
+app.include_router(knowledge_router)
 
 # Enable CORS for local UI
 app.add_middleware(
@@ -57,6 +64,9 @@ class RunRequest(BaseModel):
     deep_search: bool = False
     retrieval_strategy: str = "local"
     auto_fix: bool = False
+    budget_limit: Optional[float] = None
+    consensus_mode: bool = False
+    review_strategy: str = "basic"
 
 class IngestRequest(BaseModel):
     type: str # database, component_library
@@ -119,7 +129,10 @@ async def run_feature(req: RunRequest, request: Request):
             req.request,
             deep_search=req.deep_search,
             retrieval_strategy=req.retrieval_strategy,
-            auto_fix=req.auto_fix
+            auto_fix=req.auto_fix,
+            budget_limit=req.budget_limit,
+            consensus_mode=req.consensus_mode,
+            review_strategy=req.review_strategy
         )
         
         await bus.publish(Event(type=EventType.DONE, agent="Orchestrator", content=result))
@@ -129,46 +142,4 @@ async def run_feature(req: RunRequest, request: Request):
         await bus.publish(Event(type=EventType.ERROR, agent="Orchestrator", content=str(e)))
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/ingest")
-async def ingest_knowledge(req: IngestRequest, request: Request):
-    # check_auth(request)
-    
-    try:
-        documents = []
-        collection_name = req.collection
-        
-        if req.type == "database":
-             if not collection_name:
-                 collection_name = "pos_database_schema"
-             ingester = DatabaseSchemaIngester(req.path, req.models_dir or req.path)
-             documents = ingester.ingest()
-             
-        elif req.type == "component_library":
-             if not collection_name:
-                 collection_name = "pos_component_library"
-             ingester = ComponentLibraryIngester(req.path)
-             documents = ingester.ingest()
-        else:
-            raise HTTPException(status_code=400, detail=f"Unknown type: {req.type}")
-            
-        store = ChromaVectorStore(collection_name=collection_name)
-        store.add_documents(documents)
-        
-        return {"status": "success", "documents_ingested": len(documents), "collection": collection_name}
-
-    except Exception as e:
-        logging.error(f"Error ingesting: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/query")
-async def query_knowledge(req: QueryRequest, request: Request):
-    # check_auth(request)
-    
-    try:
-        # Use simpler retrieval for now, or expose domain context
-        retriever = DomainAwareRetriever()
-        results = retriever.retrieve(req.query, top_k=req.top_k)
-        return {"results": results}
-    except Exception as e:
-        logging.error(f"Error querying: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# Knowledge endpoints moved to api/knowledge_routes.py

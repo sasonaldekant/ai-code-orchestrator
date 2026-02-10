@@ -19,6 +19,10 @@ class RetrievalAgent:
         self.llm = llm_client
         self.max_steps = 10
         self.root_dir = Path(os.getcwd())
+        self.name = "Investigator"
+        self.description = "Deeply researches the codebase using a ReAct loop."
+        self.tools = ["search_code", "read_file", "list_dir"]
+        self.role = "researcher"
 
     @register_tool(
         name="deep_search",

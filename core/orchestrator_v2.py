@@ -83,6 +83,7 @@ class OrchestratorV2:
     - Comprehensive monitoring and metrics
     """
 
+
     def __init__(
         self,
         config_path: str = "config/model_mapping.yaml",
@@ -98,6 +99,10 @@ class OrchestratorV2:
         self.validator = OutputValidator()
         self.tracer = TracingService()
         self.retriever = retriever or RAGRetriever()
+        
+        # Initialize Producer-Reviewer Loop
+        from core.producer_reviewer import ProducerReviewerLoop
+        self.producer_reviewer = ProducerReviewerLoop(self.llm_client, self.cost_manager)
 
         # Configuration
         self.max_retries = max_retries
@@ -146,6 +151,9 @@ class OrchestratorV2:
         top_k: int = 3,
         deep_search: bool = False,
         retrieval_strategy: str = "local",
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic",
     ) -> PhaseResult:
         """
         Run a phase with automatic retry on failure.
@@ -179,6 +187,9 @@ class OrchestratorV2:
                     top_k=top_k,
                     deep_search=deep_search,
                     retrieval_strategy=retrieval_strategy,
+                    budget_limit=budget_limit,
+                    consensus_mode=consensus_mode,
+                    review_strategy=review_strategy,
                 )
                 
                 result.output = output
@@ -219,15 +230,25 @@ class OrchestratorV2:
         top_k: int = 3,
         deep_search: bool = False,
         retrieval_strategy: str = "local",
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic",
     ) -> Dict[str, Any]:
         """
         Internal method to execute a single phase.
         """
+        # [Check Budget]
+        if budget_limit is not None:
+            current_cost = self.cost_manager.total_cost
+            if current_cost >= budget_limit:
+                raise ValueError(f"Budget limit exceeded (${current_cost:.2f} >= ${budget_limit:.2f})")
+
         self.tracer.log_event("phase_start", {
             "phase": phase,
             "schema": schema_name,
             "deep_search": deep_search,
             "timestamp": datetime.utcnow().isoformat(),
+            "consensus_mode": consensus_mode
         })
         
         # RAG retrieval
@@ -273,7 +294,14 @@ class OrchestratorV2:
         if not agent:
             raise ValueError(f"Unknown phase: {phase}")
             
-        result = await agent.execute(context=context or {}, rag_context=rag_context)
+        # Inject run-time configuration into context
+        execution_context = context or {}
+        execution_context.update({
+            "consensus_mode": consensus_mode,
+            "review_strategy": review_strategy
+        })
+
+        result = await agent.execute(context=execution_context, rag_context=rag_context)
         
         # Validate
         validation = self.validator.validate(result, schema_name)
@@ -304,6 +332,9 @@ class OrchestratorV2:
         context: Optional[Dict[str, Any]] = None,
         question: Optional[str] = None,
         quality_threshold: float = 0.8,
+        budget_limit: Optional[float] = None,
+        consensus_mode: bool = False,
+        review_strategy: str = "basic",
     ) -> PhaseResult:
         """
         Run phase with iterative feedback loop for quality improvement.
@@ -318,8 +349,12 @@ class OrchestratorV2:
         Returns:
             PhaseResult with final output
         """
-        logger.info(f"Starting phase '{phase}' with feedback loop")
+        logger.info(f"Starting phase '{phase}' with iterative feedback")
         
+        current_context = context or {}
+        best_result: Optional[PhaseResult] = None
+        best_score = 0.0
+
         for iteration in range(self.max_feedback_iterations):
             logger.info(f"Feedback iteration {iteration + 1}/{self.max_feedback_iterations}")
             
@@ -327,14 +362,19 @@ class OrchestratorV2:
             result = await self.run_phase_with_retry(
                 phase=phase,
                 schema_name=schema_name,
-                context=context,
+                context=current_context,
                 question=question,
+                budget_limit=budget_limit,
+                consensus_mode=consensus_mode,
+                review_strategy=review_strategy,
             )
             
             if result.status != PhaseStatus.COMPLETED:
+                logger.warning(f"Phase failed during iteration {iteration}")
                 return result
             
-            # Assess quality
+            # Use the internal _assess_quality (which we will improve or keep)
+            # Re-adding _assess_quality structure but improved
             feedback = await self._assess_quality(result.output, phase)
             
             logger.info(f"Quality score: {feedback.quality_score:.2f}")
@@ -342,23 +382,29 @@ class OrchestratorV2:
             if feedback.quality_score >= quality_threshold:
                 logger.info(f"Quality threshold met for phase '{phase}'")
                 return result
+
+            # Keep track of best result
+            if feedback.quality_score > best_score:
+                best_score = feedback.quality_score
+                best_result = result
             
             if not feedback.needs_iteration or iteration >= self.max_feedback_iterations - 1:
                 logger.warning(f"Max iterations reached for phase '{phase}'")
-                return result
+                return best_result or result
             
-            # Update context with feedback for next iteration
-            context = context or {}
-            context["previous_output"] = result.output
-            context["feedback"] = {
+            # Update context for next pass
+            current_context = current_context.copy()
+            current_context["previous_output"] = result.output
+            current_context["feedback"] = {
                 "issues": feedback.issues,
                 "suggestions": feedback.suggestions,
+                "instruction": "Please refine the previous output based on the feedback."
             }
             
             self.metrics["total_feedback_iterations"] += 1
             logger.info(f"Refining output based on feedback...")
         
-        return result
+        return best_result or result
 
     async def _assess_quality(
         self,
@@ -367,6 +413,8 @@ class OrchestratorV2:
     ) -> FeedbackResult:
         """
         Assess the quality of phase output using an LLM reviewer.
+        
+        Should match the logic of ProducerReviewerLoop._review but adapted for Phase outputs.
         """
         logger.info(f"Assessing quality for phase: {phase}")
         
@@ -420,7 +468,7 @@ class OrchestratorV2:
             logger.warning(f"Review failed, falling back to heuristic: {e}")
             # Fallback heuristic
             return FeedbackResult(
-                quality_score=0.8, # Assume OK if review fails to avoid infinite loops
+                quality_score=0.8,
                 issues=["Review process failed"],
                 suggestions=[],
                 needs_iteration=False

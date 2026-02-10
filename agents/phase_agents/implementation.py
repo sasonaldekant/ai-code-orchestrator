@@ -23,6 +23,10 @@ class ImplementationAgent:
         self.orchestrator = orchestrator
         self.backend_prompt_path = Path("prompts/phase_prompts/implementation_backend.txt")
         self.frontend_prompt_path = Path("prompts/phase_prompts/implementation_frontend.txt")
+        self.name = "Implementer"
+        self.description = "Generates backend and frontend code based on architecture."
+        self.tools = ["Code Generation", "Polyglot Implementation (C#/.NET, React)", "Tech Stack Adaptation"]
+        self.role = "implementation"
 
     async def execute(self, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

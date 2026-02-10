@@ -47,3 +47,20 @@ python api/cli_commands.py query "policy"
 # Run Orchestration
 python api/cli_commands.py run "Create a hello world python script" --auto-fix
 ```
+
+## 4. GUI Enhancements (Phase 1)
+
+Implemented "Advanced Run Options" in the `OrchestratorUI`.
+
+- **Frontend**: Added expandable `AdvancedOptions` panel.
+  - Controls for `Budget Limit`, `Consensus Mode`, and `Review Strategy`.
+- **Backend**: Updated `run` endpoint and `LifecycleOrchestrator` to process these parameters.
+
+## 5. Global Settings (Phase 2)
+
+Implemented Configuration Management System.
+
+- **Backend API**: `api/config_routes.py` handles reading/writing `model_mapping.yaml` and `.env` (safely).
+- **Settings Modal**: New UI component for:
+  - **Model Defaults**: Global and per-phase model selection.
+  - **API Keys**: Secure management of OpenAI, Anthropic, and Google keys.

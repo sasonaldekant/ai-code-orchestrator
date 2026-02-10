@@ -12,7 +12,7 @@ class RepairAgent:
     searching for context, and generating patches.
     """
 
-    def __init__(self, llm_client: BaseLLMClient):
+    def __init__(self, llm_client: LLMClient):
         self.llm_client = llm_client
 
     @register_tool(name="auto_fix", category="debugging", description="Investigates and fixes errors.")

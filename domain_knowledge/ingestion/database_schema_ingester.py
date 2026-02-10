@@ -19,6 +19,16 @@ class DatabaseSchemaIngester(Ingester):
     def __init__(self, dbcontext_path: str, models_dir: str):
         self.dbcontext_path = Path(dbcontext_path)
         self.models_dir = Path(models_dir)
+        
+        # If directory provided, try to find the DbContext file
+        if self.dbcontext_path.is_dir():
+            # Look for logical DbContext file
+            candidates = list(self.dbcontext_path.rglob("*Context.cs"))
+            if candidates:
+                self.dbcontext_path = candidates[0]
+                logger.info(f"Auto-detected DbContext file: {self.dbcontext_path}")
+            else:
+                logger.warning(f"No *Context.cs file found in {dbcontext_path}, ingestion might fail.")
 
     def ingest(self) -> List[Document]:
         """

@@ -296,6 +296,10 @@ class ChromaVectorStore(VectorStore):
         )
         return len(results['ids']) > 0
 
+    def list_collections(self) -> List[str]:
+        """List all collections in the persistent store."""
+        return [c.name for c in self.client.list_collections()]
+
 
 class FaissVectorStore(VectorStore):
     """
