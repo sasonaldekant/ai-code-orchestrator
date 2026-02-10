@@ -52,10 +52,10 @@ class LifecycleOrchestrator:
 
     def __init__(
         self, 
-        domain_retriever: DomainAwareRetriever,
+        domain_retriever: Optional[DomainAwareRetriever] = None,
         simulation_mode: bool = False
     ):
-        self.domain_retriever = domain_retriever
+        self.domain_retriever = domain_retriever or DomainAwareRetriever()
         self.simulation_mode = simulation_mode
         
         # Initialize Core Orchestrator
