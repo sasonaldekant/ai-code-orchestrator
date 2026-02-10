@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "phase": { "type": "string" },
+    "output": { 
+      "type": "object",
+      "properties": {
+        "backend_files": { "type": "array" },
+        "frontend_files": { "type": "array" },
+        "errors": { "type": "array" }
+      }
+    },
+    "tokens_in": { "type": "integer" },
+    "tokens_out": { "type": "integer" }
+  },
+  "required": [],
+  "additionalProperties": true
+}

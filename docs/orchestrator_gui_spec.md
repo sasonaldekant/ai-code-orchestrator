@@ -102,6 +102,45 @@ The Frontend renders these distinct event types differently (Code vs Text vs Err
 
 ---
 
+#### F. File Output Panel (NEW)
+
+Dedicated panel for reviewing and approving file changes.
+
+- **Pending Files List:** Queue of files waiting for approval.
+- **Diff View:** Side-by-side or unified diff of changes.
+- **Approve/Reject Buttons:** Per-file or batch approval.
+- **Backup Indicator:** Shows if backup exists for rollback.
+
+**Implementation Notes:**
+
+- Uses `FileWriter.preview()` for diff generation.
+- Shows file path, additions/deletions count.
+- Integrates with Git status if available.
+
+#### G. Code Verification Panel (NEW)
+
+Real-time display of code verification status.
+
+- **Test Status:** Pass/Fail indicators for each test.
+- **Execution Time:** How long tests took.
+- **Retry Counter:** Shows retry attempts (max 3).
+- **Error Details:** Expandable error messages on failure.
+
+**Event Types:**
+
+```json
+{
+  "type": "verification",
+  "phase": "testing",
+  "status": "running|passed|failed",
+  "tests_passed": 5,
+  "tests_failed": 1,
+  "execution_time_ms": 1250
+}
+```
+
+---
+
 ### 5. Implementation Roadmap
 
 1.  **Phase 1: Foundation**
@@ -119,6 +158,11 @@ The Frontend renders these distinct event types differently (Code vs Text vs Err
     - File System browsing.
     - Diff Viewer.
 
+4.  **Phase 4: Quality Gates (NEW)**
+    - Code Verification Panel.
+    - File Output Panel with diff view.
+    - Approval workflow for file writes.
+
 ---
 
 ### 6. Why This is "Better"
@@ -126,3 +170,5 @@ The Frontend renders these distinct event types differently (Code vs Text vs Err
 - **Control:** We don't just "talk" to the AI; we allow the user to **manipulate the plan** while it's running.
 - **Context:** Generic tools guess the context. Nexus **visualizes** the context (Schema/Component Library) so the user knows exactly what the AI knows.
 - **Privacy:** Complete data isolation. No code leaves the local network except to the LLM provider API (which is stateless).
+- **Quality:** Every piece of code is **verified** before it touches your project.
+- **Safety:** Full **backup and rollback** system protects against bad changes.

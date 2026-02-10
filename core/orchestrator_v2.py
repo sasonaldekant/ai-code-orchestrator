@@ -88,10 +88,11 @@ class OrchestratorV2:
         retry_delay: float = 1.0,
         max_feedback_iterations: int = 3,
         retriever: Optional[Any] = None,
+        llm_client: Optional[Any] = None,
     ) -> None:
         self.cost_manager = CostManager()
         self.model_router = ModelRouterV2(config_path)
-        self.llm_client = LLMClientV2(self.cost_manager)
+        self.llm_client = llm_client or LLMClientV2(self.cost_manager)
         self.validator = OutputValidator()
         self.tracer = TracingService()
         self.retriever = retriever or RAGRetriever()
@@ -121,10 +122,10 @@ class OrchestratorV2:
     def phase_agents(self) -> Dict[str, Any]:
         """Lazy initialization of phase agents."""
         if self._phase_agents is None:
-            from ..agents.phase_agents.analyst import AnalystAgent
-            from ..agents.phase_agents.architect import ArchitectAgent
-            from ..agents.phase_agents.implementation import ImplementationAgent
-            from ..agents.phase_agents.testing import TestingAgent
+            from agents.phase_agents.analyst import AnalystAgent
+            from agents.phase_agents.architect import ArchitectAgent
+            from agents.phase_agents.implementation import ImplementationAgent
+            from agents.phase_agents.testing import TestingAgent
 
             self._phase_agents = {
                 "analyst": AnalystAgent(self),
