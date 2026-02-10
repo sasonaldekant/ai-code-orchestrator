@@ -127,16 +127,29 @@ class ModelRouter:
         
         # Check for consensus mode
         if phase_config.get("consensus_mode"):
-            # Return primary model but flag consensus mode
-            primary = phase_config["models"]["primary"]
-            return ModelConfig(
-                model=primary["model"],
-                provider=primary["provider"],
-                temperature=0.1,
-                max_tokens=8000,
-                consensus_mode=True,
-                reasoning=phase_config.get("reasoning", "")
-            )
+            # Try to get primary model from 'models' dict or fall back to 'model' key
+            models_dict = phase_config.get("models", {})
+            primary = models_dict.get("primary")
+            
+            if primary:
+                return ModelConfig(
+                    model=primary["model"],
+                    provider=primary["provider"],
+                    temperature=0.1,
+                    max_tokens=8000,
+                    consensus_mode=True,
+                    reasoning=phase_config.get("reasoning", "")
+                )
+            else:
+                # Fallback to standard keys if 'models' dict is missing
+                return ModelConfig(
+                    model=phase_config["model"],
+                    provider=phase_config["provider"],
+                    temperature=phase_config.get("temperature", 0.1),
+                    max_tokens=phase_config.get("max_tokens", 8000),
+                    consensus_mode=True,
+                    reasoning=phase_config.get("reasoning", "")
+                )
         
         # Standard single-model routing
         return ModelConfig(

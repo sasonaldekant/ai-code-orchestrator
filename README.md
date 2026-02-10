@@ -1,114 +1,97 @@
-# ai-code-orchestrator
+# AI Code Orchestrator v4.0 (Bleeding Edge)
 
-This scaffold implements the **next step**: filled JSON schemas, prompt templates, a runnable CLI, unit tests, and CI.
+**The first "Cognitive" AI Software Engineer.**
 
-## Quickstart
+Unlike standard coding assistants that just complete text, the **AI Code Orchestrator v4.0** is an autonomous agent that **sees** your app, **fixes** its own bugs, **remembers** your preferences, and **learns** from its mistakes.
+
+---
+
+## 🚀 Key Features (v4.0)
+
+### 🧠 Cognitive Memory ("The Cortex")
+
+The system is no longer stateless. It has:
+
+- **Episodic Memory:** Remembers your specific coding rules (e.g., "Always use Tailwind", "No classes").
+- **Self-Correction:** If it fixes a bug, it saves the solution in its **Experience DB** to avoid repeating the mistake.
+
+### 🛠 Autonomous Self-Healing (Auto-Fixer)
+
+When code verification fails, the orchestrator doesn't just error out. It:
+
+1. **Investigates** the error using a specialized `RepairAgent`.
+2. **Patches** the code automatically.
+3. **Re-verifies** until the tests pass.
+
+### 👁 Multi-Modal Vision
+
+Drag & drop screenshots, mockups, or diagrams into the Nexus GUI. The agent can "see" what you mean and generate code that matches the visual design.
+
+### 🔌 IDE Bridge
+
+Connect your favorite editor (VS Code, Cursor, JetBrains) directly to the brain.
+
+- Right-click code -> "AI Fix This"
+- Right-click code -> "AI Explain This"
+
+---
+
+## 📚 Documentation
+
+- **[User Guide v4.0](docs/USER_GUIDE_v4.md)** - Full usage instructions.
+- **[Technical Documentation](docs/AI%20Code%20Orchestrator%20-%20Technical%20Documentation.md)** - Architecture deep dive.
+- **[IDE Integration](docs/IDE_INTEGRATION_GUIDE.md)** - How to build plugins.
+
+---
+
+## ⚡ Quickstart
+
+### 1. Installation
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e .[dev]
-pip install jsonschema pyyaml
-python -m cli --phase analyst --schema schemas/phase_schemas/requirements.json
+git clone https://github.com/mgasic/ai-code-orchestrator.git
+cd ai-code-orchestrator
+pip install -r requirements.txt
+cd ui && npm install
 ```
 
-## Layout
+### 2. Configuration
 
-- `core/` — orchestrator, routing, validation, **chunking engine (NEW)**
-- `schemas/` — JSON Schemas for phase and specialist outputs
-- `prompts/` — universal/spec templates + phase/specialist prompts
-- `evals/` — placeholder evaluation scripts
-- `rag/` — **ChromaDB vector store & retrieval v2**
-- `tests/` — unit tests for validator
-- `.github/workflows/ci.yml` — CI pipeline
-- `docs/` — **Technical & user documentation**
+Copy `.env.example` to `.env` and add your API keys (OpenAI, Anthropic, or Google).
 
-## E2E Dry Run
+### 3. Run
 
-```
-python -m pipeline
-ls outputs
-```
-
-## Enterprise RAG (v3.0)
-
-The system now features an enterprise-grade RAG pipeline with:
-
-- **Strategic Auto-Chunking**: Logic-aware code splitting.
-- **Optimization Advisor**: Proactive token management.
-- **Knowledge Explorer**: Document-level browsing and fine-grained deletion.
-
-For full details, see [ADVANCED_RAG.md](docs/ADVANCED_RAG.md).
+**Option A: Nexus GUI (Recommended)**
 
 ```bash
-# Direct ingestion
-python manage.py ingest project_codebase ./path/to/project
+# Terminal 1
+python manage.py start-api
+
+# Terminal 2
+cd ui && npm run dev
 ```
 
-## Docker
+Access at `http://localhost:5173`.
 
-```
-make docker-build
-make docker-run
-```
+**Option B: CLI**
 
-## Tracing & audit
-
-By default tracing is **on** and writes JSONL:
-
-```
-export TRACE_JSONL=1
-export TRACE_FILE=trace.jsonl
+```bash
+python manage.py run "Build a Tetris game in Python" --auto-fix
 ```
 
-## Real LLM (optional)
+---
 
-Set `OFFLINE_LLM=0` and provide `OPENAI_API_KEY`. The client tries OpenAI Responses API:
+## 🏗 Architecture
 
-```
-export OFFLINE_LLM=0
-export OPENAI_API_KEY=sk-...
-python -m cli --phase analyst --schema schemas/phase_schemas/requirements.json
-```
-
-If the SDK isn't installed or call fails, it falls back to offline stub and traces the reason.
-
-## REST API
-
-Local:
+The system is built on a **System Cortex** that dynamically routes your intent to the right tool:
 
 ```
-make api-run
-# health
-curl http://localhost:8000/health
-# run orchestrator
-curl -X POST http://localhost:8000/run -H "Content-Type: application/json" \  -d '{"phase":"analyst","schema_name":"requirements"}'
+[User Request] -> [Semantic Router] -> [Registry] -> [Agent/Tool]
+                                           ^
+                                           |
+                                    [Cognitive Memory]
 ```
 
-Docker Compose:
+## License
 
-```
-make compose-up
-# then hit http://localhost:8000/health
-make compose-down
-```
-
-### API with RAG
-
-Ingest sample domain docs and run with a question to enrich context:
-
-```
-make api-run         # terminal A
-make api-ingest      # terminal B
-curl -X POST http://localhost:8000/run -H "Content-Type: application/json"   -d '{"phase":"analyst","schema_name":"requirements","question":"frontend accessibility","top_k":2}'
-# RAG context stored in outputs/rag_context.txt
-```
-
-### Query endpoint
-
-```
-make api-run           # terminal A
-make api-ingest        # terminal B
-make api-query         # hits POST /query
-```
-
-The `/run` endpoint now merges retrieved text into the LLM prompt (truncated to ~2000 chars). Audit copy is stored in `outputs/rag_context.txt`.
+MIT

@@ -1,3 +1,4 @@
+
 """
 Admin API Routes for Orchestrator Configuration and Management.
 
@@ -6,6 +7,7 @@ Provides endpoints for:
 - Knowledge base management (collections)
 - RAG ingestion with validation
 - Local file system browsing
+- Knowledge Graph visualization and building
 """
 
 from core.audit_logger import AuditLogger
@@ -22,6 +24,11 @@ from rag.vector_store import ChromaVectorStore, Document
 from domain_knowledge.ingestion.database_schema_ingester import DatabaseSchemaIngester
 from domain_knowledge.ingestion.component_library_ingester import ComponentLibraryIngester
 from core.chunking.engine import ChunkingEngine
+from core.graph.schema import KnowledgeGraph
+from core.graph.ingester import GraphIngester
+from domain_knowledge.ingestion.database_content_ingester import DatabaseContentIngester
+from core.external_integration import ExternalIntegration
+from api.shared import orchestrator_instance
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +37,9 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 # Base paths
 CONFIG_DIR = Path("config")
 PROJECT_ROOT = Path(".")
+
+# Global Knowledge Graph Instance (In-Memory MVP)
+knowledge_graph = KnowledgeGraph()
 
 
 # ============== Pydantic Models ==============
@@ -52,6 +62,33 @@ class IngestionValidateRequest(BaseModel):
 class IngestionExecuteRequest(IngestionValidateRequest):
     """Request to execute ingestion."""
     pass
+
+
+class ContentIngestRequest(BaseModel):
+    """Request to ingest database content (rows)."""
+    mode: str = "json"  # 'json' or 'sql'
+    
+    # Common
+    table_name: str
+    collection_name: str = "database_content"
+    
+    # JSON specific
+    file_path: Optional[str] = None
+    
+    # SQL specific
+    connection_string: Optional[str] = None
+    query: Optional[str] = "SELECT * FROM {table_name}"
+
+
+class PromptGenRequest(BaseModel):
+    query: str
+    context_files: List[str]  # List of file paths
+    target_model: str = "generic"
+
+class ExternalIngestRequest(BaseModel):
+    question: str
+    answer: str
+    source: str = "external_ai"
 
 
 class BrowseResponse(BaseModel):
@@ -420,6 +457,50 @@ async def execute_ingestion(req: IngestionExecuteRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/ingest/content")
+async def ingest_content(req: ContentIngestRequest):
+    """
+    Ingest actual data rows from JSON or SQL.
+    """
+    try:
+        ingester = DatabaseContentIngester()
+        documents = []
+        
+        if req.mode == "json":
+            if not req.file_path:
+                raise HTTPException(status_code=400, detail="file_path required for json mode")
+            documents = ingester.ingest_from_json(req.file_path, req.table_name)
+            
+        elif req.mode == "sql":
+            if not req.connection_string:
+                raise HTTPException(status_code=400, detail="connection_string required for sql mode")
+            
+            # Safe basic query formatting
+            final_query = req.query
+            if "{table_name}" in final_query:
+                final_query = final_query.format(table_name=req.table_name)
+                
+            documents = ingester.ingest_from_sql(req.connection_string, final_query, req.table_name)
+            
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown mode: {req.mode}")
+            
+        if documents:
+            store = ChromaVectorStore(collection_name=req.collection_name)
+            store.add_documents(documents)
+            
+        return {
+            "status": "success",
+            "count": len(documents),
+            "collection": req.collection_name,
+            "mode": req.mode
+        }
+        
+    except Exception as e:
+        logger.error(f"Content ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== File Browser Endpoint ==============
 
 @router.get("/browse")
@@ -484,6 +565,88 @@ async def browse_files(
         
     except HTTPException:
         raise
+
+# ============== Knowledge Graph Endpoints (Phase 12) ==============
+
+@router.post("/graph/build")
+async def build_knowledge_graph(path: str = ".", background_tasks: BackgroundTasks = None):
+    """
+    Trigger a full rebuild of the Knowledge Graph.
+    """
+    try:
+        # In a real app, use background tasks for large codebases
+        # For MVP, we do it synchronously or via simple background task
+        
+        target_path = Path(path).resolve()
+        if not target_path.exists():
+            raise HTTPException(status_code=404, detail="Path not found")
+
+        # Reset graph
+        global knowledge_graph
+        knowledge_graph = KnowledgeGraph()
+        ingester = GraphIngester(knowledge_graph)
+
+        logger.info(f"Building Knowledge Graph from {target_path}...")
+        
+        # Simple recursive walk
+        count = 0
+        for file_path in target_path.rglob("*"):
+            if file_path.is_file() and file_path.suffix in [".py", ".cs", ".ts", ".js"]:
+                if "node_modules" in str(file_path) or "__pycache__" in str(file_path):
+                    continue
+                    
+                try:
+                    content = file_path.read_text(encoding="utf-8", errors="ignore")
+                    ingester.process_file(str(file_path), content)
+                    count += 1
+                except Exception as e:
+                    logger.warning(f"Failed to ingest {file_path}: {e}")
+        
+        return {
+            "status": "success",
+            "message": f"Graph built from {count} files.",
+            "stats": {
+                "nodes": len(knowledge_graph.nodes),
+                "edges": len(knowledge_graph.edges)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Graph build failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/graph")
+async def get_knowledge_graph_data():
+    """
+    Get the current Knowledge Graph in JSON format.
+    """
+    return knowledge_graph.to_json()
+
+
+# ============== Swarm Monitoring Endpoints (Phase 19) ==============
+
+@router.get("/swarm/dag")
+async def get_swarm_dag():
+    """
+    Get the current Swarm Task DAG from the blackboard.
+    """
+    swarm_manager = getattr(orchestrator_instance.orchestrator, "swarm_manager", None)
+    if not swarm_manager:
+         raise HTTPException(status_code=404, detail="Swarm Manager not initialized in orchestrator.")
+         
+    return await swarm_manager.blackboard.get_dag()
+
+@router.get("/swarm/observations")
+async def get_swarm_observations():
+    """
+    Get all observations from the swarm blackboard.
+    """
+    swarm_manager = getattr(orchestrator_instance.orchestrator, "swarm_manager", None)
+    if not swarm_manager:
+         raise HTTPException(status_code=404, detail="Swarm Manager not initialized in orchestrator.")
+         
+    return await swarm_manager.blackboard.get_observations()
+
+
 # ============== Tool Endpoints (Phase 7) ==============
 
 from agents.specialist_agents.doc_generator import DocGeneratorAgent
@@ -560,6 +723,70 @@ async def review_code(req: CodeReviewRequest):
         }
     except Exception as e:
         logger.error(f"Code review error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/tools/generate-prompt")
+async def generate_external_prompt(req: PromptGenRequest):
+    """
+    Generate a prompt for external Pro models (ChatGPT o1, Perplexity).
+    """
+    try:
+        # 1. Gather context
+        context_data = []
+        for file_path_str in req.context_files:
+            path = Path(file_path_str)
+            if path.exists() and path.is_file():
+                content = path.read_text(encoding="utf-8", errors="ignore")
+                context_data.append({"path": str(path), "content": content})
+            else:
+                logger.warning(f"File not found for context: {path}")
+
+        # 2. Generate Prompt
+        integration = ExternalIntegration()
+        prompt = integration.generate_prompt(req.query, context_data, req.target_model)
+        
+        return {"prompt": prompt}
+    except Exception as e:
+        logger.error(f"Prompt generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/tools/advise-complexity")
+async def advise_complexity(req: PromptGenRequest):
+    """
+    Check if a task is too complex for local models.
+    """
+    try:
+        # 1. Gather context
+        context_data = []
+        for file_path_str in req.context_files:
+            path = Path(file_path_str)
+            if path.exists() and path.is_file():
+                content = path.read_text(encoding="utf-8", errors="ignore")
+                context_data.append({"path": str(path), "content": content})
+            
+        # 2. Analyze
+        integration = ExternalIntegration()
+        advice = integration.detect_task_complexity(req.query, context_data)
+        
+        return advice
+    except Exception as e:
+        logger.error(f"Advisor error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/ingest/external-response")
+async def ingest_external_response(req: ExternalIngestRequest):
+    """
+    Ingest an answer from an external AI tool.
+    """
+    try:
+        store = ChromaVectorStore(collection_name="external_knowledge")
+        integration = ExternalIntegration(vector_store=store)
+        
+        doc_id = integration.ingest_response(req.question, req.answer, req.source)
+        
+        return {"status": "success", "doc_id": doc_id}
+    except Exception as e:
+        logger.error(f"External ingestion error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/audit-report")

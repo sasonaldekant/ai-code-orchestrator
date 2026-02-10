@@ -22,7 +22,9 @@ from core.code_evaluator import CodeEvaluator
 from core.error_tracker import ErrorTracker
 from core.guardrails import GuardrailMonitor, Action
 from agents.specialist_agents.test_generator import TestGeneratorAgent
+from agents.specialist_agents.repair_agent import RepairAgent
 from api.event_bus import bus, Event, EventType
+from core.memory.experience_db import ExperienceDB
 
 logger = logging.getLogger(__name__)
 
@@ -81,13 +83,22 @@ class LifecycleOrchestrator:
         else:
             self.test_generator = TestGeneratorAgent()
             
+        self.repair_agent = RepairAgent(self.orchestrator.llm_client)
+        self.experience_db = ExperienceDB()
+            
         self.verification_loop = VerificationLoop(self.code_executor, max_retries=3)
         self.file_writer = FileWriter(project_root=".", auto_approve=False)
         self.code_evaluator = CodeEvaluator()
         self.error_tracker = ErrorTracker()
         self.guardrails = GuardrailMonitor()
 
-    async def execute_request(self, user_request: str) -> Dict[str, Any]:
+    async def execute_request(
+        self, 
+        user_request: str,
+        deep_search: bool = False,
+        retrieval_strategy: str = "local",
+        auto_fix: bool = False
+    ) -> Dict[str, Any]:
         """
         Main entry point: break down request and execute tasks.
         """
@@ -117,7 +128,9 @@ class LifecycleOrchestrator:
                 "request": user_request,
                 "domain_context": planning_context.to_prompt_string()
             },
-            question=user_request
+            question=user_request,
+            deep_search=deep_search,
+            retrieval_strategy=retrieval_strategy,
         )
         
         if plan_result.status != PhaseStatus.COMPLETED:
@@ -138,7 +151,7 @@ class LifecycleOrchestrator:
         results = {}
         for milestone in self.milestones:
             await bus.publish(Event(type=EventType.MILESTONE, agent="Orchestrator", content=f"Starting Milestone: {milestone.id}"))
-            results[milestone.id] = await self.execute_milestone(milestone)
+            results[milestone.id] = await self.execute_milestone(milestone, auto_fix=auto_fix)
             
             # Update plan status broadcast
             plan_data = {"milestones": [m.to_dict() for m in self.milestones]}
@@ -150,7 +163,7 @@ class LifecycleOrchestrator:
             "results": results
         }
 
-    async def execute_milestone(self, milestone: Milestone) -> Dict[str, Any]:
+    async def execute_milestone(self, milestone: Milestone, auto_fix: bool = False) -> Dict[str, Any]:
         """
         Execute all tasks in a milestone, respecting dependencies.
         """
@@ -161,7 +174,7 @@ class LifecycleOrchestrator:
         # Simple sequential execution for now
         # TODO: Implement DAG topological sort for parallel execution
         for task in milestone.tasks:
-            task_result = await self.execute_task(task)
+            task_result = await self.execute_task(task, auto_fix=auto_fix)
             results[task.id] = task_result
             if task.status == "failed":
                 milestone.status = "failed"
@@ -177,7 +190,7 @@ class LifecycleOrchestrator:
         milestone.status = "completed"
         return results
 
-    async def execute_task(self, task: Task) -> Dict[str, Any]:
+    async def execute_task(self, task: Task, auto_fix: bool = False) -> Dict[str, Any]:
         """
         Execute a single task with domain context.
         """
@@ -247,6 +260,59 @@ class LifecycleOrchestrator:
                         agent="Verifier", 
                         content=f"Code verification failed: {verification_result.get('feedback', 'Unknown error')}"
                     ))
+                    
+                    # [Phase 16] Auto-Fix Logic
+                    if auto_fix:
+                        await bus.publish(Event(type=EventType.THOUGHT, agent="RepairAgent", content="Auto-Fix triggered. Analyzing failure..."))
+                        
+                        # Extract error details
+                        exec_result = verification_result.get("result") # ExecutionResult obj
+                        error_log = verification_result.get("feedback", "")
+                        if exec_result:
+                            error_log += f"\nStderr: {exec_result.stderr}\nStdout: {exec_result.stdout}"
+                            
+                        # Attempt fix
+                        fix_result = await self.repair_agent.auto_fix(
+                            error_log=error_log, 
+                            test_command="Verification Test Suite" 
+                        )
+                        
+                        if fix_result["success"]:
+                            await bus.publish(Event(type=EventType.ACTION, agent="RepairAgent", content=f"Fix applied: {fix_result['summary']}"))
+                            
+                            # Verify again!
+                            # We need to re-read the code from the file because RepairAgent overwrote it? 
+                            # Or did RepairAgent return the new content?
+                            # RepairAgent overwrote the file on disk, but phase_result.output still has old code.
+                            # We should update phase_result.output with the new code from disk.
+                            
+                            # Extract filename to re-read
+                            _, filename = self._extract_code_from_output(phase_result.output)
+                            if filename and Path(filename).exists():
+                                new_code = Path(filename).read_text(encoding="utf-8")
+                                # Update phase result for next steps (like file writing - though RepairAgent already wrote it)
+                                # But let's keep consistency
+                                if isinstance(phase_result.output.get("output"), dict) and phase_result.output["output"].get("backend_files"):
+                                    phase_result.output["output"]["backend_files"][0]["content"] = new_code
+                                else:
+                                    phase_result.output["code"] = new_code
+                                
+                                # Re-verify
+                                verification_result = await self._verify_code(phase_result.output, task)
+                                if verification_result.get("verified"):
+                                    await bus.publish(Event(type=EventType.LOG, agent="RepairAgent", content="Fix verified! Tests passed."))
+                                    
+                                    # [Phase 17] Record Experience
+                                    self.experience_db.record_fix(
+                                        error_pattern=error_log,
+                                        fix_strategy=fix_result['summary'],
+                                        context=task.description
+                                    )
+                                else:
+                                    await bus.publish(Event(type=EventType.WARNING, agent="RepairAgent", content="Fix failed validation."))
+                        else:
+                             await bus.publish(Event(type=EventType.ERROR, agent="RepairAgent", content=f"Auto-Fix failed: {fix_result['summary']}"))
+
                 # Store verification result but don't fail the task
                 phase_result.output["verification"] = verification_result
             

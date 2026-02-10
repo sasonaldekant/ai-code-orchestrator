@@ -3,7 +3,8 @@ import { Database, FolderOpen, CheckCircle, AlertCircle, Loader2, Upload, Info, 
 import clsx from 'clsx';
 import { PathSelector } from './PathSelector';
 
-type IngestionType = 'database' | 'component_library' | 'project_codebase';
+type IngestionType = 'database' | 'component_library' | 'project_codebase' | 'database_content';
+type ContentMode = 'json' | 'sql';
 
 interface ValidationResult {
     valid: boolean;
@@ -29,6 +30,12 @@ export function IngestionPanel() {
     const [collection, setCollection] = useState('');
     const [chunkSize, setChunkSize] = useState(800);
     const [chunkOverlap, setChunkOverlap] = useState(120);
+
+    // Phase 13: Content Ingestion State
+    const [contentMode, setContentMode] = useState<ContentMode>('json');
+    const [tableName, setTableName] = useState('');
+    const [connectionString, setConnectionString] = useState('');
+    const [sqlQuery, setSqlQuery] = useState('SELECT * FROM {table_name}');
 
     const [isValidating, setIsValidating] = useState(false);
     const [isIngesting, setIsIngesting] = useState(false);
@@ -72,17 +79,33 @@ export function IngestionPanel() {
         setResult(null);
 
         try {
-            const resp = await fetch('http://localhost:8000/admin/ingest/execute', {
+            // Phase 13 Logic
+            let endpoint = 'http://localhost:8000/admin/ingest/execute';
+            let body: any = {
+                type,
+                path,
+                models_dir: modelsDir || undefined,
+                collection: collection || undefined,
+                chunk_size: chunkSize,
+                chunk_overlap: chunkOverlap,
+            };
+
+            if (type === 'database_content') {
+                endpoint = 'http://localhost:8000/admin/ingest/content';
+                body = {
+                    mode: contentMode,
+                    table_name: tableName,
+                    collection_name: collection || 'database_content',
+                    file_path: contentMode === 'json' ? path : undefined,
+                    connection_string: contentMode === 'sql' ? connectionString : undefined,
+                    query: contentMode === 'sql' ? sqlQuery : undefined
+                };
+            }
+
+            const resp = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type,
-                    path,
-                    models_dir: modelsDir || undefined,
-                    collection: collection || undefined,
-                    chunk_size: chunkSize,
-                    chunk_overlap: chunkOverlap,
-                }),
+                body: JSON.stringify(body),
             });
             const data = await resp.json();
             if (resp.ok) {
@@ -111,7 +134,7 @@ export function IngestionPanel() {
                 {/* Type Selection */}
                 <div>
                     <label className="block text-sm font-medium mb-2">Ingestion Type</label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button
                             onClick={() => setType('database')}
                             className={clsx(
@@ -148,22 +171,91 @@ export function IngestionPanel() {
                             <Upload className="w-5 h-5" />
                             <span className="font-medium">Project Codebase</span>
                         </button>
+                        <button
+                            onClick={() => setType('database_content')}
+                            className={clsx(
+                                "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all",
+                                type === 'database_content'
+                                    ? "border-amber-500 bg-amber-500/10 text-amber-500"
+                                    : "border-border hover:border-amber-500/50"
+                            )}
+                        >
+                            <span className="font-medium">Database Content</span>
+                        </button>
                     </div>
                 </div>
+
+                {/* Phase 13: Content Ingestion Inputs */}
+                {type === 'database_content' && (
+                    <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-lg space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Source Mode</label>
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" checked={contentMode === 'json'} onChange={() => setContentMode('json')} />
+                                    <span>JSON File</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" checked={contentMode === 'sql'} onChange={() => setContentMode('sql')} />
+                                    <span>Direct SQL Connection</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Target Table Name</label>
+                            <input
+                                type="text"
+                                value={tableName}
+                                onChange={(e) => setTableName(e.target.value)}
+                                placeholder="e.g. Products"
+                                className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:border-primary text-sm"
+                            />
+                        </div>
+
+                        {contentMode === 'sql' && (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Connection String</label>
+                                    <input
+                                        type="text"
+                                        value={connectionString}
+                                        onChange={(e) => setConnectionString(e.target.value)}
+                                        placeholder="Driver={ODBC Driver 17 for SQL Server};Server=...;"
+                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:border-primary text-sm font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Query</label>
+                                    <input
+                                        type="text"
+                                        value={sqlQuery}
+                                        onChange={(e) => setSqlQuery(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:border-primary text-sm font-mono"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Use {`{table_name}`} placeholder if needed.</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
 
                 {/* Path Input */}
                 <PathSelector
                     label={
                         type === 'database' ? 'DbContext Path' :
                             type === 'component_library' ? 'Components Directory' :
-                                'Project Root Path'
+                                type === 'database_content' && contentMode === 'json' ? 'JSON File Path' :
+                                    type === 'project_codebase' ? 'Project Root Path' : 'Path'
                     }
                     value={path}
                     onChange={setPath}
+                    disabled={type === 'database_content' && contentMode === 'sql'}
                     placeholder={
                         type === 'database' ? 'E:\\Project\\Backend\\Data' :
                             type === 'component_library' ? 'E:\\Project\\Frontend\\src\\components' :
-                                'E:\\Project\\MyExistingApp'
+                                type === 'database_content' ? 'E:\\exports\\products.json' :
+                                    'E:\\Project\\MyExistingApp'
                     }
                 />
 
@@ -228,7 +320,7 @@ export function IngestionPanel() {
                 <div className="flex gap-3 pt-4">
                     <button
                         onClick={handleValidate}
-                        disabled={!path || isValidating}
+                        disabled={!path || isValidating || type === 'database_content'}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 disabled:opacity-50 transition-all"
                     >
                         {isValidating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Info className="w-4 h-4" />}
@@ -236,7 +328,7 @@ export function IngestionPanel() {
                     </button>
                     <button
                         onClick={handleIngest}
-                        disabled={!validation?.valid || isIngesting}
+                        disabled={type !== 'database_content' && (!validation?.valid || isIngesting)}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-all"
                     >
                         {isIngesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
