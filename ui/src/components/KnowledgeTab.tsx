@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Upload, Database, FileCode, CheckCircle, AlertCircle, RefreshCw, Search, X } from 'lucide-react';
+import { Upload, Database, FileCode, CheckCircle, AlertCircle, RefreshCw, Search, X, Eye } from 'lucide-react';
 import clsx from 'clsx';
 
 interface SearchResult {
@@ -13,7 +13,7 @@ interface SearchResult {
 }
 
 export function KnowledgeTab() {
-    const [ingestType, setIngestType] = useState<'database' | 'component_library'>('database');
+    const [ingestType, setIngestType] = useState<'database' | 'component_library'>('component_library');
     const [path, setPath] = useState('');
     const [collectionName, setCollectionName] = useState('');
     const [isIngesting, setIsIngesting] = useState(false);
@@ -22,6 +22,8 @@ export function KnowledgeTab() {
     const [testQuery, setTestQuery] = useState('');
     const [testResults, setTestResults] = useState<SearchResult[]>([]);
     const [isTesting, setIsTesting] = useState(false);
+    const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+    const [collectionDocuments, setCollectionDocuments] = useState<any[]>([]);
 
     const fetchCollections = () => {
         fetch('http://localhost:8000/knowledge/collections')
@@ -99,6 +101,21 @@ export function KnowledgeTab() {
         try {
             await fetch(`http://localhost:8000/knowledge/collections/${name}`, { method: 'DELETE' });
             fetchCollections();
+            if (selectedCollection === name) {
+                setSelectedCollection(null);
+                setCollectionDocuments([]);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleViewDocuments = async (name: string) => {
+        try {
+            const resp = await fetch(`http://localhost:8000/knowledge/collections/${name}/documents`);
+            const data = await resp.json();
+            setSelectedCollection(name);
+            setCollectionDocuments(data.documents || []);
         } catch (error) {
             console.error(error);
         }
@@ -155,11 +172,14 @@ export function KnowledgeTab() {
                                     type="text"
                                     value={path}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPath(e.target.value)}
-                                    placeholder={ingestType === 'database' ? "e.g., /src/backend" : "e.g., /src/components"}
+                                    placeholder={ingestType === 'database' ? "e.g., C:/projects/myapp/backend" : "e.g., C:/projects/myapp/src/components"}
                                     className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-1 focus:ring-primary outline-none"
                                     required
                                 />
-                                <p className="text-xs text-muted-foreground">Path to the directory containing source files.</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Enter the <strong>absolute path</strong> to the directory on your local machine.
+                                    The backend will read files directly from this location.
+                                </p>
                             </div>
 
                             <div className="space-y-2">
@@ -277,13 +297,22 @@ export function KnowledgeTab() {
                                     {collections.map((col: string) => (
                                         <div key={col} className="flex justify-between items-center text-xs font-mono bg-background p-2 rounded border border-border/50">
                                             <span>{col}</span>
-                                            <button
-                                                onClick={() => handleDeleteCollection(col)}
-                                                className="text-destructive hover:text-red-600 p-1"
-                                                title="Delete Collection"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => handleViewDocuments(col)}
+                                                    className="text-primary hover:text-primary/80 p-1"
+                                                    title="View Documents"
+                                                >
+                                                    <Eye className="w-3 h-3" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCollection(col)}
+                                                    className="text-destructive hover:text-red-600 p-1"
+                                                    title="Delete Collection"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -292,6 +321,59 @@ export function KnowledgeTab() {
                     </div>
                 </div>
             </div>
+
+            {/* Documents Viewer Modal */}
+            {selectedCollection && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-card border border-border rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+                        <div className="p-4 border-b border-border flex justify-between items-center">
+                            <h2 className="text-lg font-semibold">Documents in '{selectedCollection}'</h2>
+                            <button
+                                onClick={() => {
+                                    setSelectedCollection(null);
+                                    setCollectionDocuments([]);
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-4 overflow-y-auto flex-1">
+                            {collectionDocuments.length === 0 ? (
+                                <p className="text-muted-foreground text-center">No documents found.</p>
+                            ) : (
+                                <div className="space-y-4">
+                                    {collectionDocuments.map((doc: any, idx: number) => (
+                                        <div key={idx} className="bg-muted/30 border border-border rounded-lg p-4">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="text-xs font-mono text-primary">{doc.id}</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {doc.metadata?.component || doc.metadata?.type || 'Unknown'}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                                {doc.text.substring(0, 500)}
+                                                {doc.text.length > 500 && '...'}
+                                            </div>
+                                            {doc.metadata && Object.keys(doc.metadata).length > 0 && (
+                                                <details className="mt-2">
+                                                    <summary className="text-xs text-muted-foreground cursor-pointer">Metadata</summary>
+                                                    <pre className="text-xs mt-1 bg-background p-2 rounded overflow-x-auto">
+                                                        {JSON.stringify(doc.metadata, null, 2)}
+                                                    </pre>
+                                                </details>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-border text-sm text-muted-foreground">
+                            Total: {collectionDocuments.length} documents
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

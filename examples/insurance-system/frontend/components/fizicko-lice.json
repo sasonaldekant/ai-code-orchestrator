@@ -1,0 +1,82 @@
+{
+    "title": "Fizičko Lice - Unos Podataka",
+    "description": "Forma za unos podataka fizičkog lica",
+    "fields": [
+        {
+            "id": "ime",
+            "label": "Ime",
+            "type": "text",
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Ime mora sadržavati samo slova"
+        },
+        {
+            "id": "prezime",
+            "label": "Prezime",
+            "type": "text",
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Prezime mora sadržavati samo slova"
+        },
+        {
+            "id": "jmbg",
+            "label": "JMBG",
+            "type": "text",
+            "required": true,
+            "pattern": "^[0-9]{13}$",
+            "errorMessage": "JMBG mora sadržavati točno 13 cifara"
+        },
+        {
+            "id": "pol",
+            "label": "Pol",
+            "type": "radio",
+            "required": true,
+            "options": [
+                {
+                    "value": "M",
+                    "label": "Muško"
+                },
+                {
+                    "value": "Ž",
+                    "label": "Žensko"
+                }
+            ],
+            "errorMessage": "Pol je obavezno polje"
+        },
+        {
+            "id": "datumRodjenja",
+            "label": "Datum rođenja",
+            "type": "date",
+            "required": true,
+            "errorMessage": "Datum rođenja je obavezno polje"
+        },
+        {
+            "id": "adresa",
+            "label": "Adresa",
+            "type": "text",
+            "required": true,
+            "minLength": 3,
+            "maxLength": 100,
+            "errorMessage": "Adresa je obavezno polje"
+        },
+        {
+            "id": "mobilniTelefon",
+            "label": "Mobilni telefon",
+            "type": "tel",
+            "required": true,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]{5,15}$",
+            "errorMessage": "Nepravilan format telefona"
+        },
+        {
+            "id": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "errorMessage": "Unesite ispravan email"
+        }
+    ]
+}

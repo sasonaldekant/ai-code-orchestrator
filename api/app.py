@@ -23,6 +23,10 @@ from api.event_bus import bus, Event, EventType
 
 # Basic auth helper
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
 
@@ -31,6 +35,7 @@ def check_auth(req: Request):
         if req.headers.get("x-api-key") != API_KEY:
             raise HTTPException(status_code=401, detail="Unauthorized")
 
+# Triggering reload to apply config changes (v3.26 - Vision-to-JSON Pipeline Enabled)
 app = FastAPI(title="AI Code Orchestrator API v3.0", version="3.0.0")
 
 # Include admin routes
@@ -58,8 +63,10 @@ REQS = Counter("aio_requests_total", "Total API requests", ["path", "method", "s
 LAT = Histogram("aio_request_seconds", "Request latency seconds", ["path", "method"])
 
 
-class RunRequest(BaseModel):
+class ExecutionRequest(BaseModel):
     request: str
+    mode: Optional[str] = "standard"
+    image: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
     deep_search: bool = False
     retrieval_strategy: str = "local"
@@ -114,10 +121,13 @@ async def stream_logs(request: Request):
 
 from api.shared import orchestrator_instance
 
-@app.post("/run")
-async def run_feature(req: RunRequest, request: Request):
+@app.post("/orchestrate")
+async def orchestrate_feature(req: ExecutionRequest, request: Request):
     # check_auth(request) # Optional for local UI mode
     
+    if not req.request or not req.request.strip():
+        raise HTTPException(status_code=400, detail="Request cannot be empty")
+        
     # Notify start
     await bus.publish(Event(type=EventType.LOG, agent="API", content=f"Starting request: {req.request}"))
 
@@ -127,12 +137,14 @@ async def run_feature(req: RunRequest, request: Request):
         
         result = await orchestrator_instance.execute_request(
             req.request,
+            mode=req.mode,
             deep_search=req.deep_search,
             retrieval_strategy=req.retrieval_strategy,
             auto_fix=req.auto_fix,
             budget_limit=req.budget_limit,
             consensus_mode=req.consensus_mode,
-            review_strategy=req.review_strategy
+            review_strategy=req.review_strategy,
+            image=req.image
         )
         
         await bus.publish(Event(type=EventType.DONE, agent="Orchestrator", content=result))

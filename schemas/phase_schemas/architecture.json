@@ -3,12 +3,27 @@
   "title": "Architecture schema",
   "type": "object",
   "properties": {
-    "phase": {"type": "string"},
-    "architecture": {"type": "string"},
-    "tokens_in": {"type": "number"},
-    "tokens_out": {"type": "number"},
-    "model": {"type": "string"},
-    "provider": {"type": "string"}
+    "phase": {
+      "type": "string"
+    },
+    "architecture": {
+      "type": "object"
+    },
+    "tokens_in": {
+      "type": "number"
+    },
+    "tokens_out": {
+      "type": "number"
+    },
+    "model": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    }
   },
-  "required": ["phase", "architecture"]
+  "required": [
+    "phase",
+    "architecture"
+  ]
 }

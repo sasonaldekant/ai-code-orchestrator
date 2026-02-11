@@ -3,4 +3,20 @@ You are a testing agent.  Given the implemented backend and frontend code, gener
 Implementation context:
 {implementation}
 
-Return a JSON object with lists of tests and a summary of coverage.
+Return a JSON object with a detailed test report.
+
+Your JSON must strictly follow this structure:
+{
+  "test_plan": "Description of the testing strategy",
+  "test_cases": [
+    {
+      "id": "TC-1",
+      "title": "Test case title",
+      "steps": ["Step 1 description", "Step 2 description"],
+      "expected": "Description of expected outcome",
+      "status": "pass" 
+    }
+  ],
+  "coverage_percent": 0,
+  "defects": []
+}

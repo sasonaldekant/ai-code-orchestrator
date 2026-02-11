@@ -35,7 +35,7 @@ class TestingAgent:
         
         response = await self.orchestrator.llm_client.complete(
             messages=[
-                {"role": "system", "content": "You are a QA Engineer. Output JSON with 'test_cases'."},
+                {"role": "system", "content": "You are a QA Engineer. Output JSON with 'test_plan' (summary string) and 'test_cases' (list)."},
                 {"role": "user", "content": prompt_content}
             ],
             model=cfg.model,

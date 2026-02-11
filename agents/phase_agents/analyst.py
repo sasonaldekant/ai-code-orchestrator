@@ -64,6 +64,7 @@ class AnalystAgent:
             "tokens_out": response.tokens_used["completion"],
             "model": response.model,
             "provider": response.provider,
+            "thinking": response.thinking
         }
         return result
 

@@ -71,6 +71,7 @@ class ArchitectAgent:
             "tokens_out": response.tokens_used["completion"],
             "model": response.model,
             "provider": response.provider,
+            "thinking": response.thinking
         }
 
     async def _execute_consensus(self, config, prompt):

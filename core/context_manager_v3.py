@@ -77,7 +77,11 @@ class ContextManagerV3:
                 logger.error(f"Failed to retrieve/format domain context: {e}")
                 formatted_context = "Error retrieving domain context."
 
-        # 3. Combine into EnrichedContext
+        # 3. Project Structure Injection (for architectural awareness)
+        project_structure = self._get_project_structure()
+        formatted_context += f"\n\n[Project Structure]:\n{project_structure}\n"
+
+        # 4. Combine into EnrichedContext
         return EnrichedContextV3(
             phase=phase,
             specialty=specialty,
@@ -85,3 +89,27 @@ class ContextManagerV3:
             rules=rules,
             formatted_prompt_context=formatted_context
         )
+
+    def _get_project_structure(self) -> str:
+        """Scan key directories to provide structural context."""
+        try:
+            structure = []
+            exclude = {'.git', '.venv', '__pycache__', 'node_modules', 'dist', 'coverage'}
+            
+            root = Path(".")
+            # Limit to depth 2 to save tokens, focus on src/components/api
+            for path in root.rglob("*"):
+                if any(part in exclude for part in path.parts):
+                    continue
+                if path.is_file():
+                    # Only include relevant code files
+                    if path.suffix in {'.py', '.tsx', '.ts', '.cs', '.js', '.yaml', '.json'}:
+                        structure.append(str(path))
+                        
+                if len(structure) > 200: # Limit to 200 files to avoid context overflow
+                    break
+                    
+            return "\n".join(structure[:200])
+        except Exception as e:
+            logger.error(f"Failed to scan project structure: {e}")
+            return "Error scanning project structure."

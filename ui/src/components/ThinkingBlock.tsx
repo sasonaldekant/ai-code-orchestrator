@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Brain, FileCode, CheckCircle, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, FileCode, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,7 +9,7 @@ interface ThinkingBlockProps {
 }
 
 export function ThinkingBlock({ logs, title = "Thinking Process" }: ThinkingBlockProps) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
 
     // Group logs by agent/phase if needed, or just show raw sequence for now
 
@@ -45,30 +45,52 @@ export function ThinkingBlock({ logs, title = "Thinking Process" }: ThinkingBloc
                         transition={{ duration: 0.2 }}
                         className="border-t border-border bg-background/50"
                     >
-                        <div className="p-4 space-y-3 font-mono text-xs max-h-[400px] overflow-y-auto custom-scrollbar">
-                            {logs.map((log, idx) => (
-                                <div key={idx} className="flex gap-3 animate-in fade-in slide-in-from-left-1 duration-300">
-                                    <div className="mt-0.5 min-w-[16px]">
-                                        {log.type === 'error' ? (
-                                            <AlertCircle className="w-3 h-3 text-destructive" />
-                                        ) : log.type === 'artifact' ? (
-                                            <FileCode className="w-3 h-3 text-accent-foreground" />
-                                        ) : (
-                                            <CheckCircle className="w-3 h-3 text-muted-foreground/50" />
-                                        )}
-                                    </div>
-                                    <div className={clsx(
-                                        "flex-1 break-words",
-                                        log.type === 'error' ? 'text-destructive' : 'text-muted-foreground'
-                                    )}>
-                                        <span className="font-semibold text-foreground/80 mr-2">[{log.agent}]:</span>
-                                        {typeof log.content === 'string' ? log.content : JSON.stringify(log.content)}
-                                    </div>
-                                    <div className="text-[10px] text-muted-foreground/30 whitespace-nowrap">
-                                        {new Date(log.timestamp).toLocaleTimeString()}
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="p-4 space-y-3 font-mono text-xs max-h-[500px] overflow-y-auto custom-scrollbar">
+                            {logs
+                                .filter(log => log.type !== 'done' || (typeof log.content === 'string')) // Filter out big result blobs
+                                .map((log, idx) => {
+                                    const isInfo = log.type === 'info';
+                                    const isError = log.type === 'error';
+                                    const isThought = log.type === 'thought';
+                                    const timestamp = log.timestamp ? new Date(log.timestamp) : new Date();
+                                    const isValidTimestamp = !isNaN(timestamp.getTime());
+
+                                    return (
+                                        <div key={idx} className={clsx(
+                                            "flex gap-3 p-2 rounded-md transition-colors",
+                                            isInfo ? "bg-indigo-500/10 border border-indigo-500/20 shadow-sm" :
+                                                isThought ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"
+                                        )}>
+                                            <div className="mt-0.5 min-w-[16px]">
+                                                {isError ? (
+                                                    <AlertCircle className="w-3 h-3 text-destructive" />
+                                                ) : isInfo ? (
+                                                    <Sparkles className="w-3 h-3 text-indigo-400" />
+                                                ) : log.type === 'artifact' ? (
+                                                    <FileCode className="w-3 h-3 text-accent-foreground" />
+                                                ) : isThought ? (
+                                                    <Brain className="w-3 h-3 text-primary/50" />
+                                                ) : (
+                                                    <CheckCircle className="w-3 h-3 text-muted-foreground/30" />
+                                                )}
+                                            </div>
+                                            <div className={clsx(
+                                                "flex-1 break-words",
+                                                isError ? 'text-destructive' :
+                                                    isInfo ? 'text-indigo-100 text-[13px] font-sans whitespace-pre-wrap' :
+                                                        'text-muted-foreground/80'
+                                            )}>
+                                                <span className="font-semibold text-foreground/70 mr-2">[{log.agent || 'Agent'}]:</span>
+                                                {typeof log.content === 'string'
+                                                    ? log.content.replace(/###\s+/g, '')
+                                                    : JSON.stringify(log.content, null, 2)}
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground/40 whitespace-nowrap self-start tabular-nums">
+                                                {isValidTimestamp ? timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </motion.div>
                 )}

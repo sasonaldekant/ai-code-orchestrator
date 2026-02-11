@@ -104,12 +104,20 @@ class ImplementationAgent:
             tokens_in += frontend_resp.tokens_used["prompt"]
             tokens_out += frontend_resp.tokens_used["completion"]
 
+        # Combine thinking from both if available
+        thinking = ""
+        if not isinstance(backend_resp, Exception) and backend_resp.thinking:
+            thinking += f"### Backend Thinking\n{backend_resp.thinking}\n\n"
+        if not isinstance(frontend_resp, Exception) and frontend_resp.thinking:
+            thinking += f"### Frontend Thinking\n{frontend_resp.thinking}\n"
+
         return {
             "phase": "implementation",
             "output": output,
             "tokens_in": tokens_in,
             "tokens_out": tokens_out,
-            "models": f"{backend_cfg.model}, {frontend_cfg.model}"
+            "models": f"{backend_cfg.model}, {frontend_cfg.model}",
+            "thinking": thinking if thinking else None
         }
 
     def _build_prompt(self, path: Path, context: Dict[str, Any], rag_context: List[Dict[str, Any]], fallback: str) -> str:

@@ -19,6 +19,9 @@ class DomainContext:
     components: List[Dict[str, Any]] = field(default_factory=list)
     design_tokens: List[str] = field(default_factory=list)
     query_patterns: List[str] = field(default_factory=list)
+    total_db_count: int = 0
+    total_ui_count: int = 0
+    all_component_names: List[str] = field(default_factory=list)
 
 class DomainAwareRetriever:
     """
@@ -73,20 +76,28 @@ class DomainAwareRetriever:
         if cache_key in self._context_cache:
             return self._context_cache[cache_key]
 
+        db_results = []
+        component_results = []
+
         # 1. Retrieve database entities
-        # Note: 'type' filter matches metadata set in ingesters
-        db_results = self.db_store.search(
-            query=user_requirement, 
-            top_k=top_k_entities, 
-            filter_metadata={"type": "database_schema"}
-        )
+        try:
+            db_results = self.db_store.search(
+                query=user_requirement, 
+                top_k=top_k_entities, 
+                filter_metadata={"type": "database_schema"}
+            )
+        except Exception as e:
+            logger.warning(f"Database search failed (maybe collection missing?): {e}")
 
         # 2. Retrieve React components
-        component_results = self.components_store.search(
-            query=user_requirement, 
-            top_k=top_k_components, 
-            filter_metadata={"type": "react_component"}
-        )
+        try:
+            component_results = self.components_store.search(
+                query=user_requirement, 
+                top_k=top_k_components, 
+                filter_metadata={"type": "react_component"}
+            )
+        except Exception as e:
+            logger.warning(f"Component search failed (maybe collection missing?): {e}")
 
         # 3. Extract relationships for found entities
         relevant_entities = [r.document.metadata.get("entity") for r in db_results if r.document.metadata.get("entity")]
@@ -97,6 +108,22 @@ class DomainAwareRetriever:
 
         # 5. Get query patterns (optional/future)
         query_patterns: List[str] = [] 
+        
+        # 6. Get total counts and all names for better global context
+        total_db = 0
+        total_ui = 0
+        all_names = []
+        try:
+            total_db = self.db_store.get_collection_stats().get("count", 0)
+            ui_stats = self.components_store.get_collection_stats()
+            total_ui = ui_stats.get("count", 0)
+            
+            # If total_ui is reasonable, get all names
+            if total_ui < 100:
+                all_docs = self.components_store.get_documents(limit=100)
+                all_names = sorted(list(set([d.metadata.get("component") for d in all_docs if d.metadata.get("component")])))
+        except Exception as e:
+            logger.warning(f"Failed to get collection stats: {e}")
 
         context = DomainContext(
             database_entities=[
@@ -111,6 +138,8 @@ class DomainAwareRetriever:
             components=[
                 {
                     "name": r.document.metadata.get("component"),
+                    "description": json.loads(r.document.metadata.get("component_info", "{}")).get("description", ""),
+                    "docs": json.loads(r.document.metadata.get("component_info", "{}")).get("docs", ""),
                     "props": json.loads(r.document.metadata.get("component_info", "{}")).get("props", []),
                     "examples": json.loads(r.document.metadata.get("component_info", "{}")).get("examples", []),
                 }
@@ -118,6 +147,9 @@ class DomainAwareRetriever:
             ],
             design_tokens=design_tokens,
             query_patterns=query_patterns,
+            total_db_count=total_db,
+            total_ui_count=total_ui,
+            all_component_names=all_names
         )
 
         self._context_cache[cache_key] = context
@@ -162,7 +194,7 @@ class DomainAwareRetriever:
                 "e": [
                     {
                         "name": e["name"],
-                        "props": [f"{p['name']}:{p['type']}" for p in e.get("properties", [])[:10]],
+                        "fields": [f"{f['name']}:{f['type']}" for f in e.get("fields", [])[:10]],
                         "rels": [f"{r['property_name']}->{r['related_entity']}" for r in e.get("relationships", [])[:5]],
                     }
                     for e in context.database_entities
@@ -173,11 +205,16 @@ class DomainAwareRetriever:
                 "c": [
                     {
                         "name": c["name"],
+                        "desc": c.get("description", "")[:150] + "..." if len(c.get("description", "")) > 150 else c.get("description", ""),
+                        "docs": c.get("docs", "")[:300] + "..." if len(c.get("docs", "")) > 300 else c.get("docs", ""),
                         "props": [f"{p['name']}:{p['type']}" for p in c.get("props", [])[:8]],
+                        "examples": c.get("examples", [])[:1] # Include at least one example if available
                     }
                     for c in context.components
                 ],
                 "t": context.design_tokens[:15],
+                "total": context.total_ui_count,
+                "all_names": context.all_component_names[:50]
             },
         }
         return json.dumps(context_json, separators=(",", ":"))
@@ -187,7 +224,7 @@ class DomainAwareRetriever:
         Compress the domain context into a minimal representation.
         """
         entities_compact = [
-            f"{e['name']}({','.join([p['name'] for p in e.get('properties', [])[:5]])})"
+            f"{e['name']}({','.join([f['name'] for f in e.get('fields', [])[:5]])})"
             for e in domain_context.database_entities
         ]
         rels_compact = [f"{r['from']}->{r['to']}" for r in domain_context.relationships]

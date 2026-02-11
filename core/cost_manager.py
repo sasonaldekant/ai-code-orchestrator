@@ -93,6 +93,8 @@ class CostManager:
         "gpt-3.5-turbo": ModelPricing(0.50, 1.50, "openai", 16000),
         
         # Anthropic
+        "claude-sonnet-4.5": ModelPricing(3.00, 15.0, "anthropic", 200000),
+        "claude-3-7-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
         "claude-3-5-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
         "claude-3-opus": ModelPricing(15.0, 75.0, "anthropic", 200000),
         "claude-3-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),

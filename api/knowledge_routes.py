@@ -63,6 +63,40 @@ async def delete_collection(name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/collections/{name}/documents")
+async def get_collection_documents(name: str, limit: int = 100):
+    """Get all documents from a specific collection."""
+    try:
+        import chromadb
+        from chromadb.config import Settings
+
+        client = chromadb.PersistentClient(
+            path="rag/chroma_db",
+            settings=Settings(anonymized_telemetry=False),
+        )
+        
+        collection = client.get_collection(name=name)
+        results = collection.get(limit=limit, include=["documents", "metadatas"])
+        
+        documents = []
+        for i, doc_id in enumerate(results["ids"]):
+            documents.append({
+                "id": doc_id,
+                "text": results["documents"][i] if i < len(results["documents"]) else "",
+                "metadata": results["metadatas"][i] if i < len(results["metadatas"]) else {}
+            })
+        
+        return {
+            "collection": name,
+            "count": len(documents),
+            "documents": documents
+        }
+    except Exception as e:
+        logging.error(f"Error getting documents: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @router.post("/ingest")
 async def ingest_knowledge(req: IngestRequest):
     """Ingest data into the knowledge base."""

@@ -34,6 +34,7 @@ class LLMResponse:
     tokens_used: Dict[str, int]
     finish_reason: str
     metadata: Dict[str, Any]
+    thinking: Optional[str] = None
 
 
 class LLMProvider(ABC):
@@ -102,13 +103,27 @@ class AnthropicProvider(LLMProvider):
             "total": response.usage.input_tokens + response.usage.output_tokens
         }
         
+        # Combine text and thinking from all content blocks
+        content_text = ""
+        thinking_text = ""
+        if hasattr(response, "content") and isinstance(response.content, list):
+            for block in response.content:
+                if block.type == "text":
+                    content_text += block.text
+                elif block.type == "thinking":
+                    thinking_text += block.thinking
+        elif hasattr(response, "content"):
+             # Fallback for simple string content if API changes
+             content_text = str(response.content)
+
         return LLMResponse(
-            content=response.content[0].text,
+            content=content_text,
             model=model,
             provider="anthropic",
             tokens_used=tokens,
             finish_reason=response.stop_reason,
-            metadata={"id": response.id}
+            metadata={"id": response.id},
+            thinking=thinking_text if thinking_text else None
         )
 
 # Mock Google Provider for consistency if not installed or configured, 
@@ -325,7 +340,8 @@ class LLMClientV2:
             "prompt": messages, # Valid JSON list
             # Truncate very long response content in log to save space if needed, 
             # currently saving full for audit purposes as requested.
-            "response_content": response.content if response else None 
+            "response_content": response.content if response else None,
+            "thinking_record": response.thinking if response else None
         }
         
         try:

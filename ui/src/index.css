@@ -4,33 +4,36 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* Slightly lighter background for better text pop */
+    --background: 222 20% 8%;
+    --foreground: 0 0% 100%;
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --card: 222 20% 8%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 222 20% 8%;
+    --popover-foreground: 0 0% 100%;
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 1.2%;
 
-    --secondary: 222.2 47.4% 11.2%;
+    --secondary: 222.2 30% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    /* Muted text is now much brighter (85% lightness) */
+    --muted: 222 20% 18%;
+    --muted-foreground: 215 20% 85%;
 
-    --accent: 216 34% 17%;
+    --accent: 217 32% 22%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 216 34% 17%;
+    /* Clearer borders */
+    --border: 217 32% 28%;
+    --input: 217 32% 28%;
+    --ring: 224 76% 48%;
 
     --radius: 0.5rem;
   }
@@ -38,9 +41,11 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

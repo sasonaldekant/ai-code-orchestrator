@@ -9,45 +9,58 @@ export function useLogStream() {
     const eventSourceRef = useRef<EventSource | null>(null);
 
     useEffect(() => {
-        // In production, use relative path if served from same origin
-        const url = "http://localhost:8000/stream/logs";
+        let eventSource: EventSource | null = null;
+        let retryTimeout: NodeJS.Timeout;
 
-        const eventSource = new EventSource(url);
-        eventSourceRef.current = eventSource;
+        const connect = () => {
+            // In production, use relative path if served from same origin
+            const url = "http://localhost:8000/stream/logs";
 
-        eventSource.onopen = () => {
-            console.log("Connected to log stream");
-            setIsConnected(true);
-        };
+            eventSource = new EventSource(url);
+            eventSourceRef.current = eventSource;
 
-        eventSource.onmessage = (event) => {
-            try {
-                const data: LogEvent = JSON.parse(event.data);
-                setLogs((prev) => [...prev, data]);
+            eventSource.onopen = () => {
+                console.log("Connected to log stream");
+                setIsConnected(true);
+            };
 
-                // If it's a plan event, update the plan state
-                if (data.type === "plan" || (data.type === "done" && data.content.plan)) {
-                    // Handle plan updates
-                    if (data.type === "done") {
-                        setPlan(data.content.plan);
-                    } else {
-                        setPlan(data.content); // If direct plan event
+            eventSource.onmessage = (event) => {
+                try {
+                    const data: LogEvent = JSON.parse(event.data);
+                    setLogs((prev) => [...prev, data]);
+
+                    // If it's a plan event, update the plan state
+                    if (data.type === "plan" || (data.type === "done" && data.content.plan)) {
+                        // Handle plan updates
+                        if (data.type === "done") {
+                            setPlan(data.content.plan);
+                        } else {
+                            setPlan(data.content); // If direct plan event
+                        }
                     }
+                } catch (e) {
+                    console.error("Error parsing event", e);
                 }
-            } catch (e) {
-                console.error("Error parsing event", e);
-            }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error("EventSource failed:", err);
+                setIsConnected(false);
+                if (eventSource) {
+                    eventSource.close();
+                }
+                // Retry connection after 3 seconds
+                retryTimeout = setTimeout(connect, 3000);
+            };
         };
 
-        eventSource.onerror = (err) => {
-            console.error("EventSource failed:", err);
-            // Optional: reconnect logic
-            setIsConnected(false);
-            eventSource.close();
-        };
+        connect();
 
         return () => {
-            eventSource.close();
+            if (eventSource) {
+                eventSource.close();
+            }
+            clearTimeout(retryTimeout);
         };
     }, []);
 

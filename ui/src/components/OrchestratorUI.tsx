@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import type { Milestone, Task } from '../lib/types';
 import { useLogStream } from '../hooks/useLogStream';
-import { Send, SquareCode, Activity, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon } from 'lucide-react';
+import { Send, SquareCode, Activity, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon, SlidersHorizontal, Check } from 'lucide-react';
 import clsx from 'clsx';
 import { ThinkingBlock } from './ThinkingBlock';
 import { KnowledgeTab } from './KnowledgeTab';
@@ -21,11 +21,28 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
     const scrollRef = React.useRef<HTMLDivElement>(null);
     const [activeTab, setActiveTab] = useState<'stream' | 'graph' | 'knowledge' | 'agents'>('stream');
 
-    // Phase 15: Deep Search State
+    // Feature Toggles (Phase 15, 16, 18)
+    const [features, setFeatures] = useState({
+        deepSearch: false,
+        autoFix: false,
+        askMode: false
+    });
+    const [showOptions, setShowOptions] = useState(false);
+
+    // Legacy individual states (keeping for compatibility with existing logic if any)
     const [deepSearch, setDeepSearch] = useState(false);
-    const [retrievalStrategy, setRetrievalStrategy] = useState<'local' | 'hybrid' | 'external'>('local');
-    // Phase 16: Auto-Fix
     const [autoFix, setAutoFix] = useState(false);
+
+    const toggleFeature = (key: keyof typeof features) => {
+        setFeatures(prev => {
+            const newVal = !prev[key];
+            if (key === 'deepSearch') setDeepSearch(newVal);
+            if (key === 'autoFix') setAutoFix(newVal);
+            return { ...prev, [key]: newVal };
+        });
+    };
+
+    const [retrievalStrategy, setRetrievalStrategy] = useState<'local' | 'hybrid' | 'external'>('local');
     // Phase 16: Vision
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -79,11 +96,13 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                 }
             }
 
-            const resp = await fetch('http://localhost:8000/run', {
+            const response = await fetch('http://localhost:8000/orchestrate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'x-api-key': '12345' },
                 body: JSON.stringify({
                     request: finalPrompt,
+                    mode: features.askMode ? 'question' : 'standard',
+                    image: selectedImage,
                     deep_search: deepSearch,
                     retrieval_strategy: retrievalStrategy,
                     auto_fix: autoFix,
@@ -92,14 +111,16 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                     review_strategy: reviewStrategy
                 })
             });
-            if (!resp.ok) throw new Error("Failed to start");
+            if (!response.ok) throw new Error("Failed to start");
+
+            // Success: only then clear input
+            setPrompt("");
+            setSelectedImage(null);
         } catch (e) {
             console.error(e);
             alert("Error starting request. Check console.");
         } finally {
             setIsLoading(false);
-            setPrompt("");
-            setSelectedImage(null);
         }
     };
 
@@ -223,8 +244,44 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                 </div>
                             )}
 
+                            {/* Result Display - Show latest answer prominently if exists */}
+                            {(() => {
+                                // Efficiently find the last info event without reversing the whole array
+                                let lastInfoEvent = null;
+                                for (let i = logs.length - 1; i >= 0; i--) {
+                                    if (logs[i].type === 'info') {
+                                        lastInfoEvent = logs[i];
+                                        break;
+                                    }
+                                }
+
+                                if (lastInfoEvent && lastInfoEvent.content) {
+                                    return (
+                                        <div className="bg-card border border-indigo-500/30 rounded-xl p-6 shadow-xl shadow-indigo-500/10 animate-in fade-in zoom-in duration-500">
+                                            <div className="flex items-center gap-2 mb-4 text-indigo-400">
+                                                <div className="p-2 bg-indigo-500/20 rounded-lg">
+                                                    <Sparkles className="w-5 h-5" />
+                                                </div>
+                                                <h3 className="font-bold text-lg text-foreground">Final Answer</h3>
+                                                <span className="ml-auto px-2 py-1 bg-indigo-500/10 text-[10px] font-bold uppercase tracking-widest rounded border border-indigo-500/20">Result</span>
+                                            </div>
+                                            <div className="text-foreground/90 leading-relaxed font-sans prose prose-invert max-w-none whitespace-pre-wrap text-sm md:text-base">
+                                                {typeof lastInfoEvent.content === 'string'
+                                                    ? lastInfoEvent.content.replace(/###\s+/g, '')
+                                                    : JSON.stringify(lastInfoEvent.content, null, 2)}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
+
                             {/* Render logs grouped or sequenced */}
-                            {logs.length > 0 && <ThinkingBlock logs={logs} title="Complete Execution Log" />}
+                            {logs.length > 0 && (
+                                <div className="mt-8">
+                                    <ThinkingBlock logs={logs} title="Full Execution Process" />
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -255,75 +312,96 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                             </label>
 
                             {/* Deep Search Toolbar */}
-                            <div className="flex items-center gap-2 mr-2">
+                            {/* Options Dropdown */}
+                            <div className="relative mr-2">
                                 <button
                                     type="button"
-                                    onClick={() => setDeepSearch(!deepSearch)}
+                                    onClick={() => setShowOptions(!showOptions)}
                                     className={clsx(
-                                        "p-1.5 rounded-md transition-all flex items-center gap-1.5 border",
-                                        deepSearch
-                                            ? "bg-blue-500/10 border-blue-500/50 text-blue-400"
-                                            : "bg-muted/30 border-transparent text-muted-foreground hover:text-foreground"
+                                        "p-2 rounded-full transition-all border",
+                                        showOptions || features.deepSearch || features.autoFix || features.askMode
+                                            ? "bg-primary/20 text-primary border-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                                            : "bg-background/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                                     )}
-                                    title="Toggle Deep Search (Investigator Agent)"
+                                    title="Execution Options"
                                 >
-                                    <Search className="w-4 h-4" />
-                                    <span className="text-xs font-medium">Deep Search</span>
+                                    <SlidersHorizontal className="w-5 h-5" />
                                 </button>
 
-                                {deepSearch && (
-                                    <div className="flex items-center gap-1 bg-muted/30 p-0.5 rounded-md border border-border">
+                                {showOptions && (
+                                    <div className="absolute bottom-full mb-2 right-0 w-56 bg-card border border-border rounded-xl shadow-xl backdrop-blur-md p-2 space-y-1 z-50">
+                                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Execution Mode
+                                        </div>
+
                                         <button
                                             type="button"
-                                            onClick={() => setRetrievalStrategy('local')}
+                                            onClick={() => toggleFeature('deepSearch')}
                                             className={clsx(
-                                                "px-2 py-0.5 text-[10px] rounded transition-colors",
-                                                retrievalStrategy === 'local' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                features.deepSearch ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
                                             )}
-                                        >Local</button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setRetrievalStrategy('hybrid')}
-                                            className={clsx(
-                                                "px-2 py-0.5 text-[10px] rounded transition-colors flex items-center gap-1",
-                                                retrievalStrategy === 'hybrid' ? "bg-background shadow-sm text-blue-400" : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                            title="Use External AI to plan investigation"
                                         >
-                                            <Sparkles className="w-3 h-3" />
-                                            Hybrid
+                                            <Search className="w-4 h-4 mr-2" />
+                                            Deep Search
+                                            {features.deepSearch && <Check className="w-4 h-4 ml-auto" />}
                                         </button>
+
                                         <button
                                             type="button"
-                                            onClick={() => setRetrievalStrategy('external')}
+                                            onClick={() => toggleFeature('autoFix')}
                                             className={clsx(
-                                                "px-2 py-0.5 text-[10px] rounded transition-colors flex items-center gap-1",
-                                                retrievalStrategy === 'external' ? "bg-background shadow-sm text-purple-400" : "text-muted-foreground hover:text-foreground"
+                                                "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                features.autoFix ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
                                             )}
-                                            title="Full External Delegation (High Cost)"
                                         >
-                                            <Globe className="w-3 h-3" />
-                                            Pro
+                                            <Wrench className="w-4 h-4 mr-2" />
+                                            Auto-Fix
+                                            {features.autoFix && <Check className="w-4 h-4 ml-auto" />}
+                                        </button>
+
+                                        <div className="h-px bg-border my-1" />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleFeature('askMode')}
+                                            className={clsx(
+                                                "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                features.askMode ? "bg-indigo-500/20 text-indigo-400" : "hover:bg-muted text-foreground"
+                                            )}
+                                        >
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Ask Agent (Q&A)
+                                            {features.askMode && <Check className="w-4 h-4 ml-auto" />}
                                         </button>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Auto-Fix Toggle */}
-                            <button
-                                type="button"
-                                onClick={() => setAutoFix(!autoFix)}
-                                className={clsx(
-                                    "p-1.5 rounded-md transition-all flex items-center gap-1.5 border mr-2",
-                                    autoFix
-                                        ? "bg-amber-500/10 border-amber-500/50 text-amber-500"
-                                        : "bg-muted/30 border-transparent text-muted-foreground hover:text-foreground"
-                                )}
-                                title="Enable Autonomous Self-Healing (Auto-Fixer)"
-                            >
-                                <Wrench className="w-4 h-4" />
-                                <span className="text-xs font-medium">Auto-Fix</span>
-                            </button>
+                            {features.deepSearch && (
+                                <div className="flex items-center gap-1 bg-muted/30 p-0.5 rounded-md border border-border">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRetrievalStrategy('local')}
+                                        className={clsx(
+                                            "px-2 py-0.5 text-[10px] rounded transition-colors",
+                                            retrievalStrategy === 'local' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >Local</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRetrievalStrategy('hybrid')}
+                                        className={clsx(
+                                            "px-2 py-0.5 text-[10px] rounded transition-colors flex items-center gap-1",
+                                            retrievalStrategy === 'hybrid' ? "bg-background shadow-sm text-blue-400" : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                        title="Use External AI to plan investigation"
+                                    >
+                                        <Sparkles className="w-3 h-3" />
+                                        Hybrid
+                                    </button>
+                                </div>
+                            )}
 
                             <textarea
                                 value={prompt}
@@ -350,7 +428,7 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                     <Send className="w-5 h-5" />
                                 )}
                             </button>
-                        </div>
+                        </div >
 
                         <AdvancedOptions
                             budget={budgetLimit}
@@ -364,11 +442,11 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                         <div className="mt-2 ml-2 text-[10px] text-muted-foreground opacity-60">
                             Press <kbd className="font-mono bg-muted/50 px-1 rounded mx-0.5 border border-border">Enter</kbd> to send, <kbd className="font-mono bg-muted/50 px-1 rounded mx-0.5 border border-border">Shift+Enter</kbd> for new line
                         </div>
-                    </form>
-                </div>
-            </main>
+                    </form >
+                </div >
+            </main >
 
             <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-        </div>
+        </div >
     );
 }

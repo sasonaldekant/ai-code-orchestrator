@@ -19,6 +19,7 @@ class EventType(str, Enum):
     WARNING = "warning"
     ERROR = "error"
     DONE = "done"
+    INFO = "info"
 
 @dataclass
 class Event:

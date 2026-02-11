@@ -1,9 +1,9 @@
 budgets:
   max_input_tokens: 6000
   max_output_tokens: 1000
-retrieval:
-  top_k: 4
-  chunk_chars: 800
-  chunk_overlap: 120
 concurrency:
   max_workers: 2
+retrieval:
+  chunk_chars: 800
+  chunk_overlap: 120
+  top_k: 4

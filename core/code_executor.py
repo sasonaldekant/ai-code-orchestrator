@@ -21,7 +21,7 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 
 
-class ExecutionStatus(Enum):
+class ExecutionStatus(str, Enum):
     SUCCESS = "success"
     FAILED = "failed"
     TIMEOUT = "timeout"
