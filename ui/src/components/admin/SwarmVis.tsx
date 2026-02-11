@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { RefreshCw, Play, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { RefreshCw, Play, Clock } from 'lucide-react';
 
 interface SwarmNode {
     id: string;
@@ -120,7 +120,7 @@ const SwarmVis: React.FC = () => {
                         linkDirectionalArrowLength={4}
                         linkDirectionalArrowRelPos={1}
                         linkDirectionalParticles={2}
-                        linkDirectionalParticleSpeed={d => 0.005}
+                        linkDirectionalParticleSpeed={() => 0.005}
                         backgroundColor="transparent"
                         cooldownTicks={100}
                         onNodeClick={(node: any) => {

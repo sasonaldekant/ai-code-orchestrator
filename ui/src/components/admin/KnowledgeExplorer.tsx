@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BookOpen, Trash2, RefreshCw, Loader2, Search, Database, AlertCircle, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save, Lock, Bot, Sliders } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -141,10 +141,10 @@ function ApiKeysPanel({ keys, onChange }: { keys: any, onChange: (v: any) => voi
             </div>
 
             <div className="space-y-4">
-                <ApiKeyInput label="OpenAI API Key" value={keys?.OPENAI_API_KEY || ''} onChange={(v) => handleChange('OPENAI_API_KEY', v)} />
-                <ApiKeyInput label="Anthropic API Key" value={keys?.ANTHROPIC_API_KEY || ''} onChange={(v) => handleChange('ANTHROPIC_API_KEY', v)} />
-                <ApiKeyInput label="Google AI Key" value={keys?.GOOGLE_API_KEY || ''} onChange={(v) => handleChange('GOOGLE_API_KEY', v)} />
-                <ApiKeyInput label="Perplexity API Key" value={keys?.PERPLEXITY_API_KEY || ''} onChange={(v) => handleChange('PERPLEXITY_API_KEY', v)} />
+                <ApiKeyInput label="OpenAI API Key" value={keys?.OPENAI_API_KEY || ''} onChange={(v: any) => handleChange('OPENAI_API_KEY', v)} />
+                <ApiKeyInput label="Anthropic API Key" value={keys?.ANTHROPIC_API_KEY || ''} onChange={(v: any) => handleChange('ANTHROPIC_API_KEY', v)} />
+                <ApiKeyInput label="Google AI Key" value={keys?.GOOGLE_API_KEY || ''} onChange={(v: any) => handleChange('GOOGLE_API_KEY', v)} />
+                <ApiKeyInput label="Perplexity API Key" value={keys?.PERPLEXITY_API_KEY || ''} onChange={(v: any) => handleChange('PERPLEXITY_API_KEY', v)} />
             </div>
         </div>
     );
@@ -215,11 +215,11 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                         <ModelSelector
                             label="Model"
                             value={config.routing?.phase?.analyst?.model}
-                            onChange={(v) => updateNested(['routing', 'phase', 'analyst', 'model'], v)}
+                            onChange={(v: any) => updateNested(['routing', 'phase', 'analyst', 'model'], v)}
                         />
                         <TokenInput
                             value={config.routing?.phase?.analyst?.max_tokens}
-                            onChange={(v) => updateNested(['routing', 'phase', 'analyst', 'max_tokens'], parseInt(v))}
+                            onChange={(v: any) => updateNested(['routing', 'phase', 'analyst', 'max_tokens'], parseInt(v))}
                         />
                     </div>
 
@@ -232,7 +232,7 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                         <ModelSelector
                             label="Model"
                             value={config.routing?.phase?.architect?.model}
-                            onChange={(v) => updateNested(['routing', 'phase', 'architect', 'model'], v)}
+                            onChange={(v: any) => updateNested(['routing', 'phase', 'architect', 'model'], v)}
                         />
                         <div className="flex items-center justify-between pt-1">
                             <span className="text-xs font-medium text-muted-foreground">Consensus Mode</span>
@@ -254,7 +254,7 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                         <ModelSelector
                             label="Model"
                             value={config.routing?.phase?.implementation?.model}
-                            onChange={(v) => updateNested(['routing', 'phase', 'implementation', 'model'], v)}
+                            onChange={(v: any) => updateNested(['routing', 'phase', 'implementation', 'model'], v)}
                         />
                     </div>
                 </div>

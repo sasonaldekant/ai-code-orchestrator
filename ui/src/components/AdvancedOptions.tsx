@@ -1,6 +1,5 @@
-import * as React from 'react';
 import { useState } from 'react';
-import { Settings, DollarSign, Users, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { DollarSign, Users, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
 
 interface AdvancedOptionsProps {
