@@ -14,6 +14,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     // Config State
     const [models, setModels] = useState<any>({});
+    const [limits, setLimits] = useState<any>({});
     const [apiKeys, setApiKeys] = useState<any>({});
 
     // Fetch settings on open
@@ -24,6 +25,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 .then(res => res.json())
                 .then(data => {
                     setModels(data.models);
+                    setLimits(data.limits);
                     setApiKeys(data.api_keys);
                 })
                 .catch(err => console.error("Failed to load settings", err))
@@ -39,6 +41,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     models: models,
+                    limits: limits,
                     api_keys: apiKeys
                 })
             });
@@ -90,7 +93,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             <>
                                 {activeTab === 'models' && <ModelsPanel config={models} onChange={(newConfig) => { setModels(newConfig); setHasUnsavedChanges(true); }} />}
                                 {activeTab === 'api_keys' && <ApiKeysPanel keys={apiKeys} onChange={(newKeys) => { setApiKeys(newKeys); setHasUnsavedChanges(true); }} />}
-                                {activeTab === 'limits' && <div className="text-muted-foreground text-center mt-20">System limits configuration coming soon...</div>}
+                                {activeTab === 'limits' && <LimitsPanel config={limits} onChange={(newLimits) => { setLimits(newLimits); setHasUnsavedChanges(true); }} />}
                             </>
                         )}
                     </div>
@@ -144,6 +147,77 @@ function ApiKeysPanel({ keys, onChange }: { keys: any, onChange: (v: any) => voi
                 <ApiKeyInput label="OpenAI API Key" value={keys?.OPENAI_API_KEY || ''} onChange={(v) => handleChange('OPENAI_API_KEY', v)} />
                 <ApiKeyInput label="Anthropic API Key" value={keys?.ANTHROPIC_API_KEY || ''} onChange={(v) => handleChange('ANTHROPIC_API_KEY', v)} />
                 <ApiKeyInput label="Google AI Key" value={keys?.GOOGLE_API_KEY || ''} onChange={(v) => handleChange('GOOGLE_API_KEY', v)} />
+            </div>
+        </div>
+    );
+}
+
+function LimitsPanel({ config, onChange }: { config: any, onChange: (v: any) => void }) {
+    // Helper to deeply update nested state
+    const updateNested = (path: string[], value: any) => {
+        const newConfig = JSON.parse(JSON.stringify(config || {}));
+        let current = newConfig;
+        for (let i = 0; i < path.length - 1; i++) {
+            if (!current[path[i]]) current[path[i]] = {};
+            current = current[path[i]];
+        }
+        current[path[path.length - 1]] = value;
+        onChange(newConfig);
+    };
+
+    if (!config) return <div>Loading limits...</div>;
+
+    return (
+        <div className="space-y-8">
+            <div>
+                <h3 className="text-lg font-medium mb-1">Token Budgets</h3>
+                <p className="text-sm text-muted-foreground mb-4">Set safety limits for token usage per request.</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <TokenInput
+                        label="Max Input Tokens"
+                        value={config.budgets?.max_input_tokens}
+                        onChange={(v) => updateNested(['budgets', 'max_input_tokens'], parseInt(v))}
+                    />
+                    <TokenInput
+                        label="Max Output Tokens"
+                        value={config.budgets?.max_output_tokens}
+                        onChange={(v) => updateNested(['budgets', 'max_output_tokens'], parseInt(v))}
+                    />
+                </div>
+            </div>
+
+            <div className="border-t border-border/50 pt-6">
+                <h3 className="text-lg font-medium mb-1">RAG Retrieval Settings</h3>
+                <p className="text-sm text-muted-foreground mb-4">Configure how the system processes and retrieves knowledge.</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <TokenInput
+                        label="Top K Results"
+                        value={config.retrieval?.top_k}
+                        onChange={(v) => updateNested(['retrieval', 'top_k'], parseInt(v))}
+                    />
+                    <TokenInput
+                        label="Chunk Size (Chars)"
+                        value={config.retrieval?.chunk_chars}
+                        onChange={(v) => updateNested(['retrieval', 'chunk_chars'], parseInt(v))}
+                    />
+                    <TokenInput
+                        label="Chunk Overlap"
+                        value={config.retrieval?.chunk_overlap}
+                        onChange={(v) => updateNested(['retrieval', 'chunk_overlap'], parseInt(v))}
+                    />
+                </div>
+            </div>
+
+            <div className="border-t border-border/50 pt-6">
+                <h3 className="text-lg font-medium mb-1">Concurrency</h3>
+                <p className="text-sm text-muted-foreground mb-4">Control parallel execution limits.</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <TokenInput
+                        label="Max Workers"
+                        value={config.concurrency?.max_workers}
+                        onChange={(v) => updateNested(['concurrency', 'max_workers'], parseInt(v))}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -280,10 +354,10 @@ function ModelSelector({ label, value, onChange }: any) {
     )
 }
 
-function TokenInput({ value, onChange }: any) {
+function TokenInput({ label, value, onChange }: any) {
     return (
         <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Max Tokens</label>
+            <label className="text-xs text-muted-foreground">{label || "Max Tokens"}</label>
             <input
                 type="number"
                 value={value}

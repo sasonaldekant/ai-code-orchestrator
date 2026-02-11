@@ -10,6 +10,8 @@ router = APIRouter(prefix="/config", tags=["config"])
 CONFIG_PATH = Path("config/model_mapping.yaml")
 ENV_PATH = Path(".env")
 
+LIMITS_PATH = Path("config/limits.yaml")
+
 class ModelConfig(BaseModel):
     model: str
     provider: str
@@ -18,6 +20,7 @@ class ModelConfig(BaseModel):
 
 class GlobalSettings(BaseModel):
     models: Dict[str, Any]
+    limits: Optional[Dict[str, Any]] = None
     api_keys: Optional[Dict[str, str]] = None
 
 def load_yaml_config():
@@ -26,8 +29,18 @@ def load_yaml_config():
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
+def load_limits_config():
+    if not LIMITS_PATH.exists():
+        return {}
+    with open(LIMITS_PATH, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
 def save_yaml_config(data: Dict):
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        yaml.dump(data, f, default_flow_style=False)
+
+def save_limits_config(data: Dict):
+    with open(LIMITS_PATH, "w", encoding="utf-8") as f:
         yaml.dump(data, f, default_flow_style=False)
 
 def update_env_file(api_keys: Dict[str, str]):
@@ -64,6 +77,7 @@ def update_env_file(api_keys: Dict[str, str]):
 async def get_settings():
     try:
         config = load_yaml_config()
+        limits = load_limits_config()
         
         # Return masked API keys existence check
         api_keys = {
@@ -74,6 +88,7 @@ async def get_settings():
         
         return {
             "models": config,
+            "limits": limits,
             "api_keys": api_keys
         }
     except Exception as e:
@@ -84,8 +99,12 @@ async def update_settings(settings: GlobalSettings):
     try:
         # 1. Save YAML config
         save_yaml_config(settings.models)
+
+        # 2. Save Limits config
+        if settings.limits:
+            save_limits_config(settings.limits)
         
-        # 2. Update .env if keys provided
+        # 3. Update .env if keys provided
         if settings.api_keys:
             update_env_file(settings.api_keys)
             

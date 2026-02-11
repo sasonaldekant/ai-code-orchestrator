@@ -56,7 +56,11 @@ This guide provides instructions on how to use the AI Code Orchestrator v4.0 (Bl
 
    ```bash
    # Terminal 1: Backend
-   python manage.py start-api
+   # Option A: Using Uvicorn directly (recommended for development)
+   uvicorn api.main:app --reload
+
+   # Option B: Using Python module
+   python -m uvicorn api.main:app --reload
 
    # Terminal 2: Frontend (Nexus GUI)
    cd ui && npm run dev
