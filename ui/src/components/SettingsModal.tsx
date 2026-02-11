@@ -144,6 +144,7 @@ function ApiKeysPanel({ keys, onChange }: { keys: any, onChange: (v: any) => voi
                 <ApiKeyInput label="OpenAI API Key" value={keys?.OPENAI_API_KEY || ''} onChange={(v) => handleChange('OPENAI_API_KEY', v)} />
                 <ApiKeyInput label="Anthropic API Key" value={keys?.ANTHROPIC_API_KEY || ''} onChange={(v) => handleChange('ANTHROPIC_API_KEY', v)} />
                 <ApiKeyInput label="Google AI Key" value={keys?.GOOGLE_API_KEY || ''} onChange={(v) => handleChange('GOOGLE_API_KEY', v)} />
+                <ApiKeyInput label="Perplexity API Key" value={keys?.PERPLEXITY_API_KEY || ''} onChange={(v) => handleChange('PERPLEXITY_API_KEY', v)} />
             </div>
         </div>
     );
@@ -195,7 +196,8 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                             <option value="gpt-4o">GPT-4o</option>
                             <option value="gpt-4o-mini">GPT-4o Mini</option>
                             <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                            <option value="sonar-reasoning-pro">Sonar Reasoning Pro (PPLX)</option>
                         </select>
                     </div>
                 </div>
@@ -273,8 +275,9 @@ function ModelSelector({ label, value, onChange }: any) {
                 <option value="gpt-4o">GPT-4o (OpenAI)</option>
                 <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
                 <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Google)</option>
                 <option value="gemini-2.5-pro">Gemini 2.5 Pro (Google)</option>
+                <option value="sonar-reasoning-pro">Sonar Reasoning Pro (Perplexity)</option>
+                <option value="sonar-pro">Sonar Pro (Perplexity)</option>
             </select>
         </div>
     )

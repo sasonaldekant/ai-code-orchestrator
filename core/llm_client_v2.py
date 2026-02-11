@@ -151,6 +151,43 @@ class GoogleProvider(LLMProvider):
         )
 
 
+class PerplexityProvider(OpenAIProvider):
+    async def complete(self, messages: List[Dict], model: str, **kwargs) -> LLMResponse:
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(api_key=self.api_key, base_url="https://api.perplexity.ai")
+        
+        # Prepare params
+        params = {
+            "model": model,
+            "messages": messages,
+            "temperature": kwargs.get("temperature", 0.0),
+            "max_tokens": kwargs.get("max_tokens", 4000),
+        }
+        
+        # Note: Perplexity might not support json_mode in all models, 
+        # but the standard Sonar models usually do or ignore it gracefully.
+        if kwargs.get("json_mode"):
+            params["response_format"] = {"type": "json_object"}
+
+        response = await client.chat.completions.create(**params)
+        
+        usage = response.usage
+        tokens = {
+            "prompt": usage.prompt_tokens,
+            "completion": usage.completion_tokens,
+            "total": usage.total_tokens
+        }
+        
+        return LLMResponse(
+            content=response.choices[0].message.content,
+            model=model,
+            provider="perplexity",
+            tokens_used=tokens,
+            finish_reason=response.choices[0].finish_reason,
+            metadata={"id": response.id}
+        )
+
+
 class LLMClientV2:
     def __init__(self, cost_manager: CostManager):
         self.cost_manager = cost_manager
@@ -164,12 +201,17 @@ class LLMClientV2:
             self.providers["anthropic"] = AnthropicProvider(os.getenv("ANTHROPIC_API_KEY"), cost_manager)
         if os.getenv("GOOGLE_API_KEY"):
             self.providers["google"] = GoogleProvider(os.getenv("GOOGLE_API_KEY"), cost_manager)
+        if os.getenv("PERPLEXITY_API_KEY"):
+            self.providers["perplexity"] = PerplexityProvider(os.getenv("PERPLEXITY_API_KEY"), cost_manager)
 
     def _get_provider_name(self, model: str) -> str:
-        if "gpt" in model.lower(): return "openai"
-        if "claude" in model.lower(): return "anthropic"
-        if "gemini" in model.lower(): return "google"
+        model_lower = model.lower()
+        if "gpt" in model_lower: return "openai"
+        if "claude" in model_lower: return "anthropic"
+        if "gemini" in model_lower: return "google"
+        if "sonar" in model_lower: return "perplexity"
         return "openai" # Default fallback
+
 
     async def complete(
         self,
