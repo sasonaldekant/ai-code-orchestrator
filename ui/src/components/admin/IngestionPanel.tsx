@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Database, FolderOpen, CheckCircle, AlertCircle, Loader2, Upload, Info, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { PathSelector } from './PathSelector';

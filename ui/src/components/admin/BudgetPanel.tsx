@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, Save, RefreshCw, Loader2, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 import clsx from 'clsx';
 

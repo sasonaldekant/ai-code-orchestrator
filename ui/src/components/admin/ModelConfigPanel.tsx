@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Bot, Save, RefreshCw, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -30,6 +30,8 @@ const AVAILABLE_MODELS = [
     { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'openai' },
     { value: 'claude-3-5-sonnet', label: 'Claude 3.5 Sonnet', provider: 'anthropic' },
     { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', provider: 'google' },
+    { value: 'sonar-reasoning-pro', label: 'Sonar Reasoning Pro', provider: 'perplexity' },
+    { value: 'sonar-pro', label: 'Sonar Pro', provider: 'perplexity' },
 ];
 
 const PHASES = ['analyst', 'architect', 'implementer', 'tester', 'reviewer'];

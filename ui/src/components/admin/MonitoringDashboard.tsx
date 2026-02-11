@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { Activity, TrendingUp, AlertCircle, DollarSign, Download } from 'lucide-react';
+import { Activity, TrendingUp, AlertCircle, DollarSign, Download, CheckCircle } from 'lucide-react';
 
 const mockSuccessData = [
     { name: 'Mon', success: 85, error: 15 },
@@ -128,7 +128,7 @@ export function MonitoringDashboard() {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {mockCostData.map((entry, index) => (
+                                    {mockCostData.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>

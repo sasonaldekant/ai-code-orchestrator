@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Brain, FileCode, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';

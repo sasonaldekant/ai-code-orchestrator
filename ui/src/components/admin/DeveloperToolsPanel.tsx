@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Shield, Code, Play, CheckCircle, AlertTriangle, AlertOctagon, Info, Cpu, Download, Lightbulb, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileText, Shield, Play, CheckCircle, AlertTriangle, AlertOctagon, Info, Cpu, Download, Lightbulb, Activity } from 'lucide-react';
 import clsx from 'clsx';
 import SwarmVis from './SwarmVis';
 
