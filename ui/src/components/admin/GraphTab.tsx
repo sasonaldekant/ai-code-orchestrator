@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { RefreshCw, ZoomIn, ZoomOut, Filter } from 'lucide-react';
+import { RefreshCw, Filter } from 'lucide-react';
 
 interface GraphNode {
     id: string;

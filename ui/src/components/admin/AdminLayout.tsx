@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2, Lock } from 'lucide-react';
 import clsx from 'clsx';
 import { IngestionPanel } from './IngestionPanel';
 import { ModelConfigPanel } from './ModelConfigPanel';
 import { BudgetPanel } from './BudgetPanel';
 import { KnowledgeExplorer } from './KnowledgeExplorer';
 import { MonitoringDashboard } from './MonitoringDashboard';
+import { DeveloperToolsPanel } from './DeveloperToolsPanel';
+import { ApiKeysPanel } from './ApiKeysPanel';
 import GraphTab from './GraphTab';
 
-type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph';
+type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph' | 'keys';
 
 interface AdminLayoutProps {
     onBack: () => void;
@@ -25,6 +27,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
         { id: 'tools' as const, label: 'Developer Tools', icon: Wrench },
         { id: 'monitoring' as const, label: 'System Monitoring', icon: Activity },
         { id: 'graph' as const, label: 'Knowledge Graph', icon: Share2 },
+        { id: 'keys' as const, label: 'API Credentials', icon: Lock },
     ];
 
     return (
@@ -76,6 +79,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
                     {activeTab === 'tools' && <DeveloperToolsPanel />}
                     {activeTab === 'monitoring' && <MonitoringDashboard />}
                     {activeTab === 'graph' && <GraphTab />}
+                    {activeTab === 'keys' && <ApiKeysPanel />}
                 </div>
             </main>
         </div>

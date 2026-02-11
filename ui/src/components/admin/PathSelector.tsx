@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FolderOpen, ChevronRight, Folder, File, Loader2, X, Home, ArrowUp } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -8,6 +8,7 @@ interface PathSelectorProps {
     placeholder?: string;
     label?: string;
     filterExtensions?: string;
+    disabled?: boolean;
 }
 
 interface FileItem {
@@ -18,7 +19,7 @@ interface FileItem {
     extension?: string;
 }
 
-export function PathSelector({ value, onChange, placeholder, label, filterExtensions }: PathSelectorProps) {
+export function PathSelector({ value, onChange, placeholder, label, filterExtensions, disabled }: PathSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [currentPath, setCurrentPath] = useState('E:\\PROGRAMING\\AI_Projects');
     const [items, setItems] = useState<FileItem[]>([]);
@@ -98,12 +99,14 @@ export function PathSelector({ value, onChange, placeholder, label, filterExtens
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className="flex-1 px-4 py-2.5 bg-background border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 text-sm"
+                    disabled={disabled}
+                    className="flex-1 px-4 py-2.5 bg-background border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                     type="button"
                     onClick={() => setIsOpen(true)}
-                    className="px-3 py-2.5 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
+                    disabled={disabled}
+                    className="px-3 py-2.5 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <FolderOpen className="w-5 h-5" />
                 </button>
