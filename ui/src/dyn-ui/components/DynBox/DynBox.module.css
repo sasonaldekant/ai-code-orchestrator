@@ -1,0 +1,505 @@
+/**
+ * DynBox Component Styles - Unified Component Token Strategy
+ * Supports both component tokens and dynamic overrides
+ */
+
+.box {
+  /* Base styles with isolation and override capability */
+  display: var(--dyn-box-display, var(--dyn-box-display-block));
+  position: var(--dyn-box-position, relative);
+  box-sizing: border-box;
+  font-family: inherit;
+
+  /* Layout basics with overrides */
+  width: var(--dyn-box-width, 100%);
+  height: var(--dyn-box-height, auto);
+  min-width: var(--dyn-box-min-width, auto);
+  min-height: var(--dyn-box-min-height, auto);
+  max-width: var(--dyn-box-max-width, none);
+  max-height: var(--dyn-box-max-height, none);
+
+  /* Spacing (Longhand with Fallbacks) */
+  padding-top: var(--dyn-box-padding-top, var(--dyn-box-padding, var(--dyn-box-spacing-padding-none)));
+  padding-right: var(--dyn-box-padding-right, var(--dyn-box-padding, var(--dyn-box-spacing-padding-none)));
+  padding-bottom: var(--dyn-box-padding-bottom, var(--dyn-box-padding, var(--dyn-box-spacing-padding-none)));
+  padding-left: var(--dyn-box-padding-left, var(--dyn-box-padding, var(--dyn-box-spacing-padding-none)));
+
+  margin-top: var(--dyn-box-margin-top, var(--dyn-box-margin, var(--dyn-box-spacing-margin-none)));
+  margin-right: var(--dyn-box-margin-right, var(--dyn-box-margin, var(--dyn-box-spacing-margin-none)));
+  margin-bottom: var(--dyn-box-margin-bottom, var(--dyn-box-margin, var(--dyn-box-spacing-margin-none)));
+  margin-left: var(--dyn-box-margin-left, var(--dyn-box-margin, var(--dyn-box-spacing-margin-none)));
+
+  gap: var(--dyn-box-gap, var(--dyn-box-spacing-gap-default));
+
+  /* Colors and effects with overrides */
+  /* Colors and effects with overrides */
+  background-color: var(--dyn-box-bg, transparent);
+  color: var(--dyn-box-color, var(--dyn-semantic-text));
+
+  border: var(--dyn-box-border, none);
+  border-radius: var(--dyn-box-radius, var(--dyn-border-radius-none, 0));
+  box-shadow: var(--dyn-box-shadow, none);
+
+  text-align: var(--dyn-box-text-align, inherit);
+  overflow: var(--dyn-box-overflow, visible);
+  overflow-x: var(--dyn-box-overflow-x, visible);
+  overflow-y: var(--dyn-box-overflow-y, visible);
+
+  /* Grid & Gap Specifics */
+  grid-template-columns: var(--dyn-box-grid-columns, none);
+  grid-template-rows: var(--dyn-box-grid-rows, none);
+  grid-template-areas: var(--dyn-box-grid-areas, none);
+  row-gap: var(--dyn-box-row-gap, normal);
+  column-gap: var(--dyn-box-column-gap, normal);
+  align-content: var(--dyn-box-align-content, normal);
+  align-items: var(--dyn-box-align-items, normal);
+  justify-content: var(--dyn-box-justify-content, normal);
+  flex-direction: var(--dyn-box-flex-direction, row);
+  flex-wrap: var(--dyn-box-flex-wrap, nowrap);
+
+  transition: var(--dyn-box-transition, var(--dyn-box-transition-default));
+
+  /* Grid Item styles */
+  grid-column: var(--dyn-box-grid-col-span, auto);
+  grid-row: var(--dyn-box-grid-row-span, auto);
+  grid-column-start: var(--dyn-box-grid-col-start, auto);
+  grid-row-start: var(--dyn-box-grid-row-start, auto);
+}
+
+/* Base Variable Definitions */
+:root {
+  --dyn-box-display-block: block;
+  --dyn-box-display-inline: inline;
+  --dyn-box-display-inline-block: inline-block;
+  --dyn-box-display-flex: flex;
+  --dyn-box-display-inline-flex: inline-flex;
+  --dyn-box-display-grid: grid;
+  --dyn-box-display-none: none;
+}
+
+/* Ensure block-level displays fill width unless overridden */
+.boxGrid, .boxFlex, .box {
+  width: var(--dyn-box-width, auto);
+}
+
+/* Grid Span Definitions (Fallbacks until Phase 2) */
+:root {
+  --dyn-grid-span-full: span 12;
+  --dyn-grid-span-half: span 6;
+  --dyn-grid-span-third: span 4;
+  --dyn-grid-span-quarter: span 3;
+
+  /* Spacing Tokens for Gap */
+  --dyn-box-spacing-gap-none: 0;
+  --dyn-box-spacing-gap-0: 0;
+  --dyn-box-spacing-gap-2xs: var(--dyn-spacing-2xs, 2px);
+  --dyn-box-spacing-gap-xs: var(--dyn-spacing-xs, 4px);
+  --dyn-box-spacing-gap-sm: var(--dyn-spacing-sm, 8px);
+  --dyn-box-spacing-gap-md: var(--dyn-spacing-md, 16px);
+  --dyn-box-spacing-gap-lg: var(--dyn-spacing-lg, 24px);
+  --dyn-box-spacing-gap-xl: var(--dyn-spacing-xl, 32px);
+  --dyn-box-spacing-gap-2xl: var(--dyn-spacing-2xl, 40px);
+  --dyn-box-spacing-gap-3xl: var(--dyn-spacing-3xl, 48px);
+  --dyn-box-spacing-gap-4xl: var(--dyn-spacing-4xl, 56px);
+  --dyn-box-spacing-gap-default: var(--dyn-box-spacing-gap-sm);
+
+  /* Spacing Tokens for Padding */
+  --dyn-box-spacing-padding-none: 0;
+  --dyn-box-spacing-padding-2xs: var(--dyn-spacing-2xs, 2px);
+  --dyn-box-spacing-padding-xs: var(--dyn-spacing-xs, 4px);
+  --dyn-box-spacing-padding-sm: var(--dyn-spacing-sm, 8px);
+  --dyn-box-spacing-padding-md: var(--dyn-spacing-md, 16px);
+  --dyn-box-spacing-padding-lg: var(--dyn-spacing-lg, 24px);
+  --dyn-box-spacing-padding-xl: var(--dyn-spacing-xl, 32px);
+  --dyn-box-spacing-padding-2xl: var(--dyn-spacing-2xl, 40px);
+  --dyn-box-spacing-padding-3xl: var(--dyn-spacing-3xl, 48px);
+  --dyn-box-spacing-padding-4xl: var(--dyn-spacing-4xl, 56px);
+  --dyn-box-spacing-padding-default: var(--dyn-box-spacing-padding-xs);
+
+  /* Spacing Tokens for Margin */
+  --dyn-box-spacing-margin-none: 0;
+  --dyn-box-spacing-margin-2xs: var(--dyn-spacing-2xs, 2px);
+  --dyn-box-spacing-margin-xs: var(--dyn-spacing-xs, 4px);
+  --dyn-box-spacing-margin-sm: var(--dyn-spacing-sm, 8px);
+  --dyn-box-spacing-margin-md: var(--dyn-spacing-md, 16px);
+  --dyn-box-spacing-margin-lg: var(--dyn-spacing-lg, 24px);
+  --dyn-box-spacing-margin-xl: var(--dyn-spacing-xl, 32px);
+  --dyn-box-spacing-margin-2xl: var(--dyn-spacing-2xl, 40px);
+  --dyn-box-spacing-margin-3xl: var(--dyn-spacing-3xl, 48px);
+  --dyn-box-spacing-margin-4xl: var(--dyn-spacing-4xl, 56px);
+  --dyn-box-spacing-margin-auto: auto;
+}
+
+/* Responsive Grid Spans */
+@media (max-width: 767px) {
+  .box {
+    grid-column: var(--dyn-box-grid-col-span-mobile, var(--dyn-box-grid-col-span, auto));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .box {
+    grid-column: var(--dyn-box-grid-col-span-tablet, var(--dyn-box-grid-col-span-mobile, var(--dyn-box-grid-col-span, auto)));
+  }
+}
+
+@media (min-width: 1024px) {
+  .box {
+    grid-column: var(--dyn-box-grid-col-span-desktop, var(--dyn-box-grid-col-span-tablet, var(--dyn-box-grid-col-span-mobile, var(--dyn-box-grid-col-span, auto))));
+  }
+}
+
+/* ============================================
+   DISPLAY VARIANTS
+   ============================================ */
+
+.boxBlock {
+  --dyn-box-display: var(--dyn-box-display-block);
+}
+
+.boxInline {
+  --dyn-box-display: var(--dyn-box-display-inline);
+}
+
+.boxInlineBlock {
+  --dyn-box-display: var(--dyn-box-display-inline-block);
+}
+
+.boxNone {
+  --dyn-box-display: var(--dyn-box-display-none);
+}
+
+.boxFlex {
+  --dyn-box-display: var(--dyn-box-display-flex);
+}
+
+.boxInlineFlex {
+  --dyn-box-display: var(--dyn-box-display-inline-flex);
+}
+
+.boxGrid {
+  --dyn-box-display: var(--dyn-box-display-grid);
+}
+
+/* ============================================
+   POSITION VARIANTS
+   ============================================ */
+.boxAbsolute {
+  --dyn-box-position: absolute;
+}
+
+.boxRelative {
+  --dyn-box-position: relative;
+}
+
+.boxFixed {
+  --dyn-box-position: fixed;
+}
+
+.boxSticky {
+  --dyn-box-position: sticky;
+}
+
+/* ============================================
+   PADDING VARIANTS (Component Tokens)
+   ============================================ */
+.boxP0 {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-none);
+}
+
+.boxP2xs {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-2xs);
+}
+
+.boxPXs {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-xs);
+}
+
+.boxPSm {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-sm);
+}
+
+.boxPMd {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-md);
+}
+
+.boxPLg {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-lg);
+}
+
+.boxPXl {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-xl);
+}
+
+.boxP2xl {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-2xl);
+}
+
+.boxP3xl {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-3xl);
+}
+
+.boxP4xl {
+  --dyn-box-padding: var(--dyn-box-spacing-padding-4xl);
+}
+
+/* ============================================
+   MARGIN VARIANTS (Component Tokens)
+   ============================================ */
+.boxM0 {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-none);
+}
+
+.boxM2xs {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-2xs);
+}
+
+.boxMXs {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-xs);
+}
+
+.boxMSm {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-sm);
+}
+
+.boxMMd {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-md);
+}
+
+.boxMLg {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-lg);
+}
+
+.boxMXl {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-xl);
+}
+
+.boxM2xl {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-2xl);
+}
+
+.boxM3xl {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-3xl);
+}
+
+.boxM4xl {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-4xl);
+}
+
+.boxMAuto {
+  --dyn-box-margin: var(--dyn-box-spacing-margin-auto);
+}
+
+/* ============================================
+   BACKGROUND VARIANTS (Component Tokens)
+   ============================================ */
+.boxBgPrimary {
+  --dyn-box-bg: var(--dyn-box-color-bg-primary, var(--dyn-theme-primary, #3b82f6));
+  --dyn-box-color: var(--dyn-box-text-inverse, var(--dyn-semantic-text-inverse, #ffffff));
+}
+
+.boxBgSecondary {
+  --dyn-box-bg: var(--dyn-box-color-bg-secondary, var(--dyn-theme-secondary, #6b7280));
+  --dyn-box-color: var(--dyn-box-text-inverse, var(--dyn-semantic-text-inverse, #ffffff));
+}
+
+.boxBgTertiary {
+  --dyn-box-bg: var(--dyn-box-color-bg-tertiary, var(--dyn-semantic-surface-muted, #f8fafc));
+  --dyn-box-color: var(--dyn-box-text-default, var(--dyn-semantic-text, #0f172a));
+}
+
+/* ... existing background classes ... */
+.boxBgSurface {
+  --dyn-box-bg: var(--dyn-box-color-bg-surface, var(--dyn-semantic-surface, #ffffff));
+}
+
+.boxBgMuted {
+  --dyn-box-bg: var(--dyn-box-color-bg-muted, var(--dyn-semantic-surface-muted, #f1f5f9));
+}
+
+.boxBgSuccess {
+  --dyn-box-bg: var(--dyn-box-color-bg-success, var(--dyn-feedback-positive, #22c55e));
+  --dyn-box-color: var(--dyn-box-text-inverse, var(--dyn-semantic-text-inverse, #ffffff));
+}
+
+.boxBgSuccessSurface {
+  --dyn-box-bg: var(--dyn-semantic-success-surface);
+  --dyn-box-color: var(--dyn-semantic-success-text);
+  --dyn-box-border: 1px solid var(--dyn-semantic-success-border);
+}
+
+.boxBgWarning {
+  --dyn-box-bg: var(--dyn-box-color-bg-warning, var(--dyn-feedback-warning, #f59e0b));
+  --dyn-box-color: var(--dyn-box-text-default, var(--dyn-semantic-text, #0f172a));
+}
+
+.boxBgWarningSurface {
+  --dyn-box-bg: var(--dyn-semantic-warning-surface);
+  --dyn-box-color: var(--dyn-semantic-warning-text);
+  --dyn-box-border: 1px solid var(--dyn-semantic-warning-border);
+}
+
+.boxBgDanger {
+  --dyn-box-bg: var(--dyn-box-color-bg-danger, var(--dyn-feedback-negative-default, #ef4444));
+  --dyn-box-color: var(--dyn-box-text-inverse, var(--dyn-semantic-text-inverse, #ffffff));
+}
+
+.boxBgDangerSurface {
+  --dyn-box-bg: var(--dyn-semantic-danger-surface);
+  --dyn-box-color: var(--dyn-semantic-danger-text);
+  --dyn-box-border: 1px solid var(--dyn-semantic-danger-border);
+}
+
+.boxBgInfo {
+  --dyn-box-bg: var(--dyn-semantic-info-DEFAULT);
+  --dyn-box-color: var(--dyn-semantic-text-inverse);
+}
+
+.boxBgInfoSurface {
+  --dyn-box-bg: var(--dyn-semantic-info-surface);
+  --dyn-box-color: var(--dyn-semantic-info-text);
+  --dyn-box-border: 1px solid var(--dyn-semantic-info-border);
+}
+
+/* Color Variants */
+.boxColorDangerText {
+  --dyn-box-color: var(--dyn-semantic-danger-text);
+}
+
+.boxColorSuccessText {
+  --dyn-box-color: var(--dyn-semantic-success-text);
+}
+
+.boxColorWarningText {
+  --dyn-box-color: var(--dyn-semantic-warning-text);
+}
+
+.boxColorInfoText {
+  --dyn-box-color: var(--dyn-semantic-info-text);
+}
+
+/* Border Variants */
+.boxBorderDanger {
+  --dyn-box-border: var(--dyn-box-border-width-sm) solid var(--dyn-semantic-danger-border);
+}
+
+.boxBorderSuccess {
+  --dyn-box-border: var(--dyn-box-border-width-sm) solid var(--dyn-semantic-success-border);
+}
+
+.boxBorderWarning {
+  --dyn-box-border: var(--dyn-box-border-width-sm) solid var(--dyn-semantic-warning-border);
+}
+
+.boxBorderInfo {
+  --dyn-box-border: var(--dyn-box-border-width-sm) solid var(--dyn-semantic-info-border);
+}
+
+/* ============================================
+   RADIUS VARIANTS
+   ============================================ */
+.boxRoundedNone {
+  --dyn-box-radius: var(--dyn-box-border-radius-none, var(--dyn-border-radius-none, 0));
+}
+
+.boxRoundedSm {
+  --dyn-box-radius: var(--dyn-box-border-radius-sm, var(--dyn-border-radius-sm, 0.25rem));
+}
+
+.boxRoundedMd {
+  --dyn-box-radius: var(--dyn-box-border-radius-md, var(--dyn-border-radius-md, 0.375rem));
+}
+
+.boxRoundedLg {
+  --dyn-box-radius: var(--dyn-box-border-radius-lg, var(--dyn-border-radius-lg, 0.5rem));
+}
+
+.boxRoundedFull {
+  --dyn-box-radius: var(--dyn-box-border-radius-full, var(--dyn-border-radius-full, 9999px));
+}
+
+/* ============================================
+   SHADOW VARIANTS
+   ============================================ */
+.boxShadowSm {
+  --dyn-box-shadow: var(--dyn-box-shadow-sm, var(--dyn-shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1)));
+}
+
+.boxShadowMd {
+  --dyn-box-shadow: var(--dyn-box-shadow-md, var(--dyn-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1)));
+}
+
+.boxShadowLg {
+  --dyn-box-shadow: var(--dyn-box-shadow-lg, var(--dyn-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1)));
+}
+
+/* ============================================
+   TEXT ALIGN & OVERFLOW
+   ============================================ */
+.boxTextLeft {
+  --dyn-box-text-align: left;
+}
+
+.boxTextCenter {
+  --dyn-box-text-align: center;
+}
+
+.boxTextRight {
+  --dyn-box-text-align: right;
+}
+
+.boxOverflowHidden {
+  --dyn-box-overflow: hidden;
+}
+
+.boxOverflowAuto {
+  --dyn-box-overflow: auto;
+}
+
+.boxOverflowScroll {
+  --dyn-box-overflow: scroll;
+}
+
+/* ============================================
+   MISC
+   ============================================ */
+.boxBorder {
+  --dyn-box-border: var(--dyn-box-border-width-sm) solid var(--dyn-box-color-border-default);
+}
+
+.boxInteractive {
+  cursor: pointer;
+}
+
+.boxInteractive:hover {
+  transform: translateY(var(--dyn-box-hover-lift, -1px));
+  box-shadow: var(--dyn-box-shadow-md);
+}
+
+.boxInteractive:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-box-color-border-focus);
+  outline-offset: var(--dyn-spacing-2xs, 2px);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+.dynSrOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .box,
+  .boxInteractive {
+    transition: none;
+  }
+}

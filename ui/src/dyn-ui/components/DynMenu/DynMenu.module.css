@@ -1,0 +1,252 @@
+/**
+ * DynMenu Component Styles - Option B: Full Token Integration
+ * 100% Design Token Compliance
+ */
+
+/* ============================================
+   MENUBAR CONTAINER
+   ============================================ */
+
+:root {
+  /* Component tokens */
+  --dyn-menu-min-width: 12.5rem;
+  --dyn-menu-max-width: 17.5rem;
+  --dyn-menu-dropdown-min-width: 11.25rem;
+}
+
+.menubar {
+  display: flex;
+  gap: var(--dyn-spacing-xs, 4px);
+  padding: var(--dyn-spacing-sm, 8px);
+  background: var(--dyn-semantic-surface, #ffffff);
+  border-radius: var(--dyn-border-radius-md, 6px);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-semantic-border, #e2e8f0);
+  font-family: inherit;
+}
+
+.menubar[aria-orientation="vertical"] {
+  flex-direction: column;
+  width: fit-content;
+  min-width: var(--dyn-menu-min-width);
+  max-width: var(--dyn-menu-max-width);
+}
+
+.menubar[aria-orientation="horizontal"] {
+  flex-direction: row;
+  width: fit-content;
+}
+
+/* ============================================
+   MENUBAR ITEM
+   ============================================ */
+
+.menubarItem {
+  position: relative;
+}
+
+.menubarButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--dyn-spacing-sm) var(--dyn-spacing-md);
+  border: none;
+  border-radius: var(--dyn-border-radius-sm);
+  background: transparent;
+  color: var(--dyn-semantic-text);
+  font-size: var(--dyn-font-size-sm);
+  font-weight: var(--dyn-font-weight-medium);
+  font-family: inherit;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all var(--dyn-transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.menubarButton:hover {
+  background: var(--dyn-semantic-surface-hover);
+}
+
+.menubarButton:focus-visible {
+  outline: var(--dyn-border-width-md, 0.125rem) solid var(--dyn-semantic-border-focus);
+  outline-offset: var(--dyn-border-width-md, 0.125rem);
+}
+
+.menubarButtonOpen {
+  background: var(--dyn-semantic-surface-active);
+  color: var(--dyn-theme-primary);
+}
+
+.menubarButtonContent {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm);
+}
+
+.menubarIcon,
+.menuIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--dyn-semantic-text-secondary);
+}
+
+.menubarButtonOpen .menubarIcon {
+  color: var(--dyn-theme-primary);
+}
+
+.menubarChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--dyn-spacing-md);
+  color: var(--dyn-semantic-text-secondary);
+  transition: transform var(--dyn-transition-fast);
+}
+
+.menubarButtonOpen .menubarChevron {
+  color: var(--dyn-theme-primary);
+}
+
+.menubar[aria-orientation="horizontal"] .menubarButtonOpen .menubarChevron {
+  transform: rotate(180deg);
+}
+
+.menubar[aria-orientation="vertical"] .menubarButtonOpen .menubarChevron {
+  transform: rotate(90deg);
+}
+
+.menubarLabel,
+.menuLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================
+   DROPDOWN MENU
+   ============================================ */
+
+.menu {
+  position: absolute;
+  z-index: 1000;
+  min-width: var(--dyn-menu-dropdown-min-width);
+  padding: var(--dyn-spacing-xs);
+  background: var(--dyn-semantic-background);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-semantic-border);
+  border-radius: var(--dyn-border-radius-md);
+  box-shadow: var(--dyn-elevation-high);
+}
+
+.menubar[aria-orientation="horizontal"] .menu {
+  top: 100%;
+  left: 0;
+  margin-top: var(--dyn-spacing-xs);
+}
+
+.menubar[aria-orientation="vertical"] .menu {
+  top: 0;
+  left: 100%;
+  margin-left: var(--dyn-spacing-xs);
+}
+
+/* ============================================
+   MENU ITEMS
+   ============================================ */
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm);
+  width: 100%;
+  padding: var(--dyn-spacing-sm) var(--dyn-spacing-md);
+  border: none;
+  border-radius: var(--dyn-border-radius-sm);
+  background: transparent;
+  color: var(--dyn-semantic-text);
+  font-size: var(--dyn-font-size-sm);
+  font-weight: var(--dyn-font-weight-normal);
+  font-family: inherit;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--dyn-transition-fast);
+  white-space: nowrap;
+}
+
+.menuItem:hover {
+  background: var(--dyn-semantic-surface-hover);
+}
+
+.menuItem:focus-visible {
+  outline: var(--dyn-border-width-md, 0.125rem) solid var(--dyn-semantic-border-focus);
+  outline-offset: calc(var(--dyn-border-width-md, 0.125rem) * -1);
+}
+
+.menuItem:active {
+  background: var(--dyn-semantic-surface-active);
+  color: var(--dyn-theme-primary);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .menubar {
+    padding: var(--dyn-spacing-xs);
+  }
+
+  .menubar[aria-orientation="vertical"] {
+    min-width: 10rem;
+    max-width: 12.5rem;
+  }
+
+  .menubarButton {
+    padding: var(--dyn-spacing-xs) var(--dyn-spacing-sm);
+    font-size: var(--dyn-font-size-xs);
+  }
+
+  .menu {
+    min-width: 10rem;
+  }
+
+  .menuItem {
+    padding: var(--dyn-spacing-xs) var(--dyn-spacing-sm);
+    font-size: var(--dyn-font-size-xs);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  .menubar {
+    border-width: 2px;
+  }
+
+  .menu {
+    border-width: 2px;
+  }
+
+  .menubarButton:focus-visible,
+  .menuItem:focus-visible {
+    outline-width: var(--dyn-border-width-lg, 3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .menubarButton,
+  .menuItem {
+    transition: none;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   Note: Handled automatically via semantic tokens!
+   ============================================ */

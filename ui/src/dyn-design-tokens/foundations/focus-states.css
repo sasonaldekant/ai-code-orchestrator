@@ -1,0 +1,39 @@
+/**
+ * Design Token: Focus States & Accessibility
+ * Domain: focus
+ * 
+ * Provides: Focus ring and outline tokens for keyboard navigation
+ * Used by: All interactive components for accessibility
+ * 
+ * Supports:
+ * - Dark mode: YES (different focus colors)
+ * - High contrast: YES (thicker borders)
+ * - Reduced motion: N/A
+ */
+
+:root {
+  /* ========== FOCUS STATE TOKENS ========== */
+  --dyn-focus-ring-width: 3px;
+  --dyn-focus-ring-offset: 3px;
+  --dyn-focus-ring-color: var(--dyn-color-focus-ring);
+  --dyn-focus-outline: 3px solid var(--dyn-focus-ring-color);
+
+  /* ========== FOCUS UTILITIES ========== */
+  --dyn-focus-visible-style: outline var(--dyn-focus-outline) var(--dyn-focus-ring-offset);
+}
+
+/* ========== HIGH CONTRAST MODE ========== */
+@media (prefers-contrast: high) {
+  :root {
+    --dyn-focus-ring-width: 4px;
+    --dyn-focus-ring-offset: 2px;
+    --dyn-focus-outline: 4px solid var(--dyn-focus-ring-color);
+  }
+}
+
+/* ========== DARK MODE ========== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dyn-focus-ring-color: rgba(59, 130, 246, 0.35);
+  }
+}

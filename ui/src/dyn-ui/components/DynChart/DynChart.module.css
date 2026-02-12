@@ -1,0 +1,284 @@
+/**
+ * DynChart Component Styles - Option B: Full Token Integration
+ * 100% Design Token Compliance
+ */
+
+.root {
+  /* Component Tokens - 3-level fallback */
+  --dyn-chart-bg: var(--dyn-chart-background, var(--dyn-semantic-background, #ffffff));
+  --dyn-chart-border: var(--dyn-chart-border-color, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-chart-text-primary: var(--dyn-chart-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-chart-text-secondary: var(--dyn-chart-text-muted, var(--dyn-semantic-text-secondary, #475569));
+  --dyn-chart-grid: var(--dyn-chart-grid-color, var(--dyn-semantic-border-subtle, #e2e8f0));
+  --dyn-chart-axis: var(--dyn-chart-axis-color, var(--dyn-semantic-border-strong, #64748b));
+  --dyn-chart-radius: var(--dyn-chart-border-radius, var(--dyn-border-radius-md, 0.5rem));
+  --dyn-chart-font-size: var(--dyn-chart-text-size, 0.8125rem);
+  --dyn-chart-contrast-text: var(--dyn-chart-text-contrast, var(--dyn-base-white, #ffffff));
+
+  /* Base styles */
+  display: flex;
+  flex-direction: column;
+  background: var(--dyn-chart-bg);
+  border-radius: var(--dyn-chart-radius);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-chart-border);
+  padding: var(--dyn-spacing-md);
+  font-family: inherit;
+  gap: var(--dyn-spacing-md);
+}
+
+/* ============================================
+   FIGURE & HEADER
+   ============================================ */
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dyn-spacing-md);
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dyn-spacing-xs);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--dyn-font-size-lg);
+  font-weight: var(--dyn-font-weight-semibold);
+  color: var(--dyn-chart-text-primary);
+  line-height: 1.3;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--dyn-font-size-sm);
+  font-weight: var(--dyn-font-weight-normal);
+  color: var(--dyn-chart-text-secondary);
+  line-height: 1.5;
+}
+
+.description {
+  margin: 0;
+  padding: var(--dyn-spacing-sm) 0 0 0;
+  font-size: var(--dyn-font-size-xs);
+  font-weight: var(--dyn-font-weight-normal);
+  color: var(--dyn-chart-text-secondary);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ============================================
+   CONTENT & CANVAS
+   ============================================ */
+
+.content {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+
+.tooltip {
+  position: absolute;
+  max-width: 220px;
+  padding: var(--dyn-spacing-sm) var(--dyn-spacing-md);
+  border-radius: var(--dyn-border-radius-md);
+  background: var(--dyn-neutral-dark-900);
+  color: var(--dyn-base-white);
+  font-size: var(--dyn-font-size-xs);
+  line-height: 1.4;
+  box-shadow: var(--dyn-elevation-high);
+  pointer-events: none;
+  transform: translate(-50%, -120%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dyn-transition-fast), visibility var(--dyn-transition-fast);
+  z-index: var(--dyn-z-index-popover);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.tooltip[data-visible='true'] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm);
+  margin-bottom: var(--dyn-spacing-xs);
+}
+
+.tooltipColor {
+  width: var(--dyn-size-icon-xs, 0.625rem);
+  height: var(--dyn-size-icon-xs, 0.625rem);
+  border-radius: var(--dyn-border-radius-full);
+  flex-shrink: 0;
+}
+
+.tooltipSeries {
+  font-weight: var(--dyn-font-weight-semibold);
+}
+
+.tooltipPercentage {
+  margin-left: auto;
+  font-size: var(--dyn-font-size-xs);
+  opacity: 0.85;
+}
+
+.tooltipValue {
+  font-weight: var(--dyn-font-weight-semibold);
+  font-size: var(--dyn-font-size-sm);
+  margin-bottom: var(--dyn-spacing-xxs, 0.125rem);
+}
+
+.tooltipLabel {
+  font-size: var(--dyn-font-size-xs);
+  opacity: 0.85;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dyn-spacing-md);
+  justify-content: center;
+  align-items: center;
+  padding: var(--dyn-spacing-sm) 0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm);
+  font-size: var(--dyn-font-size-sm);
+  color: var(--dyn-chart-text-secondary);
+}
+
+.legendColor {
+  width: var(--dyn-size-icon-xs, 0.75rem);
+  height: var(--dyn-size-icon-xs, 0.75rem);
+  border-radius: var(--dyn-border-radius-xs, 0.125rem);
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-weight: var(--dyn-font-weight-normal);
+  line-height: 1.5;
+}
+
+/* ============================================
+   CHART TYPE VARIANTS
+   ============================================ */
+
+.typeLine .legendColor,
+.typeLine .tooltipColor {
+  border-radius: var(--dyn-border-radius-full);
+}
+
+.typeBar .legendColor,
+.typeBar .tooltipColor {
+  border-radius: var(--dyn-border-radius-xs, 2px);
+}
+
+.typePie .legendColor,
+.typePie .tooltipColor {
+  border-radius: 50%;
+}
+
+.typeArea .legendColor,
+.typeArea .tooltipColor {
+  border-radius: var(--dyn-border-radius-sm);
+  opacity: 0.9;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.emptyState {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--dyn-font-size-sm);
+  color: var(--dyn-chart-text-secondary);
+  pointer-events: none;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .root {
+    padding: var(--dyn-spacing-sm);
+  }
+
+  .title {
+    font-size: var(--dyn-font-size-md);
+  }
+
+  .subtitle {
+    font-size: var(--dyn-font-size-xs);
+  }
+
+  .legend {
+    gap: var(--dyn-spacing-sm);
+  }
+
+  .legendItem {
+    gap: var(--dyn-spacing-xs);
+    font-size: var(--dyn-font-size-xs);
+  }
+}
+
+@media (prefers-contrast: high) {
+  .root {
+    border-width: var(--dyn-border-width-md, 2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   Note: Handled automatically via semantic tokens!
+   ============================================ */

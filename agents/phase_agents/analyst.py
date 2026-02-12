@@ -76,10 +76,19 @@ class AnalystAgent:
         except FileNotFoundError:
             template = "Analyze the following requirements:\n{requirements}\n\nReturn a JSON object with 'summary', 'features', 'risks', and 'implementation_plan'."
             
+        # Load Golden Rules
+        golden_rules = self._load_golden_rules()
+        
         # Fill template
         prompt = template
         for k, v in context.items():
             prompt = prompt.replace(f"{{{k}}}", str(v))
+            
+        # Inject Golden Rules if placeholder exists, otherwise append
+        if "{golden_rules}" in prompt:
+            prompt = prompt.replace("{golden_rules}", golden_rules)
+        elif golden_rules:
+            prompt += f"\n\n[GOLDEN RULES & STANDARDS]:\n{golden_rules}\n"
             
         # Add RAG context
         if rag_context:
@@ -92,6 +101,24 @@ class AnalystAgent:
             prompt += rag_text
             
         return prompt
+
+    def _load_golden_rules(self) -> str:
+        """Load the AI_CONTEXT.md file."""
+        try:
+            # 1. Try relative to file location
+            file_path = Path(__file__).parent.parent.parent / "rag" / "AI_CONTEXT.md"
+            if file_path.exists():
+                return file_path.read_text(encoding="utf-8")
+                
+            # 2. Try relative to CWD (Project Root)
+            cwd_path = Path.cwd() / "rag" / "AI_CONTEXT.md"
+            if cwd_path.exists():
+                return cwd_path.read_text(encoding="utf-8")
+                
+            return ""
+        except Exception as e:
+            logger.warning(f"Failed to load AI_CONTEXT.md: {e}")
+            return ""
 
     def _parse_to_json(self, content: str) -> Dict[str, Any]:
         """Attempt to parse content as JSON, handling potential markdown blocks."""

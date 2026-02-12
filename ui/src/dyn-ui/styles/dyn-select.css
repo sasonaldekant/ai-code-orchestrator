@@ -1,0 +1,248 @@
+/* DynSelect - Advanced select component styles */
+/* Part of DYN UI Form Components Group - SCOPE 6 */
+
+:root {
+  --dyn-select-border: #d0d7de;
+  --dyn-select-border-hover: #afb8c1;
+  --dyn-select-border-focus: #2f81f7;
+  --dyn-select-border-error: #d1242f;
+  --dyn-select-bg: #ffffff;
+  --dyn-select-bg-disabled: #f6f8fa;
+  --dyn-select-bg-hover: #f6f8fa;
+  --dyn-select-text: #24292f;
+  --dyn-select-text-disabled: #8c959f;
+  --dyn-select-text-placeholder: #6e7781;
+  --dyn-select-focus-ring: rgba(47, 129, 247, 0.3);
+  --dyn-select-error-ring: rgba(209, 36, 47, 0.3);
+  --dyn-select-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --dyn-select-tag-bg: #e7f3ff;
+  --dyn-select-tag-color: #0366d6;
+}
+
+.dyn-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.dyn-select {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--dyn-select-border);
+  border-radius: 4px;
+  background-color: var(--dyn-select-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  outline: none;
+}
+
+.dyn-select:hover:not(.dyn-select--disabled):not(.dyn-select--readonly) {
+  border-color: var(--dyn-select-border-hover);
+}
+
+.dyn-select:focus,
+.dyn-select--focused,
+.dyn-select--open {
+  border-color: var(--dyn-select-border-focus);
+  box-shadow: 0 0 0 2px var(--dyn-select-focus-ring);
+}
+
+.dyn-select--error {
+  border-color: var(--dyn-select-border-error);
+}
+
+.dyn-select--error:focus {
+  box-shadow: 0 0 0 2px var(--dyn-select-error-ring);
+}
+
+.dyn-select--disabled {
+  background-color: var(--dyn-select-bg-disabled);
+  color: var(--dyn-select-text-disabled);
+  cursor: not-allowed;
+}
+
+.dyn-select--readonly {
+  background-color: var(--dyn-select-bg-disabled);
+  cursor: default;
+}
+
+.dyn-select--loading {
+  cursor: wait;
+}
+
+/* Size variants */
+.dyn-select--small {
+  min-height: 32px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.dyn-select--medium {
+  min-height: 40px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.dyn-select--large {
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.125rem;
+}
+
+.dyn-select-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 1.5em;
+}
+
+.dyn-select-text {
+  color: var(--dyn-select-text);
+}
+
+.dyn-select-text.dyn-select-placeholder {
+  color: var(--dyn-select-text-placeholder);
+}
+
+.dyn-select-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.dyn-select-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  background-color: var(--dyn-select-tag-bg);
+  color: var(--dyn-select-tag-color);
+  border-radius: 2px;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.dyn-select-tag-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.dyn-select-tag-remove:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dyn-select-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.75rem;
+  color: var(--dyn-select-text-placeholder);
+  transition: transform 0.2s ease;
+}
+
+.dyn-select-arrow--up {
+  transform: rotate(180deg);
+}
+
+.dyn-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--dyn-select-bg);
+  border: 1px solid var(--dyn-select-border);
+  border-radius: 4px;
+  box-shadow: var(--dyn-select-shadow);
+  margin-top: 0.25rem;
+  overflow: hidden;
+}
+
+.dyn-select-search {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--dyn-select-border);
+}
+
+.dyn-select-search-input {
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--dyn-select-border);
+  border-radius: 2px;
+  background-color: var(--dyn-select-bg);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.dyn-select-search-input:focus {
+  border-color: var(--dyn-select-border-focus);
+  box-shadow: 0 0 0 2px var(--dyn-select-focus-ring);
+}
+
+.dyn-select-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dyn-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dyn-select-option:hover:not(.dyn-select-option--disabled) {
+  background-color: var(--dyn-select-bg-hover);
+}
+
+.dyn-select-option--selected {
+  background-color: var(--dyn-select-tag-bg);
+  color: var(--dyn-select-tag-color);
+}
+
+.dyn-select-option--disabled {
+  color: var(--dyn-select-text-disabled);
+  cursor: not-allowed;
+}
+
+.dyn-select-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--dyn-select-border);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--dyn-select-bg);
+  transition: all 0.2s ease;
+}
+
+.dyn-select-checkbox--checked {
+  background-color: var(--dyn-select-border-focus);
+  border-color: var(--dyn-select-border-focus);
+  color: white;
+}
+
+.dyn-select-option-text {
+  flex: 1;
+}
+
+.dyn-select-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--dyn-select-text-placeholder);
+  font-style: italic;
+}

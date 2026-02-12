@@ -1,0 +1,132 @@
+/**
+ * DynPopup Component Styles
+ * 100% Design Token Compliance
+ */
+
+/* ==========================================================================
+   BASE CONTAINER
+   ========================================================================== */
+
+.popup {
+  /* Component Tokens - 3-level fallback */
+  --dyn-popup-bg: var(--dyn-popup-background, var(--dyn-semantic-surface, #ffffff));
+  --dyn-popup-border: var(--dyn-popup-border-color, var(--dyn-semantic-border-subtle, #e5e7eb));
+  --dyn-popup-radius: var(--dyn-popup-border-radius, var(--dyn-border-radius-md, 0.375rem));
+  --dyn-popup-shadow: var(--dyn-popup-box-shadow, var(--dyn-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1)));
+  --dyn-popup-z-index: var(--dyn-popup-z, var(--dyn-z-index-dropdown, 1000));
+  --dyn-popup-min-width: var(--dyn-popup-min-w, 12rem);
+  
+  --dyn-popup-item-text: var(--dyn-popup-text, var(--dyn-semantic-text, #111827));
+  --dyn-popup-item-bg-hover: var(--dyn-popup-hover-bg, var(--dyn-semantic-surface-hover, #f3f4f6));
+  --dyn-popup-item-icon-color: var(--dyn-popup-icon, var(--dyn-semantic-text-secondary, #6b7280));
+  
+  --dyn-popup-danger-text: var(--dyn-popup-danger, var(--dyn-feedback-negative-default, #dc2626));
+  --dyn-popup-danger-bg-hover: var(--dyn-popup-danger-bg, var(--dyn-feedback-negative-surface, #fef2f2));
+  
+  --dyn-popup-focus-ring: var(--dyn-popup-focus, var(--dyn-semantic-border-focus, #3b82f6));
+
+  /* Base styles */
+  position: absolute;
+  z-index: var(--dyn-popup-z-index);
+  min-width: var(--dyn-popup-min-width);
+  padding: var(--dyn-spacing-xs, 4px);
+  background-color: var(--dyn-popup-bg);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-popup-border);
+  border-radius: var(--dyn-popup-radius);
+  box-shadow: var(--dyn-popup-shadow);
+  opacity: 0;
+  transform: scale(0.95);
+  transform-origin: top left;
+  transition: opacity var(--dyn-transition-fast, 0.1s ease-out), transform var(--dyn-transition-fast, 0.1s ease-out);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.popupOpen {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* ==========================================================================
+   MENU ITEMS
+   ========================================================================== */
+
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--dyn-spacing-sm, 8px) var(--dyn-spacing-md, 12px);
+  font-family: inherit;
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  color: var(--dyn-popup-item-text);
+  background: transparent;
+  border: none;
+  border-radius: var(--dyn-border-radius-sm, 4px);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--dyn-transition-fast, 0.15s ease);
+  gap: var(--dyn-spacing-sm, 8px);
+}
+
+.item:hover:not(:disabled):not(.itemDisabled) {
+  background-color: var(--dyn-popup-item-bg-hover);
+}
+
+.item:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-popup-focus-ring);
+  outline-offset: -2px;
+}
+
+.itemDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.itemDanger {
+  color: var(--dyn-popup-danger-text);
+}
+
+.itemDanger:hover:not(:disabled):not(.itemDisabled) {
+  background-color: var(--dyn-popup-danger-bg-hover);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--dyn-popup-item-icon-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemDanger .icon {
+  color: inherit;
+}
+
+.divider {
+  height: var(--dyn-border-width-sm, 1px);
+  background-color: var(--dyn-popup-border);
+  margin: var(--dyn-spacing-xs, 4px) 0;
+}
+
+/* ==========================================================================
+   TRIGGER
+   ========================================================================== */
+
+.trigger {
+  display: inline-flex;
+  cursor: pointer;
+  border-radius: var(--dyn-border-radius-sm);
+  transition: background-color var(--dyn-transition-fast);
+}
+
+.trigger:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-popup-focus-ring);
+  outline-offset: 2px;
+}
+
+/* DARK MODE - Automated via semantic tokens in :root */

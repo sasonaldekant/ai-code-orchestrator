@@ -80,8 +80,13 @@ class ContextManagerV3:
         # 3. Project Structure Injection (for architectural awareness)
         project_structure = self._get_project_structure()
         formatted_context += f"\n\n[Project Structure]:\n{project_structure}\n"
+        
+        # 4. Golden Rules Injection (AI_CONTEXT.md)
+        golden_rules = self._get_golden_rules()
+        if golden_rules:
+            formatted_context += f"\n\n[GOLDEN RULES & STANDARDS]:\n{golden_rules}\n"
 
-        # 4. Combine into EnrichedContext
+        # 5. Combine into EnrichedContext
         return EnrichedContextV3(
             phase=phase,
             specialty=specialty,
@@ -113,3 +118,16 @@ class ContextManagerV3:
         except Exception as e:
             logger.error(f"Failed to scan project structure: {e}")
             return "Error scanning project structure."
+
+    def _get_golden_rules(self) -> str:
+        """Load the AI_CONTEXT.md file."""
+        try:
+            # Assumes rag/AI_CONTEXT.md is relative to project root
+            # core/context_manager_v3.py -> ../rag/AI_CONTEXT.md
+            context_path = Path(__file__).parent.parent / "rag" / "AI_CONTEXT.md"
+            if context_path.exists():
+                return context_path.read_text(encoding="utf-8")
+            return ""
+        except Exception as e:
+            logger.warning(f"Failed to load AI_CONTEXT.md: {e}")
+            return ""

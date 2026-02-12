@@ -1,0 +1,242 @@
+/**
+ * DynRadio Component Styles
+ * 100% Design Token Compliance
+ */
+
+/* ==========================================================================
+   COMPONENT TOKENS (Moved to :root)
+   ========================================================================== */
+:root {
+  /* Dimensions & Spacing */
+  --dyn-radio-check-size: 1.25rem;
+  --dyn-radio-dot-size: 0.625rem;
+  --dyn-radio-gap: var(--dyn-spacing-sm, 0.5rem);
+  --dyn-radio-wrapper-gap: var(--dyn-spacing-xs, 0.25rem);
+
+  /* Colors */
+  --dyn-radio-border: var(--dyn-semantic-text-secondary, #94a3b8);
+  --dyn-radio-bg: var(--dyn-semantic-surface, #ffffff);
+  --dyn-radio-dot-color: var(--dyn-foundation-white, #ffffff);
+  --dyn-radio-checked-color: var(--dyn-theme-primary, #3b82f6);
+
+  /* State Colors */
+  --dyn-radio-checked-bg: var(--dyn-radio-checked-color);
+  --dyn-radio-checked-border: var(--dyn-radio-checked-color);
+  --dyn-radio-hover-bg-check: var(--dyn-semantic-surface-hover, #f9fafb);
+  --dyn-radio-hover-checked-bg: var(--dyn-theme-primary-hover, #2563eb);
+  --dyn-radio-focus-ring: var(--dyn-semantic-border-focus, #3b82f6);
+  --dyn-radio-error: var(--dyn-feedback-negative-default, #ef4444);
+
+  /* Typography */
+  --dyn-radio-label-color: var(--dyn-semantic-text, #18181b);
+  --dyn-radio-desc-color: var(--dyn-semantic-text-secondary, #52525b);
+}
+
+/* ==========================================================================
+   RADIO ITEM
+   ========================================================================== */
+
+.container {
+  /* Color tokens - can be overridden by color variant classes */
+  --dyn-radio-checked-color: var(--dyn-theme-primary, #3b82f6);
+  --dyn-radio-checked-bg: var(--dyn-radio-checked-color);
+  --dyn-radio-checked-border: var(--dyn-radio-checked-color);
+
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--dyn-radio-wrapper-gap);
+}
+
+.wrapper {
+  display: inline-flex;
+  align-items: flex-start;
+  /* Align top for multiline text */
+  gap: var(--dyn-radio-gap);
+  cursor: pointer;
+  position: relative;
+}
+
+.wrapperDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* INPUT & CUSTOM RADIO */
+
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--dyn-radio-check-size);
+  height: var(--dyn-radio-check-size);
+  margin-top: 0.125rem;
+  /* Align with line-height */
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-radio-border);
+  border-radius: var(--dyn-border-radius-full, 50%);
+  background-color: var(--dyn-radio-bg);
+  transition: all var(--dyn-transition-normal, 0.2s) ease-in-out;
+  flex-shrink: 0;
+}
+
+/* Size Variants (aligned with DynCheckbox per STYLE_REGISTRY) */
+.sizeSm {
+  --dyn-radio-check-size: 16px;
+  --dyn-radio-dot-size: 8px;
+}
+
+.sizeMd {
+  --dyn-radio-check-size: 20px;
+  --dyn-radio-dot-size: 10px;
+}
+
+.sizeLg {
+  --dyn-radio-check-size: 24px;
+  --dyn-radio-dot-size: 12px;
+}
+
+/* Color Variants */
+.colorPrimary {
+  --dyn-radio-checked-color: var(--dyn-theme-primary, #3b82f6);
+}
+
+.colorSecondary {
+  --dyn-radio-checked-color: var(--dyn-theme-secondary, #64748b);
+}
+
+.colorSuccess {
+  --dyn-radio-checked-color: var(--dyn-feedback-positive-default, #10b981);
+}
+
+.colorDanger {
+  --dyn-radio-checked-color: var(--dyn-feedback-negative-default, #ef4444);
+}
+
+.colorWarning {
+  --dyn-radio-checked-color: var(--dyn-feedback-warning-default, #f59e0b);
+}
+
+.colorInfo {
+  --dyn-radio-checked-color: var(--dyn-feedback-info-default, #0ea5e9);
+}
+
+.dot {
+  width: var(--dyn-radio-dot-size);
+  height: var(--dyn-radio-dot-size);
+  border-radius: var(--dyn-border-radius-full, 50%);
+  background-color: var(--dyn-radio-dot-color);
+  transform: scale(0);
+  transition: transform var(--dyn-transition-normal, 0.2s) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* CHECKED STATE */
+
+.input:checked+.check {
+  border-color: var(--dyn-radio-checked-border);
+  background-color: var(--dyn-radio-checked-bg);
+}
+
+.input:checked+.check .dot {
+  transform: scale(1);
+}
+
+/* HOVER & FOCUS */
+
+.wrapper:hover:not(.wrapperDisabled) .check {
+  border-color: var(--dyn-radio-checked-border);
+  background-color: var(--dyn-radio-hover-bg-check);
+}
+
+.wrapper:hover:not(.wrapperDisabled) .input:checked+.check {
+  background-color: var(--dyn-radio-hover-checked-bg);
+}
+
+.input:focus-visible+.check {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-radio-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ERROR STATE */
+
+.error .check {
+  border-color: var(--dyn-radio-error);
+}
+
+.error .input:checked+.check {
+  background-color: var(--dyn-radio-error);
+  border-color: var(--dyn-radio-error);
+}
+
+.error .label {
+  color: var(--dyn-radio-error);
+}
+
+/* TEXT STYLES */
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-family: inherit;
+  font-size: var(--dyn-font-size-md, 1rem);
+  font-weight: var(--dyn-font-weight-normal, 400);
+  color: var(--dyn-radio-label-color);
+  line-height: var(--dyn-line-height-normal, 1.5);
+  user-select: none;
+}
+
+.description {
+  font-family: inherit;
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  color: var(--dyn-radio-desc-color);
+  margin-left: calc(var(--dyn-radio-check-size) + var(--dyn-radio-gap));
+}
+
+/* ==========================================================================
+   RADIO GROUP
+   ========================================================================== */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dyn-spacing-sm, 8px);
+}
+
+.groupLabel {
+  font-family: inherit;
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  font-weight: var(--dyn-font-weight-semibold, 600);
+  color: var(--dyn-radio-label-color);
+  margin-bottom: var(--dyn-spacing-xs, 4px);
+  display: block;
+}
+
+.groupDescription {
+  font-family: inherit;
+  font-size: var(--dyn-font-size-xs, 0.75rem);
+  color: var(--dyn-radio-desc-color);
+  margin-bottom: var(--dyn-spacing-sm, 8px);
+}
+
+.horizontal {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dyn-spacing-md, 16px) !important;
+}
+
+/* DARK MODE - Automated via semantic tokens */

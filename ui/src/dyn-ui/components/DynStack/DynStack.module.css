@@ -1,0 +1,234 @@
+/**
+ * DynStack Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+.container {
+  /* Layout Variables - Scoped to Component */
+  --dyn-stack-display: var(--dyn-stack-size-display, flex);
+  
+  /* Direction tokens with Fallbacks */
+  --dyn-stack-direction-vertical: var(--dyn-stack-size-direction-vertical, column);
+  --dyn-stack-direction-horizontal: var(--dyn-stack-size-direction-horizontal, row);
+  --dyn-stack-direction-vertical-reverse: var(--dyn-stack-size-direction-vertical-reverse, column-reverse);
+  --dyn-stack-direction-horizontal-reverse: var(--dyn-stack-size-direction-horizontal-reverse, row-reverse);
+
+  /* Spacing/Gap tokens with Fallbacks */
+  --dyn-stack-gap-none: 0;
+  --dyn-stack-gap-2xs: var(--dyn-stack-spacing-gap-2xs, var(--dyn-spacing-2xs, 0.125rem));
+  --dyn-stack-gap-xs: var(--dyn-stack-spacing-gap-xs, var(--dyn-spacing-xs, 0.25rem));
+  --dyn-stack-gap-sm: var(--dyn-stack-spacing-gap-sm, var(--dyn-spacing-sm, 0.5rem));
+  --dyn-stack-gap-md: var(--dyn-stack-spacing-gap-md, var(--dyn-spacing-md, 1rem));
+  --dyn-stack-gap-lg: var(--dyn-stack-spacing-gap-lg, var(--dyn-spacing-lg, 1.5rem));
+  --dyn-stack-gap-xl: var(--dyn-stack-spacing-gap-xl, var(--dyn-spacing-xl, 2rem));
+  --dyn-stack-gap-2xl: var(--dyn-stack-spacing-gap-2xl, var(--dyn-spacing-2xl, 2.5rem));
+  --dyn-stack-gap-3xl: var(--dyn-stack-spacing-gap-3xl, var(--dyn-spacing-3xl, 3.0rem));
+  --dyn-stack-gap-4xl: var(--dyn-stack-spacing-gap-4xl, var(--dyn-spacing-4xl, 4.0rem));
+
+  /* Alignment defaults */
+  --dyn-stack-align-start: var(--dyn-stack-size-align-start, flex-start);
+  --dyn-stack-align-center: var(--dyn-stack-size-align-center, center);
+  --dyn-stack-align-end: var(--dyn-stack-size-align-end, flex-end);
+  --dyn-stack-align-stretch: var(--dyn-stack-size-align-stretch, stretch);
+  --dyn-stack-align-baseline: var(--dyn-stack-size-align-baseline, baseline);
+
+  /* Justify defaults */
+  --dyn-stack-justify-start: var(--dyn-stack-size-justify-start, flex-start);
+  --dyn-stack-justify-center: var(--dyn-stack-size-justify-center, center);
+  --dyn-stack-justify-end: var(--dyn-stack-size-justify-end, flex-end);
+  --dyn-stack-justify-between: var(--dyn-stack-size-justify-between, space-between);
+  --dyn-stack-justify-around: var(--dyn-stack-size-justify-around, space-around);
+  --dyn-stack-justify-evenly: var(--dyn-stack-size-justify-evenly, space-evenly);
+
+  /* Wrap defaults */
+  --dyn-stack-wrap-wrap: var(--dyn-stack-size-wrap, wrap);
+  --dyn-stack-wrap-nowrap: var(--dyn-stack-size-nowrap, nowrap);
+  --dyn-stack-wrap-wrap-reverse: var(--dyn-stack-size-wrap-reverse, wrap-reverse);
+
+  /* Internal Computed Values - default gap: sm (8px) per STYLE_REGISTRY */
+  --dyn-stack-direction-val: var(--dyn-stack-direction, var(--dyn-stack-direction-vertical));
+  --dyn-stack-gap-val: var(--dyn-stack-gap, var(--dyn-stack-gap-sm));
+  --dyn-stack-align-val: var(--dyn-stack-align-items, var(--dyn-stack-align-stretch));
+  --dyn-stack-justify-val: var(--dyn-stack-justify-content, var(--dyn-stack-justify-start));
+  --dyn-stack-wrap-val: var(--dyn-stack-wrap, var(--dyn-stack-wrap-nowrap));
+
+  display: var(--dyn-stack-display);
+  flex-direction: var(--dyn-stack-direction-val);
+  gap: var(--dyn-stack-gap-val);
+  align-items: var(--dyn-stack-align-val);
+  justify-content: var(--dyn-stack-justify-val);
+  flex-wrap: var(--dyn-stack-wrap-val);
+
+  width: 100%;
+  height: auto;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   DIRECTION VARIANTS
+   ============================================ */
+.vertical {
+  --dyn-stack-direction: var(--dyn-stack-direction-vertical);
+}
+
+.horizontal {
+  --dyn-stack-direction: var(--dyn-stack-direction-horizontal);
+}
+
+.reverse,
+.verticalReverse {
+  --dyn-stack-direction: var(--dyn-stack-direction-vertical-reverse);
+}
+
+.horizontalReverse {
+  --dyn-stack-direction: var(--dyn-stack-direction-horizontal-reverse);
+}
+
+/* ============================================
+   ALIGNMENT VARIANTS
+   ============================================ */
+.alignStart {
+  --dyn-stack-align-items: var(--dyn-stack-align-start);
+}
+
+.alignCenter {
+  --dyn-stack-align-items: var(--dyn-stack-align-center);
+}
+
+.alignEnd {
+  --dyn-stack-align-items: var(--dyn-stack-align-end);
+}
+
+.alignStretch {
+  --dyn-stack-align-items: var(--dyn-stack-align-stretch);
+}
+
+.alignBaseline {
+  --dyn-stack-align-items: var(--dyn-stack-align-baseline);
+}
+
+/* ============================================
+   JUSTIFICATION VARIANTS
+   ============================================ */
+.justifyStart {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-start);
+}
+
+.justifyCenter {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-center);
+}
+
+.justifyEnd {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-end);
+}
+
+.justifyBetween {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-between);
+}
+
+.justifyAround {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-around);
+}
+
+.justifyEvenly {
+  --dyn-stack-justify-content: var(--dyn-stack-justify-evenly);
+}
+
+/* ============================================
+   GAP VARIANTS
+   ============================================ */
+.gapNone {
+  --dyn-stack-gap: var(--dyn-stack-gap-none);
+}
+
+.gap2xs {
+  --dyn-stack-gap: var(--dyn-stack-gap-2xs);
+}
+
+.gapXs {
+  --dyn-stack-gap: var(--dyn-stack-gap-xs);
+}
+
+.gapSm {
+  --dyn-stack-gap: var(--dyn-stack-gap-sm);
+}
+
+.gapMd {
+  --dyn-stack-gap: var(--dyn-stack-gap-md);
+}
+
+.gapLg {
+  --dyn-stack-gap: var(--dyn-stack-gap-lg);
+}
+
+.gapXl {
+  --dyn-stack-gap: var(--dyn-stack-gap-xl);
+}
+
+.gap2xl {
+  --dyn-stack-gap: var(--dyn-stack-gap-2xl);
+}
+
+.gap3xl {
+  --dyn-stack-gap: var(--dyn-stack-gap-3xl);
+}
+
+.gap4xl {
+  --dyn-stack-gap: var(--dyn-stack-gap-4xl);
+}
+
+/* ============================================
+   WRAP VARIANTS
+   ============================================ */
+.wrap {
+  --dyn-stack-wrap: var(--dyn-stack-wrap-wrap);
+}
+
+.noWrap {
+  --dyn-stack-wrap: var(--dyn-stack-wrap-nowrap);
+}
+
+.wrapReverse {
+  --dyn-stack-wrap: var(--dyn-stack-wrap-wrap-reverse);
+}
+
+/* ============================================
+   FLEX VARIANTS
+   ============================================ */
+.flex1 {
+  flex: 1 1 auto;
+}
+
+.flexGrow {
+  flex-grow: 1;
+}
+
+.flexShrink {
+  flex-shrink: 1;
+}
+
+.flexNone {
+  flex: none;
+}
+
+/* ============================================
+   ACCESSIBILITY & UTILS
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .container {
+    transition: none !important;
+  }
+}
+
+.container > :focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-semantic-border-focus, #3b82f6);
+  outline-offset: var(--dyn-spacing-2xs, 2px);
+}
+
+@media (prefers-contrast: high) {
+  .container > :focus-visible {
+    outline-width: var(--dyn-border-width-lg, 3px);
+  }
+}

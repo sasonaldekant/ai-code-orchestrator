@@ -1,0 +1,28 @@
+/**
+ * Theme: High Contrast Mode
+ * 
+ * Provides higher contrast overrides for accessibility.
+ * Automatically applied when prefers-contrast: high is set.
+ * 
+ * This file increases borders, focus rings, and text contrast.
+ */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* ========== HIGH CONTRAST BORDERS ========== */
+    --dyn-border-width-hairline: 1px;
+    --dyn-border-width-thin: 2px;
+    --dyn-border-width-thick: 4px;
+
+    /* ========== HIGH CONTRAST FOCUS ========== */
+    --dyn-focus-ring-width: 4px;
+    --dyn-focus-ring-offset: 2px;
+    --dyn-focus-outline: 4px solid var(--dyn-focus-ring-color);
+
+    /* ========== HIGH CONTRAST SHADOWS ========== */
+    /* Shadows may be less prominent in high contrast mode */
+    --dyn-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
+    --dyn-shadow-md: 0 3px 6px rgba(0, 0, 0, 0.2);
+    --dyn-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.25);
+  }
+}

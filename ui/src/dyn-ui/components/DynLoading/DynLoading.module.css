@@ -1,0 +1,367 @@
+/**
+ * DynLoading Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+.loading {
+  /* Color Tokens - 3-level fallback */
+  --dyn-loading-color-primary: var(--dyn-loading-fill-primary, var(--dyn-theme-primary, #3b82f6));
+  --dyn-loading-color-secondary: var(--dyn-loading-fill-secondary, var(--dyn-theme-secondary, #6b7280));
+  --dyn-loading-color-success: var(--dyn-loading-fill-success, var(--dyn-feedback-positive, #22c55e));
+  --dyn-loading-color-danger: var(--dyn-loading-fill-danger, var(--dyn-feedback-negative-default, #ef4444));
+  --dyn-loading-color-warning: var(--dyn-loading-fill-warning, var(--dyn-feedback-warning, #f59e0b));
+  --dyn-loading-color-info: var(--dyn-loading-fill-info, var(--dyn-feedback-info, #0ea5e9));
+  --dyn-loading-color-neutral: var(--dyn-loading-fill-neutral, var(--dyn-neutral-mid-500, #9ca3af));
+  --dyn-loading-color-white: var(--dyn-loading-fill-white, var(--dyn-base-white, #ffffff));
+
+  /* Default Color Selection */
+  --dyn-loading-text-color: var(--dyn-loading-text, var(--dyn-semantic-text, #1e293b));
+  --dyn-loading-fill-color: var(--dyn-loading-color-primary);
+
+  /* Sizing Tokens - Dimensions */
+  --dyn-loading-size-xs: var(--dyn-loading-spinner-xs, 1rem);
+  --dyn-loading-size-sm: var(--dyn-loading-spinner-sm, 1.5rem);
+  --dyn-loading-size-md: var(--dyn-loading-spinner-md, 2rem);
+  --dyn-loading-size-lg: var(--dyn-loading-spinner-lg, 3rem);
+  --dyn-loading-size-xl: var(--dyn-loading-spinner-xl, 4rem);
+
+  /* Current Size - Default to MD */
+  --dyn-loading-size: var(--dyn-loading-size-md);
+
+  /* Sizing - Spacing */
+  --dyn-loading-gap: var(--dyn-loading-spacing-gap, var(--dyn-spacing-sm, 0.5rem));
+
+  /* Overlay */
+  --dyn-loading-overlay-bg: var(--dyn-loading-overlay, var(--dyn-semantic-overlay, rgba(0, 0, 0, 0.5)));
+
+  /* Base Styles */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--dyn-loading-text-color);
+  gap: var(--dyn-loading-gap);
+
+  /* Ensure it has dimension context */
+  min-width: min-content;
+  min-height: min-content;
+}
+
+/* ==========================================================================
+   COLOR VARIANTS
+   ========================================================================== */
+
+.loadingPrimary {
+  --dyn-loading-fill-color: var(--dyn-loading-color-primary);
+}
+
+.loadingSecondary {
+  --dyn-loading-fill-color: var(--dyn-loading-color-secondary);
+}
+
+.loadingSuccess {
+  --dyn-loading-fill-color: var(--dyn-loading-color-success);
+}
+
+.loadingDanger {
+  --dyn-loading-fill-color: var(--dyn-loading-color-danger);
+}
+
+.loadingWarning {
+  --dyn-loading-fill-color: var(--dyn-loading-color-warning);
+}
+
+.loadingInfo {
+  --dyn-loading-fill-color: var(--dyn-loading-color-info);
+}
+
+.loadingNeutral {
+  --dyn-loading-fill-color: var(--dyn-loading-color-neutral);
+}
+
+.loadingWhite {
+  --dyn-loading-fill-color: var(--dyn-loading-color-white);
+  --dyn-loading-text-color: var(--dyn-loading-color-white);
+}
+
+/* ==========================================================================
+   SIZE VARIANTS
+   ========================================================================== */
+
+.sizeXs {
+  --dyn-loading-size: var(--dyn-loading-size-xs);
+  font-size: 0.75rem;
+}
+
+.sizeSm {
+  --dyn-loading-size: var(--dyn-loading-size-sm);
+  font-size: 0.875rem;
+}
+
+.sizeMd {
+  --dyn-loading-size: var(--dyn-loading-size-md);
+  font-size: 1rem;
+}
+
+.sizeLg {
+  --dyn-loading-size: var(--dyn-loading-size-lg);
+  font-size: 1.125rem;
+}
+
+.sizeXl {
+  --dyn-loading-size: var(--dyn-loading-size-xl);
+  font-size: 1.25rem;
+}
+
+/* ==========================================================================
+   VARIANT: SPINNER
+   ========================================================================== */
+
+
+/* 
+ * FORCE ANIMATION OVERRIDE
+ * The following rules use !important to strictly defeat any global "prefers-reduced-motion" 
+ * resets (like Storybook's strict-mode or accessibility resets) which force duration to 0ms.
+ * We want the spinner to spin regardless of those settings as it conveys critical status.
+ */
+
+.loadingSpinnerIndicator {
+  width: var(--dyn-loading-size, 2rem);
+  height: var(--dyn-loading-size, 2rem);
+  animation: dynLoadingRotate 2s linear infinite !important;
+  animation-duration: 2s !important;
+  animation-iteration-count: infinite !important;
+  transform-origin: center center;
+  color: var(--dyn-loading-fill-color, #3b82f6);
+  flex-shrink: 0;
+}
+
+.loadingSpinnerIndicator circle {
+  stroke: currentColor;
+  stroke-linecap: round;
+  animation: dynLoadingDash 1.5s ease-in-out infinite !important;
+  animation-duration: 1.5s !important;
+  animation-iteration-count: infinite !important;
+}
+
+@keyframes dynLoadingRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dynLoadingDash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+/* ==========================================================================
+   VARIANT: SKELETON
+   ========================================================================== */
+
+.loadingSkeleton {
+  width: 100%;
+  height: var(--dyn-loading-size, 2rem);
+  background-color: var(--dyn-semantic-surface-muted, #e5e7eb);
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  position: relative;
+  overflow: hidden;
+  /* Ensure skeleton has explicit block layout */
+  display: block;
+}
+
+.loadingSkeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.5) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0));
+  animation: dynLoadingShimmer 2s infinite;
+  /* Skeleton animation is usually acceptable to reduce, but we force it if needed. 
+     Leaving skeleton as-is for now, focusing on active indicators. */
+}
+
+.loadingCircle {
+  width: var(--dyn-loading-size);
+  height: var(--dyn-loading-size);
+  border-radius: 50%;
+}
+
+@keyframes dynLoadingShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ==========================================================================
+   VARIANT: DOTS
+   ========================================================================== */
+
+
+
+.loadingDotsIndicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25em;
+  height: var(--dyn-loading-size, 2rem);
+  color: var(--dyn-loading-fill-color, #3b82f6);
+}
+
+.loadingDotsIndicator span {
+  display: block;
+  width: calc(var(--dyn-loading-size, 2rem) * 0.25);
+  height: calc(var(--dyn-loading-size, 2rem) * 0.25);
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: dynLoadingBounce 1.4s infinite ease-in-out both !important;
+  animation-duration: 1.4s !important;
+  animation-iteration-count: infinite !important;
+}
+
+.loadingDotsIndicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loadingDotsIndicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes dynLoadingBounce {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   VARIANT: PULSE
+   ========================================================================== */
+
+
+
+.loadingPulseIndicator {
+  width: var(--dyn-loading-size, 2rem);
+  height: var(--dyn-loading-size, 2rem);
+  background-color: var(--dyn-loading-fill-color, #3b82f6);
+  border-radius: 50%;
+  animation: dynLoadingScale 1s infinite ease-in-out !important;
+  animation-duration: 1s !important;
+  animation-iteration-count: infinite !important;
+  flex-shrink: 0;
+}
+
+@keyframes dynLoadingScale {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   VARIANT: OVERLAY
+   ========================================================================== */
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--dyn-loading-overlay-bg);
+  z-index: var(--dyn-z-index-overlay, 50);
+  width: 100%;
+  height: 100%;
+}
+
+.loadingFixed {
+  position: fixed;
+  z-index: var(--dyn-z-index-modal, 100);
+}
+
+.loadingBlur {
+  backdrop-filter: blur(4px);
+  --dyn-loading-overlay-bg: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   TEXT CONTENT
+   ========================================================================== */
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+}
+
+.loadingLabel {
+  font-weight: var(--dyn-font-weight-medium, 500);
+  line-height: 1.2;
+}
+
+.loadingDescription {
+  font-size: 0.875em;
+  opacity: 0.8;
+  text-align: center;
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+
+/* Reduced motion block removed to ensure visibility */
+
+/* ==========================================================================
+   DARK MODE - Now handled via semantic tokens
+   ========================================================================== */
+
+/* Dark mode overrides removed as they are now handled by semantic tokens */
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,94 @@
+{
+    "name": "ai-code-orchestrator-client",
+    "displayName": "AI Code Orchestrator Client",
+    "description": "VS Code Client for AI Code Orchestrator",
+    "version": "0.0.1",
+    "publisher": "ai-orchestrator",
+    "engines": {
+        "vscode": "^1.90.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "ai-orchestrator-sidebar-view",
+                    "title": "AI Orchestrator",
+                    "icon": "media/robot.svg"
+                }
+            ]
+        },
+        "views": {
+            "ai-orchestrator-sidebar-view": [
+                {
+                    "type": "webview",
+                    "id": "ai-orchestrator-sidebar",
+                    "name": "AI Chat",
+                    "icon": "media/robot.svg"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "ai-orchestrator.runTask",
+                "title": "AI Orchestrator: Run Task"
+            },
+            {
+                "command": "ai-orchestrator.addContext",
+                "title": "AI Orchestrator: Add File to Context"
+            },
+            {
+                "command": "ai-orchestrator.clearContext",
+                "title": "AI Orchestrator: Clear Context"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "ai-orchestrator.addContext",
+                    "group": "ai-orchestrator",
+                    "when": "resourceLangId"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "ai-orchestrator.addContext",
+                    "group": "ai-orchestrator"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "AI Orchestrator",
+            "properties": {
+                "aiOrchestrator.pythonPath": {
+                    "type": "string",
+                    "default": "python",
+                    "description": "Path to Python interpreter"
+                },
+                "aiOrchestrator.projectRoot": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to AI Orchestrator root directory"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.90.0",
+        "fast-glob": "^3.3.3",
+        "ts-loader": "^9.5.4",
+        "typescript": "^5.9.3",
+        "vscode-test": "^1.6.1",
+        "webpack": "^5.105.1",
+        "webpack-cli": "^6.0.1"
+    }
+}

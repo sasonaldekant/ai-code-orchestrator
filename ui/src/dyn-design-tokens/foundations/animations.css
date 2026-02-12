@@ -1,0 +1,50 @@
+/**
+ * Design Token: Animations & Transitions
+ * Domain: animation
+ * 
+ * Provides: Animation durations, easing functions, transition presets
+ * Used by: Interactive components with motion
+ * 
+ * Supports:
+ * - Dark mode: N/A
+ * - High contrast: N/A
+ * - Reduced motion: YES (animations disabled)
+ */
+
+:root {
+  /* ========== ANIMATION DURATIONS ========== */
+  --dyn-animation-duration-fast: 0.1s;
+  --dyn-animation-duration-base: 0.2s;
+  --dyn-animation-duration-slow: 0.4s;
+
+  /* ========== EASING FUNCTIONS ========== */
+  --dyn-animation-easing-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dyn-animation-easing-ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --dyn-animation-easing-ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --dyn-animation-easing-ease-linear: linear;
+
+  /* ========== TRANSITION PRESETS ========== */
+  --dyn-transition-base: all var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out);
+  --dyn-transition-fast: all var(--dyn-animation-duration-fast) var(--dyn-animation-easing-ease-out);
+  --dyn-transition-slow: all var(--dyn-animation-duration-slow) var(--dyn-animation-easing-ease-out);
+
+  /* ========== SPECIFIC PROPERTY TRANSITIONS ========== */
+  --dyn-transition-colors: color var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out), background-color var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out), border-color var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out);
+  --dyn-transition-transform: transform var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out);
+  --dyn-transition-opacity: opacity var(--dyn-animation-duration-base) var(--dyn-animation-easing-ease-out);
+}
+
+/* ========== REDUCED MOTION SUPPORT ========== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dyn-animation-duration-fast: 0.01ms;
+    --dyn-animation-duration-base: 0.01ms;
+    --dyn-animation-duration-slow: 0.01ms;
+    --dyn-transition-base: none;
+    --dyn-transition-fast: none;
+    --dyn-transition-slow: none;
+    --dyn-transition-colors: none;
+    --dyn-transition-transform: none;
+    --dyn-transition-opacity: none;
+  }
+}

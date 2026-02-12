@@ -1,0 +1,259 @@
+/**
+ * DynTreeView Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+.root {
+  /* Component Tokens (Layer 2) */
+  --dyn-tree-background: var(--dyn-tree-color-background, var(--dyn-semantic-surface, #ffffff));
+  --dyn-tree-border: var(--dyn-tree-color-border, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-tree-text: var(--dyn-tree-color-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-tree-shadow: var(--dyn-tree-elevation, var(--dyn-shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1)));
+  --dyn-tree-radius: var(--dyn-tree-size-radius, var(--dyn-border-radius-md, 0.375rem));
+  --dyn-tree-transition: var(--dyn-tree-animation-duration, var(--dyn-transition-fast, 150ms)) var(--dyn-tree-animation-easing, ease-in-out);
+
+  /* Search */
+  --dyn-tree-search-bg: var(--dyn-tree-color-search-background, var(--dyn-semantic-surface-muted, #f8fafc));
+  --dyn-tree-search-border: var(--dyn-tree-color-search-border, var(--dyn-semantic-border, #e2e8f0));
+
+  /* Input */
+  --dyn-tree-input-bg: var(--dyn-tree-color-input-background, var(--dyn-semantic-input-bg, #ffffff));
+  --dyn-tree-input-border: var(--dyn-tree-color-input-border, var(--dyn-semantic-input-border, #cbd5e1));
+  --dyn-tree-input-text: var(--dyn-tree-color-input-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-tree-input-border-focus: var(--dyn-tree-color-input-border-focus, var(--dyn-semantic-border-focus, #3b82f6));
+
+  /* Node */
+  --dyn-tree-node-bg-hover: var(--dyn-tree-color-node-hover, var(--dyn-semantic-surface-hover, #f1f5f9));
+  --dyn-tree-node-bg-selected: var(--dyn-tree-color-node-selected, var(--dyn-semantic-surface-active, #e0f2fe));
+  --dyn-tree-node-text-selected: var(--dyn-tree-color-node-text-selected, var(--dyn-theme-primary, #2563eb));
+  --dyn-tree-node-height: var(--dyn-tree-size-node-height, 2rem);
+  --dyn-tree-node-padding: var(--dyn-tree-spacing-node, var(--dyn-spacing-xs, 0.25rem));
+
+  /* Switcher & Icons */
+  --dyn-tree-icon-color: var(--dyn-tree-color-icon, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-tree-icon-bg-hover: var(--dyn-tree-color-icon-hover, var(--dyn-semantic-surface-hover, #f1f5f9));
+  --dyn-tree-icon-size: var(--dyn-tree-size-icon, 1.25rem);
+
+  display: flex;
+  flex-direction: column;
+  background-color: var(--dyn-tree-background);
+  border-radius: var(--dyn-tree-radius);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tree-border);
+  font-family: inherit;
+  overflow: hidden;
+  width: 100%;
+  box-shadow: var(--dyn-tree-shadow);
+  transition: box-shadow var(--dyn-tree-transition);
+}
+
+.root:hover {
+  box-shadow: var(--dyn-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+}
+
+/* ============================================
+   SEARCH
+   ============================================ */
+
+.search {
+  padding: var(--dyn-spacing-sm, 0.5rem);
+  border-bottom: var(--dyn-border-width-sm, 1px) solid var(--dyn-tree-search-border);
+  background-color: var(--dyn-tree-search-bg);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--dyn-spacing-xs, 0.25rem) var(--dyn-spacing-sm, 0.5rem);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tree-input-border);
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  background-color: var(--dyn-tree-input-bg);
+  color: var(--dyn-tree-input-text);
+  outline: none;
+  transition: all var(--dyn-tree-transition);
+}
+
+.searchInput:focus {
+  border-color: var(--dyn-tree-input-border-focus);
+  box-shadow: 0 0 0 var(--dyn-border-width-md, 2px) var(--dyn-action-focus, rgba(59, 130, 246, 0.5));
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--dyn-spacing-xs, 0.25rem);
+}
+
+/* ============================================
+   NODE
+   ============================================ */
+
+.node {
+  width: 100%;
+}
+
+.nodeContent {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-xs, 0.25rem);
+  padding: var(--dyn-tree-node-padding) var(--dyn-spacing-sm, 0.5rem);
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  cursor: default;
+  transition: background-color var(--dyn-tree-transition);
+  min-height: var(--dyn-tree-node-height);
+}
+
+.nodeContent:hover:not(.nodeDisabled) {
+  background-color: var(--dyn-tree-node-bg-hover);
+}
+
+.nodeSelected {
+  background-color: var(--dyn-tree-node-bg-selected);
+  color: var(--dyn-tree-node-text-selected);
+}
+
+.nodeDisabled {
+  opacity: var(--dyn-opacity-disabled, 0.5);
+  cursor: not-allowed;
+}
+
+/* ============================================
+   SWITCHER
+   ============================================ */
+
+.switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dyn-tree-icon-size);
+  height: var(--dyn-tree-icon-size);
+  cursor: pointer;
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  transition: background-color var(--dyn-tree-transition);
+  flex-shrink: 0;
+  color: var(--dyn-tree-icon-color);
+}
+
+.switcher:hover {
+  background-color: var(--dyn-tree-icon-bg-hover);
+}
+
+.switcherLeaf {
+  cursor: default;
+  visibility: hidden;
+}
+
+/* ============================================
+   CHECKBOX
+   ============================================ */
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 var(--dyn-spacing-xs, 0.25rem);
+}
+
+.checkbox input {
+  cursor: pointer;
+  accent-color: var(--dyn-theme-primary);
+  /* Eventually replace with DynCheckbox for full styling control */
+}
+
+/* ============================================
+   ICON & TITLE
+   ============================================ */
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dyn-tree-icon-size);
+  color: var(--dyn-tree-icon-color);
+  flex-shrink: 0;
+}
+
+.title {
+  flex: 1;
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  color: var(--dyn-tree-text);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 var(--dyn-spacing-xs, 0.25rem);
+}
+
+.titleClickable {
+  cursor: pointer;
+}
+
+/* ============================================
+   CHILDREN
+   ============================================ */
+
+.children {
+  display: flex;
+  flex-direction: column;
+}
+
+.showLine .children {
+  position: relative;
+  margin-left: var(--dyn-spacing-sm, 0.5rem);
+  padding-left: var(--dyn-spacing-sm, 0.5rem);
+  border-left: var(--dyn-border-width-sm, 1px) solid var(--dyn-tree-border);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty {
+  padding: var(--dyn-spacing-lg, 1.5rem);
+  text-align: center;
+  color: var(--dyn-semantic-text-secondary, #64748b);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767px) {
+  .nodeContent {
+    padding: var(--dyn-spacing-xs, 0.25rem);
+    min-height: 2.5rem;
+  }
+
+  .title {
+    font-size: var(--dyn-font-size-xs, 0.75rem);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .searchInput,
+  .nodeContent,
+  .switcher {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .root {
+    border-width: var(--dyn-border-width-md, 2px);
+  }
+
+  .showLine .children {
+    border-width: var(--dyn-border-width-md, 2px);
+  }
+}
+
+/* DARK MODE - Handled automatically via semantic tokens! */

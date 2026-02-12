@@ -1,0 +1,24 @@
+/**
+ * Design Token: Z-Index
+ * Domain: zindex
+ * 
+ * Provides: Z-index layering system for stacking context
+ * Used by: Modals, dropdowns, tooltips, fixed/sticky elements
+ * 
+ * Supports:
+ * - Dark mode: N/A
+ * - High contrast: N/A
+ * - Reduced motion: N/A
+ */
+
+:root {
+  /* ========== Z-INDEX SCALE ========== */
+  --dyn-zindex-base: 0;
+  --dyn-zindex-dropdown: 100;
+  --dyn-zindex-sticky: 200;
+  --dyn-zindex-fixed: 300;
+  --dyn-zindex-modal-backdrop: 900;
+  --dyn-zindex-modal: 1000;
+  --dyn-zindex-popover: 1100;
+  --dyn-zindex-tooltip: 1200;
+}

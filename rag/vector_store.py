@@ -614,3 +614,76 @@ class InMemoryVectorStore(VectorStore):
     def check_content_exists(self, content_hash: str) -> bool:
         """Check if content hash exists in-memory."""
         return any(d.metadata.get("content_hash") == content_hash for d in self.documents)
+
+
+class SimplePersistentVectorStore(InMemoryVectorStore):
+    """
+    Persistent vector store using JSON and NumPy.
+    
+    Dependency-free (except numpy) alternative to ChromaDB.
+    Suitable for environments where complex C-extensions or 
+    specific dependency versions (like Pydantic v1) fail.
+    """
+    
+    def __init__(
+        self, 
+        collection_name: str,
+        persist_directory: str,
+        embedding_function: Optional[Any] = None
+    ) -> None:
+        super().__init__(embedding_function)
+        self.collection_name = collection_name
+        self.persist_directory = Path(persist_directory)
+        self.persist_path = self.persist_directory / f"{collection_name}.json"
+        
+        # Load if exists
+        if self.persist_path.exists():
+            self.load()
+        else:
+            self.persist_directory.mkdir(parents=True, exist_ok=True)
+            
+    def add_documents(self, documents: List[Document]) -> None:
+        """Add documents and persist immediately."""
+        super().add_documents(documents)
+        self.save()
+        
+    def save(self) -> None:
+        """Save documents to JSON file."""
+        data = [
+            {
+                "id": doc.id,
+                "text": doc.text,
+                "metadata": doc.metadata,
+                "embedding": doc.embedding
+            }
+            for doc in self.documents
+        ]
+        self.persist_path.write_text(json.dumps(data), encoding="utf-8")
+        logger.info(f"Saved {len(self.documents)} documents to {self.persist_path}")
+        
+    def load(self) -> None:
+        """Load documents from JSON file."""
+        if not self.persist_path.exists():
+            return
+            
+        try:
+            data = json.loads(self.persist_path.read_text(encoding="utf-8"))
+            self.documents = [
+                Document(
+                    id=d["id"],
+                    text=d["text"],
+                    metadata=d["metadata"],
+                    embedding=d.get("embedding") # May be None
+                )
+                for d in data
+            ]
+            logger.info(f"Loaded {len(self.documents)} documents from {self.persist_path}")
+        except Exception as e:
+            logger.error(f"Failed to load persistent store: {e}")
+
+    def delete_collection(self) -> None:
+        """Delete json file and clear memory."""
+        super().delete_collection()
+        if self.persist_path.exists():
+            self.persist_path.unlink()
+

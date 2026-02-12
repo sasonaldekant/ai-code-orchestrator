@@ -10,11 +10,12 @@ This guide provides instructions on how to use the AI Code Orchestrator v4.0 (Bl
 4. [Nexus GUI](#4-nexus-gui)
 5. [Autonomous Self-Healing (Auto-Fixer)](#5-autonomous-self-healing-auto-fixer)
 6. [Vision Capabilities](#6-vision-capabilities)
-7. [IDE Bridge API](#7-ide-bridge-api)
-8. [Cognitive Memory (The Cortex)](#8-cognitive-memory-the-cortex)
-9. [Swarm Intelligence (Multi-Agent)](#9-swarm-intelligence-multi-agent)
-10. [Advanced Features](#10-advanced-features)
-11. [Troubleshooting](#11-troubleshooting)
+7. [VS Code Extension](#7-vs-code-extension)
+8. [IDE Bridge API](#8-ide-bridge-api)
+9. [Cognitive Memory (The Cortex)](#9-cognitive-memory-the-cortex)
+10. [Swarm Intelligence (Multi-Agent)](#10-swarm-intelligence-multi-agent)
+11. [Advanced Features](#11-advanced-features)
+12. [Troubleshooting](#12-troubleshooting)
 
 ---
 
@@ -96,6 +97,21 @@ Set budgets in `config/limits.yaml`. Default per-task budget is $0.50.
 python manage.py run "Refactor the authentication middleware." --auto-fix
 ```
 
+### Advanced CLI Usage (`run_task.py`)
+
+For more control, including file context:
+
+```bash
+# Basic
+python scripts/run_task.py "Refactor login.tsx"
+
+# With Context
+python scripts/run_task.py "Fix bug in this file" --context src/components/Login.tsx
+
+# Multiple Files
+python scripts/run_task.py "Update API call" -c src/api.ts -c src/types.ts
+```
+
 ---
 
 ## 4. Nexus GUI
@@ -143,7 +159,26 @@ The Nexus GUI has been updated with:
 
 ---
 
-## 7. IDE Bridge API
+## 7. VS Code Extension
+
+**Feature:** Use the AI Code Orchestrator directly within VS Code to minimize context switching.
+
+- **Installation:**
+  1. Open the `vscode-extension` folder in VS Code.
+  2. Run `npm install` and `npm run compile`.
+  3. Press `F5` to launch the Extension Development Host.
+
+- **Usage:**
+  - **Run Task:** `Ctrl+Shift+P` -> `AI Orchestrator: Run Task`. Enter your prompt.
+  - **Add Context:** Right-click a file tab or explorer item -> `AI Orchestrator: Add to Context`.
+  - **Clear Context:** `Ctrl+Shift+P` -> `AI Orchestrator: Clear Context`.
+
+- **Output:**
+  - Check the **"AI Orchestrator"** output channel for real-time logs.
+
+---
+
+## 8. IDE Bridge API
 
 **Feature:** Connect your IDE (VS Code, Cursor, JetBrains) directly to the Orchestrator.
 
@@ -156,7 +191,7 @@ The Orchestrator exposes endpoints for context-aware actions:
 
 ---
 
-## 8. Cognitive Memory (The Cortex)
+## 9. Cognitive Memory (The Cortex)
 
 **Feature:** The system learns from you and improves over time.
 
@@ -180,7 +215,7 @@ The system remembers how it fixed bugs in the past.
 
 ---
 
-## 9. Swarm Intelligence (Multi-Agent)
+## 10. Swarm Intelligence (Multi-Agent)
 
 **Feature:** Run complex requests through a coordinated "swarm" of agents that work in parallel.
 
@@ -205,9 +240,20 @@ The system remembers how it fixed bugs in the past.
 - **Producer-Reviewer Loop**: Automated code review.
 - **Cost Tracking**: Real-time budget monitoring.
 
+### Knowledge Ingestion (RAG)
+
+To keep the AI aware of your latest code (DynUI) and docs:
+
+```bash
+# Ingest DynUI Docs, Tokens, and Components
+python scripts/ingest_dyn_ui.py
+```
+
+This updates the `chromadb` vector store found in `rag/store_data`.
+
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 - **Logs:** Check `outputs/logs/` and `outputs/audit_logs/`.
 - **Experience DB:** If fixes are stale, you can delete `experience.db` to reset self-correction memory.

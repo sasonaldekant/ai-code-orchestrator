@@ -127,10 +127,19 @@ class ImplementationAgent:
         except FileNotFoundError:
             template = fallback + "\nArchitecture: {architecture}\nDomain Context: {domain_context}"
             
+        # Load Golden Rules
+        golden_rules = self._load_golden_rules()
+        
         prompt = template
         for k, v in context.items():
             val = json.dumps(v, indent=2) if isinstance(v, (dict, list)) else str(v)
             prompt = prompt.replace(f"{{{k}}}", val)
+            
+        # Inject Golden Rules if placeholder exists, otherwise append
+        if "{golden_rules}" in prompt:
+            prompt = prompt.replace("{golden_rules}", golden_rules)
+        elif golden_rules:
+            prompt += f"\n\n[GOLDEN RULES & STANDARDS]:\n{golden_rules}\n"
             
         if rag_context and "{domain_context}" not in prompt:
             rag_text = "\n\n--- Retrieved Context ---\n"
@@ -142,6 +151,18 @@ class ImplementationAgent:
             prompt += rag_text
             
         return prompt
+
+    def _load_golden_rules(self) -> str:
+        """Load the AI_CONTEXT.md file."""
+        try:
+            # rag/AI_CONTEXT.md relative to project root
+            context_path = Path(__file__).parent.parent.parent / "rag" / "AI_CONTEXT.md"
+            if context_path.exists():
+                return context_path.read_text(encoding="utf-8")
+            return ""
+        except Exception as e:
+            logger.warning(f"Failed to load AI_CONTEXT.md: {e}")
+            return ""
 
     def _parse_files(self, content: str) -> List[Dict[str, str]]:
         """Parse JSON output containing file list."""

@@ -1,0 +1,31 @@
+/**
+ * Design Token: Sizing
+ * Domain: size
+ * 
+ * Provides: Component sizes and touch targets
+ * Used by: Size variant components, touch-target responsive design
+ * 
+ * Supports:
+ * - Dark mode: N/A
+ * - High contrast: N/A
+ * - Reduced motion: N/A
+ */
+
+:root {
+  /* ========== COMPONENT SIZES ========== */
+  --dyn-size-xs: 1rem;            /* 16px */
+  --dyn-size-sm: 1.5rem;          /* 24px */
+  --dyn-size-md: 2.5rem;          /* 40px */
+  --dyn-size-lg: 3rem;            /* 48px */
+
+  /* ========== TOUCH TARGETS (WCAG) ========== */
+  --dyn-size-touch-target: 44px;
+  --dyn-size-touch-target-sm: 40px;
+  --dyn-size-touch-target-lg: 52px;
+
+  /* ========== ICON SIZES ========== */
+  --dyn-size-icon-sm: 1rem;       /* 16px */
+  --dyn-size-icon-md: 1.5rem;     /* 24px */
+  --dyn-size-icon-lg: 2rem;       /* 32px */
+  --dyn-size-icon-xl: 2.5rem;     /* 40px */
+}

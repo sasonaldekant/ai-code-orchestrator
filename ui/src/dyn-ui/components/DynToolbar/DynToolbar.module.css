@@ -1,0 +1,330 @@
+/**
+ * DynToolbar Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+.root {
+  /* Component Tokens (Layer 2) */
+  --dyn-toolbar-background: var(--dyn-toolbar-color-background, var(--dyn-semantic-surface, #ffffff));
+  --dyn-toolbar-border-color: var(--dyn-toolbar-color-border, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-toolbar-text-color: var(--dyn-toolbar-color-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-toolbar-shadow: var(--dyn-toolbar-elevation, var(--dyn-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.12)));
+
+  --dyn-toolbar-item-bg: var(--dyn-toolbar-color-item-background, transparent);
+  --dyn-toolbar-item-bg-hover: var(--dyn-toolbar-color-item-background-hover, var(--dyn-semantic-surface-hover, #f1f5f9));
+  --dyn-toolbar-item-bg-active: var(--dyn-toolbar-color-item-background-active, var(--dyn-semantic-surface-active, #e2e8f0));
+  --dyn-toolbar-item-text: var(--dyn-toolbar-color-item-text, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-toolbar-item-text-hover: var(--dyn-toolbar-color-item-text-hover, var(--dyn-semantic-text, #0f172a));
+  --dyn-toolbar-item-text-active: var(--dyn-toolbar-color-item-text-active, var(--dyn-theme-primary, #2563eb));
+
+  --dyn-toolbar-input-bg: var(--dyn-toolbar-color-input-background, var(--dyn-semantic-input-bg, #ffffff));
+  --dyn-toolbar-input-border: var(--dyn-toolbar-color-input-border, var(--dyn-semantic-input-border, #cbd5e1));
+  --dyn-toolbar-input-text: var(--dyn-toolbar-color-input-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-toolbar-input-focus: var(--dyn-toolbar-color-input-border-focus, var(--dyn-semantic-border-focus, #3b82f6));
+
+  --dyn-toolbar-menu-bg: var(--dyn-toolbar-color-menu-background, var(--dyn-semantic-surface, #ffffff));
+  --dyn-toolbar-menu-border: var(--dyn-toolbar-color-menu-border, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-toolbar-menu-shadow: var(--dyn-toolbar-menu-elevation, var(--dyn-shadow-lg, 0 10px 20px rgba(0, 0, 0, 0.15)));
+
+  --dyn-toolbar-size-height: var(--dyn-toolbar-size-root-height, 3.5rem);
+  --dyn-toolbar-item-height: var(--dyn-toolbar-size-item-height, 2.25rem);
+  --dyn-toolbar-transition: var(--dyn-toolbar-animation-duration, var(--dyn-transition-fast, 0.15s)) var(--dyn-toolbar-animation-easing, ease);
+
+  /* Base Styles */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+  background-color: var(--dyn-toolbar-background);
+  border-bottom: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-border-color);
+  box-shadow: var(--dyn-toolbar-shadow);
+  transition: all var(--dyn-toolbar-transition);
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--dyn-toolbar-size-height);
+  padding: 0 var(--dyn-spacing-md, 1rem);
+  gap: var(--dyn-spacing-md, 1rem);
+}
+
+.items {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm, 0.5rem);
+  flex: 1;
+}
+
+/* ============================================
+   TOOLBAR ITEM
+   ============================================ */
+
+.itemWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dyn-spacing-xs, 0.25rem);
+  padding: 0 var(--dyn-spacing-sm, 0.5rem);
+  height: var(--dyn-toolbar-item-height);
+  border: var(--dyn-border-width-sm, 1px) solid transparent;
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  background: var(--dyn-toolbar-item-bg);
+  color: var(--dyn-toolbar-item-text);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  font-weight: var(--dyn-font-weight-medium, 500);
+  cursor: pointer;
+  transition: all var(--dyn-toolbar-transition);
+  white-space: nowrap;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.item:hover:not(.itemDisabled) {
+  background-color: var(--dyn-toolbar-item-bg-hover);
+  color: var(--dyn-toolbar-item-text-hover);
+}
+
+.itemActive {
+  background-color: var(--dyn-toolbar-item-bg-active);
+  color: var(--dyn-toolbar-item-text-active);
+}
+
+.itemDisabled {
+  opacity: var(--dyn-opacity-disabled, 0.5);
+  cursor: not-allowed;
+}
+
+.itemIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25em;
+  min-width: 1.25em;
+}
+
+.itemLabel {
+  line-height: normal;
+}
+
+.itemBadge {
+  margin-left: var(--dyn-spacing-xs, 0.25rem);
+}
+
+/* ============================================
+   SPECIAL ITEMS
+   ============================================ */
+
+.separator {
+  width: var(--dyn-border-width-sm, 1px);
+  height: 1.5rem;
+  background-color: var(--dyn-toolbar-border-color);
+  margin: 0 var(--dyn-spacing-xs, 0.25rem);
+  opacity: 0.6;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 18.75rem;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  height: var(--dyn-toolbar-item-height);
+  padding: 0 var(--dyn-spacing-sm, 0.5rem);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-input-border);
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  outline: none;
+  background-color: var(--dyn-toolbar-input-bg);
+  color: var(--dyn-toolbar-input-text);
+  transition: all var(--dyn-toolbar-transition);
+}
+
+.searchInput:focus {
+  border-color: var(--dyn-toolbar-input-focus);
+  box-shadow: 0 0 0 var(--dyn-border-width-md, 2px) var(--dyn-action-focus, rgba(37, 99, 235, 0.2));
+}
+
+/* ============================================
+   DROPDOWN
+   ============================================ */
+
+.dropdownArrow {
+  display: inline-flex;
+  margin-left: var(--dyn-spacing-xs, 0.25rem);
+  transition: transform var(--dyn-toolbar-transition);
+}
+
+.itemActive .dropdownArrow {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--dyn-spacing-xs, 0.25rem);
+  min-width: 10rem;
+  background-color: var(--dyn-toolbar-menu-bg);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-menu-border);
+  border-radius: var(--dyn-border-radius-md, 0.375rem);
+  box-shadow: var(--dyn-toolbar-menu-shadow);
+  padding: var(--dyn-spacing-xs, 0.25rem);
+  z-index: var(--dyn-z-index-dropdown, 1000);
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm, 0.5rem);
+  padding: var(--dyn-spacing-sm, 0.5rem) var(--dyn-spacing-md, 1rem);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  color: var(--dyn-toolbar-text-color);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  cursor: pointer;
+  transition: background-color var(--dyn-toolbar-transition);
+}
+
+.dropdownItem:hover:not(:disabled) {
+  background-color: var(--dyn-toolbar-item-bg-hover);
+}
+
+/* ============================================
+   OVERFLOW
+   ============================================ */
+
+.overflow {
+  position: relative;
+  margin-left: auto;
+}
+
+.overflowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dyn-toolbar-item-height);
+  height: var(--dyn-toolbar-item-height);
+  border: var(--dyn-border-width-sm, 1px) solid transparent;
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  background: transparent;
+  color: var(--dyn-toolbar-item-text);
+  cursor: pointer;
+  transition: all var(--dyn-toolbar-transition);
+}
+
+.overflowButton:hover,
+.overflowButton.active {
+  background-color: var(--dyn-toolbar-item-bg-hover);
+  color: var(--dyn-toolbar-item-text-hover);
+}
+
+.overflowMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--dyn-spacing-xs, 0.25rem);
+  min-width: 12.5rem;
+  background-color: var(--dyn-toolbar-menu-bg);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-menu-border);
+  border-radius: var(--dyn-border-radius-md, 0.375rem);
+  box-shadow: var(--dyn-toolbar-menu-shadow);
+  padding: var(--dyn-spacing-xs, 0.25rem);
+  z-index: var(--dyn-z-index-popover, 1010);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   VARIANTS
+   ============================================ */
+
+.variantLight {
+  background-color: transparent;
+  box-shadow: none;
+  border-bottom: var(--dyn-border-width-sm, 1px) solid transparent;
+}
+
+.variantOutline {
+  background-color: transparent;
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-border-color);
+  border-radius: var(--dyn-border-radius-md, 0.375rem);
+}
+
+.variantFloating {
+  background-color: var(--dyn-toolbar-background);
+  box-shadow: var(--dyn-toolbar-menu-shadow);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-toolbar-border-color);
+  border-radius: var(--dyn-border-radius-lg, 0.5rem);
+}
+
+.sizeSm {
+  --dyn-toolbar-size-height: 3rem;
+  --dyn-toolbar-item-height: 2rem;
+}
+
+.sizeSm .item {
+  padding: 0 var(--dyn-spacing-xs, 0.25rem);
+  font-size: var(--dyn-font-size-xs, 0.75rem);
+}
+
+.sizeLg {
+  --dyn-toolbar-size-height: 4.5rem;
+  --dyn-toolbar-item-height: 2.75rem;
+}
+
+.sizeLg .item {
+  padding: 0 var(--dyn-spacing-md, 1rem);
+  font-size: var(--dyn-font-size-md, 1rem);
+}
+
+/* ============================================
+   POSITIONS
+   ============================================ */
+
+.positionTop {
+  position: static;
+}
+
+.positionBottom {
+  margin-top: auto;
+}
+
+.positionFixedTop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--dyn-z-index-sticky, 1020);
+}
+
+.positionFixedBottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--dyn-z-index-sticky, 1020);
+}
+
+/* DARK MODE - Handled automatically via semantic tokens! */

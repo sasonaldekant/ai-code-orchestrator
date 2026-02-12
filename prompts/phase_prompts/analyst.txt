@@ -6,6 +6,12 @@ Interpret the following request/requirements:
 [Context]:
 {domain_context}
 
+[PROJECT STANDARDS & RULES]:
+{golden_rules}
+
+Verify that requirements align with the project's Component Composition Guide and Golden Rules.
+
+
 If the request requires implementation, verify requirements and produce a structured list of:
 1. Requirements (Functional/Non-functional)
 2. Implementation Plan (Phases: analyst, architect, implementation, testing)

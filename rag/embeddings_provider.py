@@ -145,14 +145,23 @@ class HuggingFaceEmbeddings(EmbeddingsProvider):
         self.model_name = model_name
         self.device = device
         
-        # Load model
-        logger.info(f"Loading HuggingFace model: {model_name}")
-        self.model = SentenceTransformer(model_name, device=device)
+        # Check for local model first
+        project_root = Path(__file__).parent.parent
+        local_model_path = project_root / "rag" / "models" / "all-MiniLM-L6-v2"
+        
+        if local_model_path.exists():
+            logger.info(f"Loading local model from: {local_model_path}")
+            load_path = str(local_model_path)
+        else:
+            logger.info(f"Loading HuggingFace model: {model_name}")
+            load_path = model_name
+            
+        self.model = SentenceTransformer(load_path, device=device)
         self._dimension = self.model.get_sentence_embedding_dimension()
         
         logger.info(
             f"Initialized HuggingFace embeddings "
-            f"(model={model_name}, dim={self._dimension})"
+            f"(model={load_path}, dim={self._dimension})"
         )
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:

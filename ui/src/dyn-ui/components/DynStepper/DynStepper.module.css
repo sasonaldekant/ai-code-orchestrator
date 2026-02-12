@@ -1,0 +1,421 @@
+/**
+ * DynStepper Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+.root {
+  /* Color tokens - semantic for auto theme switching */
+  --dyn-stepper-step-bg-pending: var(--dyn-stepper-color-step-background-pending, var(--dyn-semantic-background, #ffffff));
+  --dyn-stepper-step-bg-active: var(--dyn-stepper-color-step-background-active, var(--dyn-theme-primary, #3b82f6));
+  --dyn-stepper-step-bg-completed: var(--dyn-stepper-color-step-background-completed, var(--dyn-theme-primary, #3b82f6));
+  --dyn-stepper-step-bg-error: var(--dyn-stepper-color-step-background-error, var(--dyn-feedback-negative-default, #ef4444));
+  
+  --dyn-stepper-step-text-pending: var(--dyn-stepper-color-step-text-pending, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-stepper-step-text-active: var(--dyn-stepper-color-step-text-active, var(--dyn-semantic-text-inverse, #ffffff));
+  --dyn-stepper-step-text-completed: var(--dyn-stepper-color-step-text-completed, var(--dyn-semantic-text-inverse, #ffffff));
+  --dyn-stepper-step-text-error: var(--dyn-stepper-color-step-text-error, var(--dyn-semantic-text-inverse, #ffffff));
+  
+  --dyn-stepper-label-text-pending: var(--dyn-stepper-color-label-text-pending, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-stepper-label-text-active: var(--dyn-stepper-color-label-text-active, var(--dyn-semantic-text, #0f172a));
+  --dyn-stepper-label-text-completed: var(--dyn-stepper-color-label-text-completed, var(--dyn-semantic-text, #0f172a));
+  --dyn-stepper-label-text-error: var(--dyn-stepper-color-label-text-error, var(--dyn-feedback-negative-default, #ef4444));
+
+  --dyn-stepper-step-border: var(--dyn-stepper-color-step-border, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-stepper-step-border-active: var(--dyn-stepper-color-step-border-active, var(--dyn-theme-primary, #3b82f6));
+
+  --dyn-stepper-connector-bg: var(--dyn-stepper-color-connector-background, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-stepper-connector-active: var(--dyn-stepper-color-connector-active, var(--dyn-theme-primary, #3b82f6));
+
+  /* Size tokens */
+  --dyn-stepper-step-size: var(--dyn-stepper-size-step, 2rem);
+  --dyn-stepper-gap: var(--dyn-stepper-spacing-gap, var(--dyn-spacing-md, 1rem));
+  --dyn-stepper-label-gap: var(--dyn-stepper-spacing-labelGap, var(--dyn-spacing-sm, 0.5rem));
+
+  /* Typography */
+  --dyn-stepper-font-size: var(--dyn-stepper-size-fontSize, var(--dyn-font-size-sm, 0.875rem));
+  --dyn-stepper-font-weight: var(--dyn-stepper-size-fontWeight, var(--dyn-font-weight-medium, 500));
+
+  /* Base styles */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--dyn-stepper-font-size);
+  gap: var(--dyn-stepper-gap);
+  box-sizing: border-box;
+}
+
+/* ============================================
+   LIST CONTAINER
+   ============================================ */
+.list {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  width: 100%;
+  position: relative;
+}
+
+/* Vertical Orientation */
+.orientationVertical .list {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* ============================================
+   STEP ITEM
+   ============================================ */
+.item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: 0;
+}
+
+/* Connector Line (Horizontal) */
+.item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--dyn-stepper-step-size) / 2);
+  left: 50%;
+  width: 100%;
+  height: var(--dyn-border-width-sm, 2px);
+  background-color: var(--dyn-stepper-connector-bg);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Completed Connector */
+.itemCompleted:not(:last-child)::after {
+  background-color: var(--dyn-stepper-connector-active);
+}
+
+/* Vertical Item */
+.orientationVertical .item {
+  flex-direction: row;
+  align-items: flex-start;
+  min-height: 4rem;
+}
+
+/* Connector Line (Vertical) */
+.orientationVertical .item:not(:last-child)::after {
+  top: var(--dyn-stepper-step-size);
+  left: calc(var(--dyn-stepper-step-size) / 2);
+  width: var(--dyn-border-width-sm, 2px);
+  height: calc(100% - var(--dyn-stepper-step-size));
+  transform: translateX(-50%);
+}
+
+/* ============================================
+   STEP BUTTON (CLICKABLE AREA)
+   ============================================ */
+.button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--dyn-stepper-label-gap);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  color: var(--dyn-stepper-label-text-pending);
+  font-family: inherit;
+  font-size: inherit;
+  transition: all var(--dyn-transition-normal, 0.2s);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: var(--dyn-opacity-disabled, 0.6);
+}
+
+.orientationVertical .button {
+  flex-direction: row;
+  width: auto;
+  align-items: center;
+}
+
+/* ============================================
+   STEP INDEX (CIRCLE)
+   ============================================ */
+.stepIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dyn-stepper-step-size);
+  height: var(--dyn-stepper-step-size);
+  flex-shrink: 0;
+  border-radius: var(--dyn-border-radius-full, 50%);
+  border: var(--dyn-border-width-md, 2px) solid var(--dyn-stepper-step-border);
+  background-color: var(--dyn-stepper-step-bg-pending);
+  color: var(--dyn-stepper-step-text-pending);
+  font-weight: var(--dyn-font-weight-semibold, 600);
+  font-size: var(--dyn-stepper-font-size);
+  line-height: 1;
+  text-align: center;
+  transition: all var(--dyn-transition-normal, 0.2s);
+}
+
+/* Active State */
+.itemCurrent .stepIndex {
+  border-color: var(--dyn-stepper-step-border-active);
+  background-color: var(--dyn-stepper-step-bg-active);
+  color: var(--dyn-stepper-step-text-active);
+}
+
+/* Completed State */
+.itemCompleted .stepIndex {
+  border-color: var(--dyn-stepper-step-bg-completed);
+  background-color: var(--dyn-stepper-step-bg-completed);
+  color: var(--dyn-stepper-step-text-completed);
+}
+
+/* Error State */
+.itemError .stepIndex {
+  border-color: var(--dyn-stepper-step-bg-error);
+  background-color: var(--dyn-stepper-step-bg-error);
+  color: var(--dyn-stepper-step-text-error);
+}
+
+/* ============================================
+   STEP LABEL
+   ============================================ */
+.stepLabel {
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  font-weight: var(--dyn-stepper-font-weight);
+  text-align: center;
+  color: var(--dyn-stepper-label-text-pending);
+  transition: color var(--dyn-transition-normal, 0.2s);
+}
+
+.itemCurrent .stepLabel {
+  color: var(--dyn-stepper-label-text-active);
+  font-weight: var(--dyn-font-weight-bold, 700);
+}
+
+.itemCompleted .stepLabel {
+  color: var(--dyn-stepper-label-text-completed);
+}
+
+.itemError .stepLabel {
+  color: var(--dyn-stepper-label-text-error);
+}
+
+.stepTextContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.orientationVertical .stepTextContainer {
+  align-items: flex-start;
+  margin-left: var(--dyn-spacing-sm, 0.5rem);
+}
+
+.orientationVertical .stepLabel {
+  text-align: left;
+}
+
+.description {
+  font-size: var(--dyn-font-size-xs, 0.75rem);
+  line-height: var(--dyn-line-height-tight, 1.25);
+  color: var(--dyn-semantic-text-secondary, #64748b);
+  text-align: center;
+  margin-top: -2px;
+  max-width: 150px;
+}
+
+.orientationVertical .description {
+  text-align: left;
+  margin-top: 2px;
+  max-width: none;
+}
+
+.optional {
+  font-size: var(--dyn-font-size-xs, 0.75rem);
+  color: var(--dyn-semantic-text-secondary, #64748b);
+  font-style: italic;
+  font-weight: var(--dyn-font-weight-normal, 400);
+}
+
+/* ============================================
+   PANEL / CONTENT
+   ============================================ */
+.panel {
+  padding-top: var(--dyn-spacing-lg, 1.5rem);
+  width: 100%;
+}
+
+.panelHidden {
+  display: none;
+}
+
+.orientationVertical .panel {
+  padding-left: calc(var(--dyn-stepper-step-size) + var(--dyn-spacing-md, 1rem));
+  padding-top: 0;
+  padding-bottom: var(--dyn-spacing-lg, 1.5rem);
+  margin-left: calc((var(--dyn-stepper-step-size) / 2) - 1px);
+  border-left: var(--dyn-border-width-sm, 2px) solid transparent;
+}
+
+/* ============================================
+   VARIANTS
+   ============================================ */
+
+/* Variant: Dots */
+.variantDots .stepIndex {
+  width: 0.75rem;
+  height: 0.75rem;
+  padding: 0;
+  border-radius: var(--dyn-border-radius-full, 50%);
+  color: transparent;
+  background-color: var(--dyn-semantic-border-strong, #94a3b8);
+  border: none;
+}
+
+.variantDots .itemCurrent .stepIndex {
+  background-color: var(--dyn-stepper-step-bg-active);
+  transform: scale(1.25);
+}
+
+.variantDots .itemCompleted .stepIndex {
+  background-color: var(--dyn-stepper-step-bg-completed);
+}
+
+.variantDots .list {
+  justify-content: center;
+  gap: var(--dyn-spacing-lg, 1.5rem);
+  padding: var(--dyn-spacing-md, 1rem) 0;
+}
+
+.variantDots .item {
+  flex: 0 1 auto;
+}
+
+.variantDots .item::after {
+  display: none;
+}
+
+/* Variant: Tabs (Rectangles) */
+.variantTabs .list {
+  background-color: var(--dyn-semantic-surface-muted, #f8fafc);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-stepper-step-border);
+  border-radius: var(--dyn-border-radius-md, 0.375rem);
+  overflow: hidden;
+  gap: 0;
+}
+
+.variantTabs .item::after {
+  display: none;
+}
+
+.variantTabs .button {
+  flex-direction: row;
+  justify-content: center;
+  padding: var(--dyn-spacing-md, 1rem);
+  border-radius: 0;
+  border-bottom: var(--dyn-border-width-lg, 4px) solid transparent;
+  width: 100%;
+  gap: var(--dyn-spacing-md, 1rem);
+  background-color: transparent;
+}
+
+.variantTabs .itemCurrent .button {
+  background-color: var(--dyn-semantic-background, #ffffff);
+  border-bottom-color: var(--dyn-stepper-step-bg-active);
+  color: var(--dyn-stepper-step-bg-active);
+  box-shadow: var(--dyn-elevation-low);
+}
+
+.variantTabs .itemCompleted .button {
+  color: var(--dyn-stepper-step-bg-completed);
+}
+
+.variantTabs .button:hover:not(:disabled) {
+  background-color: var(--dyn-semantic-surface-hover, #f1f5f9);
+}
+
+.variantTabs .stepIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-stepper-step-border);
+  background-color: var(--dyn-semantic-surface-muted, #f8fafc);
+  border-radius: var(--dyn-border-radius-sm, 0.25rem);
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+}
+
+.variantTabs .itemCurrent .stepIndex {
+  border-color: var(--dyn-stepper-step-border-active);
+  background-color: var(--dyn-stepper-step-bg-active);
+  color: var(--dyn-stepper-step-text-active);
+}
+
+.variantTabs.orientationVertical .list {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: var(--dyn-border-width-sm, 1px) solid var(--dyn-stepper-step-border);
+}
+
+/* ============================================
+   SIZES
+   ============================================ */
+.sizeSm {
+  --dyn-stepper-step-size: 1.5rem;
+  --dyn-stepper-font-size: var(--dyn-font-size-xs, 0.75rem);
+}
+
+.sizeLg {
+  --dyn-stepper-step-size: 2.5rem;
+  --dyn-stepper-font-size: var(--dyn-font-size-md, 1rem);
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.progressBar {
+  width: 100%;
+  height: var(--dyn-spacing-xs, 0.5rem);
+  background-color: var(--dyn-stepper-connector-bg);
+  border-radius: var(--dyn-border-radius-full, 999px);
+  overflow: hidden;
+  margin-bottom: var(--dyn-spacing-md, 1rem);
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--dyn-stepper-step-bg-active);
+  transition: width var(--dyn-transition-normal, 0.3s) ease;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+.button:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-semantic-border-focus, #3b82f6);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .stepIndex,
+  .stepLabel,
+  .progressFill {
+    transition: none !important;
+  }
+}

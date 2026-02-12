@@ -3,13 +3,65 @@
   "title": "Implementation schema",
   "type": "object",
   "properties": {
-    "phase": {"type": "string"},
-    "backend": {"type": "string"},
-    "frontend": {"type": "string"},
-    "tokens_in": {"type": "number"},
-    "tokens_out": {"type": "number"},
-    "model": {"type": "string"},
-    "provider": {"type": "string"}
+    "phase": {
+      "type": "string"
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "backend_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "content"
+            ]
+          }
+        },
+        "frontend_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "content"
+            ]
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "backend_files",
+        "frontend_files"
+      ]
+    },
+    "tokens_in": {
+      "type": "number"
+    },
+    "tokens_out": {
+      "type": "number"
+    },
+    "models": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "thinking": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
-  "required": ["phase", "backend", "frontend"]
+  "required": [
+    "phase",
+    "output"
+  ]
 }

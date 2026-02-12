@@ -1,0 +1,436 @@
+/**
+ * DynResponsiveTabs Component Styles
+ * 100% Design Token Compliance
+ * Unified Token Strategy: 3-Level Fallback Pattern
+ */
+
+/* ============================================
+   COMPONENT TOKENS
+   ============================================ */
+
+.container {
+  /* Color tokens - Connected Box Design */
+  --dyn-tabs-bg: var(--dyn-tabs-color-background, var(--dyn-semantic-surface-muted, #f8fafc));
+  --dyn-tabs-bg-active: var(--dyn-tabs-color-background-active, var(--dyn-semantic-surface, #ffffff));
+  --dyn-tabs-bg-hover: var(--dyn-tabs-color-background-hover, var(--dyn-semantic-surface-hover, #f1f5f9));
+  --dyn-tabs-border: var(--dyn-tabs-color-border, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-tabs-border-active: var(--dyn-tabs-color-border-active, var(--dyn-theme-primary, #3b82f6));
+  --dyn-tabs-text: var(--dyn-tabs-color-text, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-tabs-text-active: var(--dyn-tabs-color-text-active, var(--dyn-semantic-text, #0f172a));
+
+  /* Sizing & Layout */
+  --dyn-tabs-radius: var(--dyn-tabs-size-borderRadius, var(--dyn-border-radius-md, 0.5rem));
+  --dyn-tabs-padding: var(--dyn-tabs-spacing-padding, var(--dyn-spacing-sm, 0.75rem) var(--dyn-spacing-lg, 1.5rem));
+  --dyn-tabs-min-height: var(--dyn-tabs-size-minHeight, 200px);
+  --dyn-tabs-transition: var(--dyn-tabs-animation-duration, var(--dyn-transition-normal, 0.2s)) var(--dyn-tabs-animation-easing, var(--dyn-easing-ease-in-out, ease-in-out));
+  
+  /* Accordion specific */
+  --dyn-tabs-accordion-header: var(--dyn-tabs-color-accordion-header, var(--dyn-semantic-surface-muted, #f8fafc));
+  --dyn-tabs-accordion-header-active: var(--dyn-tabs-color-accordion-header-active, var(--dyn-semantic-surface, #ffffff));
+  --dyn-tabs-accordion-toggle-size: var(--dyn-tabs-size-accordion-toggle, 1.5rem);
+
+  /* Accessibility */
+  --dyn-tabs-focus-ring: var(--dyn-tabs-color-focus, var(--dyn-semantic-border-focus, #3b82f6));
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ============================================
+   TAB LIST
+   ============================================ */
+
+.tabList {
+  display: flex;
+  gap: var(--dyn-spacing-2xs, 0.25rem);
+  border-bottom: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: var(--dyn-z-index-base, 1);
+}
+
+/* ============================================
+   INDIVIDUAL TAB
+   ============================================ */
+
+.tab {
+  background: var(--dyn-tabs-bg);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-bottom: none;
+  border-radius: var(--dyn-tabs-radius) var(--dyn-tabs-radius) 0 0;
+  padding: var(--dyn-tabs-padding);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+  font-weight: var(--dyn-font-weight-medium, 500);
+  color: var(--dyn-tabs-text);
+  cursor: pointer;
+  transition: var(--dyn-tabs-transition);
+  position: relative;
+  margin-bottom: -1px; /* Overlap with tabList line */
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+}
+
+.tab:hover:not(.disabledTab):not(.activeTab) {
+  background: var(--dyn-tabs-bg-hover);
+  color: var(--dyn-semantic-text);
+}
+
+.activeTab {
+  background: var(--dyn-tabs-bg-active);
+  color: var(--dyn-tabs-text-active);
+  font-weight: var(--dyn-font-weight-semibold, 600);
+  border-bottom-color: var(--dyn-tabs-bg-active);
+  z-index: calc(var(--dyn-z-index-base, 1) + 1);
+}
+
+/* Accent top line for active tab */
+.activeTab::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  background: var(--dyn-tabs-border-active);
+  border-radius: var(--dyn-tabs-radius) var(--dyn-tabs-radius) 0 0;
+}
+
+.disabledTab {
+  opacity: var(--dyn-opacity-disabled, 0.5);
+  cursor: not-allowed;
+  background: var(--dyn-semantic-surface-muted, #f1f5f9);
+}
+
+.tab:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-tabs-focus-ring);
+  outline-offset: -2px;
+}
+
+/* ============================================
+   TAB ICON
+   ============================================ */
+
+.tabIcon {
+  margin-right: var(--dyn-spacing-sm, 0.5rem);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ============================================
+   PANEL WRAPPER
+   ============================================ */
+
+.panelWrapper {
+  position: relative;
+}
+
+.panelContainer {
+  flex: 1;
+}
+
+/* ============================================
+   CONTENT PANEL
+   ============================================ */
+
+.panel {
+  background: var(--dyn-tabs-bg-active);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-top: none;
+  border-radius: 0 0 var(--dyn-tabs-radius) var(--dyn-tabs-radius);
+  padding: var(--dyn-spacing-lg, 1.5rem);
+  min-height: var(--dyn-tabs-min-height);
+  animation: dynResponsiveTabsFadeIn var(--dyn-transition-normal, 0.2s) ease;
+  position: relative;
+  z-index: var(--dyn-z-index-base, 1);
+  box-shadow: var(--dyn-elevation-low, 0 1px 3px rgba(0,0,0,0.1));
+  color: var(--dyn-semantic-text, #0f172a);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.activePanel {
+  display: block;
+}
+
+@keyframes dynResponsiveTabsFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   VERTICAL LAYOUT
+   ============================================ */
+
+.orientationVertical {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  width: 100%;
+}
+
+.orientationVertical .tabList {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  min-width: 200px;
+  gap: var(--dyn-spacing-xs, 0.25rem);
+}
+
+.orientationVertical .tab {
+  border: var(--dyn-border-width-sm, 1px) solid transparent;
+  border-right: none;
+  border-radius: var(--dyn-tabs-radius) 0 0 var(--dyn-tabs-radius);
+  margin-right: -1px;
+  margin-bottom: var(--dyn-spacing-2xs, 0.125rem);
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.orientationVertical .activeTab {
+  background: var(--dyn-tabs-bg-active);
+  border-color: var(--dyn-tabs-border);
+  border-right-color: var(--dyn-tabs-bg-active);
+  color: var(--dyn-tabs-text-active);
+  font-weight: var(--dyn-font-weight-semibold, 600);
+}
+
+/* Accent left line for vertical active tab */
+.orientationVertical .activeTab::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  width: 3px;
+  background: var(--dyn-tabs-border-active);
+  border-radius: var(--dyn-tabs-radius) 0 0 var(--dyn-tabs-radius);
+}
+
+/* Hide horizontal top indicator in vertical mode */
+.orientationVertical .activeTab::after {
+  display: none;
+}
+
+.orientationVertical .panel {
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-left: none;
+  border-radius: 0 var(--dyn-tabs-radius) var(--dyn-tabs-radius) var(--dyn-tabs-radius);
+  flex: 1;
+}
+
+/* ============================================
+   ACCORDION MODE
+   ============================================ */
+
+.accordion {
+  width: 100%;
+}
+
+.accordion .panelWrapper {
+  margin-bottom: var(--dyn-spacing-sm, 0.5rem);
+}
+
+.accordionHeader {
+  background: var(--dyn-tabs-accordion-header);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-radius: var(--dyn-border-radius-md, 0.5rem);
+  padding: var(--dyn-spacing-md, 1rem) var(--dyn-spacing-lg, 1.5rem);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--dyn-spacing-md, 1rem);
+  font-size: var(--dyn-font-size-md, 1rem);
+  font-weight: var(--dyn-font-weight-medium, 500);
+  color: var(--dyn-tabs-text);
+  transition: var(--dyn-tabs-transition);
+  user-select: none;
+  width: 100%;
+  font-family: inherit;
+}
+
+.accordionHeader:hover:not(.disabledAccordion) {
+  background: var(--dyn-tabs-bg-hover);
+  border-color: var(--dyn-tabs-border-active);
+}
+
+.accordionHeader:focus-visible {
+  outline: var(--dyn-border-width-md, 2px) solid var(--dyn-tabs-focus-ring);
+  outline-offset: 2px;
+}
+
+.activeAccordion {
+  background: var(--dyn-tabs-accordion-header-active);
+  border-color: var(--dyn-tabs-border-active);
+  color: var(--dyn-tabs-text-active);
+  font-weight: var(--dyn-font-weight-semibold, 600);
+  border-radius: var(--dyn-border-radius-md, 0.5rem) var(--dyn-border-radius-md, 0.5rem) 0 0;
+}
+
+.disabledAccordion {
+  opacity: var(--dyn-opacity-disabled, 0.5);
+  cursor: not-allowed;
+  background: var(--dyn-semantic-surface-muted, #f1f5f9);
+}
+
+.accordionLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--dyn-spacing-sm, 0.5rem);
+  flex: 1;
+}
+
+.accordionIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.accordionToggle {
+  flex-shrink: 0;
+  width: var(--dyn-tabs-accordion-toggle-size);
+  height: var(--dyn-tabs-accordion-toggle-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--dyn-transition-normal, 0.2s) ease;
+}
+
+.activeAccordion .accordionToggle {
+  transform: rotate(180deg);
+}
+
+.accordion .panel {
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-top: none;
+  border-radius: 0 0 var(--dyn-tabs-radius) var(--dyn-tabs-radius);
+  animation: dynResponsiveTabsFadeIn var(--dyn-transition-normal, 0.2s) ease;
+  min-height: auto;
+}
+
+/* ============================================
+   NESTED TABS
+   ============================================ */
+
+.nested .tab {
+  padding: var(--dyn-spacing-xs, 0.5rem) var(--dyn-spacing-md, 1rem);
+  font-size: var(--dyn-font-size-sm, 0.875rem);
+}
+
+.nested.orientationVertical .tab {
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  border-right: none;
+}
+
+.nested.orientationVertical .activeTab {
+  border-right-color: var(--dyn-tabs-bg-active);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .tab {
+    padding: var(--dyn-spacing-sm, 0.5rem) var(--dyn-spacing-md, 1rem);
+    font-size: var(--dyn-font-size-xs, 0.75rem);
+  }
+
+  .panel {
+    padding: var(--dyn-spacing-md, 1rem);
+  }
+
+  .orientationVertical .tabList {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab {
+    padding: var(--dyn-spacing-xs, 0.25rem) var(--dyn-spacing-sm, 0.5rem);
+  }
+
+  .panel {
+    padding: var(--dyn-spacing-sm, 0.5rem);
+    min-height: auto;
+  }
+
+  .accordionHeader {
+    padding: var(--dyn-spacing-sm, 0.5rem) var(--dyn-spacing-md, 1rem);
+  }
+
+  .orientationVertical {
+    flex-direction: column;
+  }
+
+  .orientationVertical .tabList {
+    border-right: none;
+    border-bottom: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+    min-width: auto;
+    margin-right: 0;
+    margin-bottom: -1px;
+  }
+
+  .orientationVertical .tab {
+    border-radius: var(--dyn-tabs-radius) var(--dyn-tabs-radius) 0 0;
+    border: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+    border-bottom: none;
+    margin-right: 0;
+  }
+
+  .orientationVertical .activeTab {
+    border-bottom-color: var(--dyn-tabs-bg-active);
+  }
+
+  .orientationVertical .panel {
+    border-radius: 0 0 var(--dyn-tabs-radius) var(--dyn-tabs-radius);
+    border-left: var(--dyn-border-width-sm, 1px) solid var(--dyn-tabs-border);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .accordionHeader,
+  .accordionToggle {
+    transition: none !important;
+  }
+
+  .panel,
+  .accordion .panel {
+    animation: none !important;
+  }
+}
+
+/* Prop-driven animation disable */
+.noAnimation .tab,
+.noAnimation .accordionHeader,
+.noAnimation .accordionToggle {
+  transition: none !important;
+}
+
+.noAnimation .panel,
+.noAnimation.accordion .panel {
+  animation: none !important;
+}
+
+/* ============================================
+   DARK MODE
+   Note: Handled automatically via semantic tokens!
+   ============================================ */

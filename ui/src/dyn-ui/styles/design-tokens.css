@@ -1,0 +1,15 @@
+/* ============================================
+   DESIGN TOKENS - Global Import
+   ============================================
+   This file imports CSS variables generated from
+   @dyn-ui/design-tokens package.
+   
+   Import this file in your app's main entry point
+   or in Storybook preview.tsx
+   ============================================ */
+
+/* 1. Import foundation tokens (colors, spacing, typography, etc.) */
+@import '@dyn-ui/design-tokens/styles/foundations/index.css';
+
+/* 2. Import component-specific tokens */
+@import '@dyn-ui/design-tokens/styles/components/index.css';

@@ -12,8 +12,11 @@ MILESTONE:
 Domain Context (Database entities and existing components):
 {domain_context}
 
+[PROJECT STANDARDS & RULES]:
+{golden_rules}
+
 Design the system structure, including key components, their responsibilities, and interactions.
-Be specific about which existing UI components (like DynInput, RadioGroup, DatePicker) should be used.
+You MUST use existing DynUI components. Do not invent new UI elements if they exist in the Golden Rules.
 Describe the layout structure (e.g., using DynStack, DynFlex).
 
 Return the architecture in the prescribed JSON format with 'components', 'data_flow', and 'technologies' sections.

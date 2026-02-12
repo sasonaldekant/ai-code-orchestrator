@@ -1,0 +1,148 @@
+/**
+ * DynGauge Component Styles - Option B: Full Token Integration
+ * 100% Design Token Compliance
+ */
+
+.root {
+  /* Component Tokens - 3-level fallback */
+  --dyn-gauge-bg: var(--dyn-gauge-background, var(--dyn-semantic-background, #ffffff));
+  --dyn-gauge-border: var(--dyn-gauge-border-color, var(--dyn-semantic-border, #e2e8f0));
+  --dyn-gauge-text-primary: var(--dyn-gauge-text, var(--dyn-semantic-text, #0f172a));
+  --dyn-gauge-text-secondary: var(--dyn-gauge-text-muted, var(--dyn-semantic-text-secondary, #64748b));
+  --dyn-gauge-track: var(--dyn-gauge-track-color, var(--dyn-semantic-background-secondary, #f1f5f9));
+  --dyn-gauge-ticks: var(--dyn-gauge-tick-color, var(--dyn-semantic-border-strong, #94a3b8));
+  --dyn-gauge-radius: var(--dyn-gauge-border-radius, var(--dyn-border-radius-md, 8px));
+  
+  /* Gauge specific tokens */
+  --dyn-gauge-font-size-sm: var(--dyn-gauge-text-sm, 10px);
+  --dyn-gauge-font-size-md: var(--dyn-gauge-text-md, 12px);
+  --dyn-gauge-font-size-lg: var(--dyn-gauge-text-lg, 14px);
+  --dyn-gauge-needle-color: var(--dyn-gauge-needle, var(--dyn-semantic-text, #0f172a));
+  --dyn-gauge-needle-center: var(--dyn-gauge-needle-bg, var(--dyn-semantic-background, #ffffff));
+  
+  /* Animation */
+  --dyn-gauge-animation-duration: var(--dyn-gauge-animation, 800ms);
+  
+  /* Breakpoints */
+  --dyn-gauge-breakpoint-mobile: var(--dyn-gauge-mobile-break, 768px);
+
+  /* Base styles */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--dyn-spacing-md);
+  background: var(--dyn-gauge-bg);
+  border-radius: var(--dyn-gauge-radius);
+  border: var(--dyn-border-width-sm, 1px) solid var(--dyn-gauge-border);
+  padding: var(--dyn-spacing-md);
+  font-family: inherit;
+}
+
+/* ... (figure & header styles) ... */
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+
+.sizeSm {
+  padding: var(--dyn-spacing-sm);
+}
+
+.sizeSm .title {
+  font-size: var(--dyn-font-size-md);
+}
+
+.sizeSm .subtitle {
+  font-size: var(--dyn-font-size-xs);
+}
+
+.sizeSm .valueText {
+  font-size: var(--dyn-font-size-lg);
+}
+
+.sizeSm .valueLabel {
+  font-size: var(--dyn-font-size-xs);
+}
+
+.sizeMd {
+  padding: var(--dyn-spacing-md);
+}
+
+.sizeMd .title {
+  font-size: var(--dyn-font-size-lg);
+}
+
+.sizeMd .subtitle {
+  font-size: var(--dyn-font-size-sm);
+}
+
+.sizeMd .valueText {
+  font-size: var(--dyn-font-size-xl);
+}
+
+.sizeMd .valueLabel {
+  font-size: var(--dyn-font-size-xs);
+}
+
+.sizeLg {
+  padding: var(--dyn-spacing-lg);
+}
+
+.sizeLg .title {
+  font-size: var(--dyn-font-size-xl);
+}
+
+.sizeLg .subtitle {
+  font-size: var(--dyn-font-size-md);
+}
+
+.sizeLg .valueText {
+  font-size: var(--dyn-font-size-2xl);
+}
+
+.sizeLg .valueLabel {
+  font-size: var(--dyn-font-size-sm);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: none;
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .root {
+    padding: var(--dyn-spacing-sm);
+    gap: var(--dyn-spacing-sm);
+  }
+
+  .title {
+    font-size: var(--dyn-font-size-md);
+  }
+
+  .subtitle {
+    font-size: var(--dyn-font-size-xs);
+  }
+
+  .legend {
+    gap: var(--dyn-spacing-xs);
+  }
+
+  .legendItem {
+    gap: var(--dyn-spacing-xs);
+    font-size: var(--dyn-font-size-xs);
+  }
+}
+
+/* ============================================
+   DARK MODE
+   Note: Handled automatically via semantic tokens!
+   ============================================ */

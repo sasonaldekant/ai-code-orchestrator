@@ -173,7 +173,7 @@ class AgenticRetriever:
         
         return all_candidates
 
-    async def _decompose_query(self, query: str) -> Optional[List[str]:
+    async def _decompose_query(self, query: str) -> Optional[List[str]]:
         """
         Decompose complex query into sub-queries.
         

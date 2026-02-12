@@ -1,0 +1,87 @@
+/**
+ * Theme: Dark Mode
+ * 
+ * Provides dark mode color overrides for all foundation and component tokens.
+ * Automatically applied when prefers-color-scheme: dark is set.
+ * 
+ * This file overrides foundation color tokens and dark-specific component colors.
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ========== DARK MODE BACKGROUNDS ========== */
+    --dyn-color-background: #0f172a;
+    --dyn-color-background-secondary: #1e293b;
+    --dyn-color-background-hover: #1e293b;
+    --dyn-color-background-selected: #334155;
+    --dyn-color-surface: #1a1f35;
+    --dyn-color-surface-subtle: #2d3748;
+    --dyn-color-surface-muted: #4a5568;
+    --dyn-color-surface-disabled: #1e293b;
+    --dyn-color-surface-readonly: #1a1f2e;
+
+    /* ========== DARK MODE TEXT ========== */
+    --dyn-color-text-primary: #f1f5f9;
+    --dyn-color-text-secondary: #cbd5f5;
+    --dyn-color-text-tertiary: #a0aec0;
+    --dyn-color-text-disabled: #64748b;
+    --dyn-color-text-placeholder: #64748b;
+    --dyn-color-text-inverse: #0f172a;
+
+    /* ========== DARK MODE BORDERS ========== */
+    --dyn-color-border: #334155;
+    --dyn-color-border-light: #475569;
+    --dyn-color-border-subtle: rgba(255, 255, 255, 0.1);
+    --dyn-color-border-hover: #64748b;
+    --dyn-color-border-disabled: #334155;
+
+    /* ========== DARK MODE BRAND COLORS ========== */
+    --dyn-color-primary: #3b82f6;
+    --dyn-color-primary-hover: #2563eb;
+    --dyn-color-primary-active: #1d4ed8;
+    --dyn-color-primary-light: #60a5fa;
+    --dyn-color-primary-dark: #1e3a8a;
+    --dyn-color-primary-alpha: rgba(59, 130, 246, 0.16);
+
+    /* ========== DARK MODE STATUS COLORS ========== */
+    --dyn-color-success: #34d399;
+    --dyn-color-success-hover: #10b981;
+    --dyn-color-success-light: #6ee7b7;
+    --dyn-color-success-dark: #047857;
+    --dyn-color-success-alpha: rgba(52, 211, 153, 0.16);
+
+    --dyn-color-warning: #fbbf24;
+    --dyn-color-warning-hover: #f59e0b;
+    --dyn-color-warning-light: #fcd34d;
+    --dyn-color-warning-dark: #b45309;
+    --dyn-color-warning-alpha: rgba(251, 191, 36, 0.16);
+
+    --dyn-color-info: #38bdf8;
+    --dyn-color-info-hover: #0ea5e9;
+    --dyn-color-info-light: #7dd3fc;
+    --dyn-color-info-dark: #0369a1;
+    --dyn-color-info-alpha: rgba(56, 189, 248, 0.16);
+
+    --dyn-color-error: #f87171;
+    --dyn-color-error-hover: #ef4444;
+    --dyn-color-error-light: #fca5a5;
+    --dyn-color-error-dark: #7f1d1d;
+    --dyn-color-error-alpha: rgba(248, 113, 113, 0.16);
+
+    --dyn-color-danger: #f87171;
+    --dyn-color-danger-hover: #ef4444;
+    --dyn-color-danger-active: #dc2626;
+    --dyn-color-danger-light: #fecaca;
+    --dyn-color-danger-dark: #7f1d1d;
+    --dyn-color-danger-alpha: rgba(248, 113, 113, 0.16);
+
+    /* ========== DARK MODE ACCESSIBILITY ========== */
+    --dyn-color-focus-ring: rgba(59, 130, 246, 0.35);
+
+    /* ========== DARK MODE SHADOWS ========== */
+    --dyn-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --dyn-shadow-md: 0 3px 6px rgba(0, 0, 0, 0.4);
+    --dyn-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+    --dyn-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.35);
+  }
+}

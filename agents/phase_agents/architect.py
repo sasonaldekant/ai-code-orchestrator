@@ -157,6 +157,9 @@ class ArchitectAgent:
                 "Output JSON with 'components', 'data_models', 'api_definitions'."
             )
             
+        # Load Golden Rules
+        golden_rules = self._load_golden_rules()
+        
         # Start with template
         prompt = template
         
@@ -165,6 +168,12 @@ class ArchitectAgent:
             if isinstance(v, (dict, list)):
                 v = json.dumps(v, indent=2)
             prompt = prompt.replace(f"{{{k}}}", str(v))
+            
+        # Inject Golden Rules if placeholder exists, otherwise append
+        if "{golden_rules}" in prompt:
+            prompt = prompt.replace("{golden_rules}", golden_rules)
+        elif golden_rules:
+            prompt += f"\n\n[GOLDEN RULES & STANDARDS]:\n{golden_rules}\n"
             
         # Add RAG context if not already handled by placement in template
         if rag_context and "{domain_context}" not in prompt:
@@ -177,6 +186,18 @@ class ArchitectAgent:
              prompt += rag_text
              
         return prompt
+
+    def _load_golden_rules(self) -> str:
+        """Load the AI_CONTEXT.md file."""
+        try:
+            # rag/AI_CONTEXT.md relative to project root
+            context_path = Path(__file__).parent.parent.parent / "rag" / "AI_CONTEXT.md"
+            if context_path.exists():
+                return context_path.read_text(encoding="utf-8")
+            return ""
+        except Exception as e:
+            logger.warning(f"Failed to load AI_CONTEXT.md: {e}")
+            return ""
 
     def _parse_json(self, content: str) -> Dict[str, Any]:
         try:

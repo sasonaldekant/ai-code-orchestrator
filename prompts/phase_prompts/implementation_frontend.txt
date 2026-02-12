@@ -12,7 +12,11 @@ MILESTONE:
 The architecture design for this implementation is:
 {architecture}
 
+[PROJECT STANDARDS & RULES]:
+{golden_rules}
+
 Produce the necessary React components, hooks, and types to implement the requested feature. 
+STRICTLY FOLLOW the 3-Layer Token System and Component Composition rules defined in the Golden Rules.
 Follow the mapping rules and validation requirements specified in the global request.
 Return JSON format with a list of files: {"files": [{"path": "...", "content": "..."}]}.
 Code should be complete and ready to use.

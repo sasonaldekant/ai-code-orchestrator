@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Component Base Layer - Button-Like Components
+   Reusable token patterns for all button-style components
+   ========================================================================== */
+
+:root {
+  /* ========================================================================
+     Button-Like Component Tokens
+     Used by: DynButton, DynIconButton, and similar components
+     ======================================================================== */
+
+  /* Background Colors */
+  --dyn-button-bg: var(--dyn-color-primary, var(--color-primary, #2563eb));
+  --dyn-button-bg-hover: var(--dyn-color-primary-hover, var(--color-primary-hover, #1d4ed8));
+  --dyn-button-bg-active: var(--dyn-color-primary-active, var(--color-primary-active, #1e40af));
+  --dyn-button-bg-disabled: var(--dyn-color-surface-disabled, var(--color-surface-disabled, #f1f5f9));
+
+  /* Border Colors */
+  --dyn-button-border: var(--dyn-color-primary, var(--color-primary, #2563eb));
+  --dyn-button-border-hover: var(--dyn-color-primary-hover, var(--color-primary-hover, #1d4ed8));
+  --dyn-button-border-active: var(--dyn-color-primary-active, var(--color-primary-active, #1e40af));
+  --dyn-button-border-disabled: var(--dyn-color-border-disabled, var(--color-border-disabled, #e2e8f0));
+
+  /* Text Colors */
+  --dyn-button-color: var(--dyn-color-text-inverse, var(--color-text-inverse, #ffffff));
+  --dyn-button-color-hover: var(--dyn-color-text-inverse, var(--color-text-inverse, #ffffff));
+  --dyn-button-color-active: var(--dyn-color-text-inverse, var(--color-text-inverse, #ffffff));
+  --dyn-button-color-disabled: var(--dyn-color-text-disabled, var(--color-text-disabled, #94a3b8));
+
+  /* Sizing */
+  --dyn-button-min-height: var(--dyn-size-md, var(--size-md, 40px));
+  --dyn-button-min-height-sm: var(--dyn-size-sm, var(--size-sm, 32px));
+  --dyn-button-min-height-lg: var(--dyn-size-lg, var(--size-lg, 48px));
+
+  /* Padding */
+  --dyn-button-padding-y: var(--dyn-spacing-sm, var(--spacing-sm, 8px));
+  --dyn-button-padding-x: var(--dyn-spacing-md, var(--spacing-md, 16px));
+  --dyn-button-padding-y-sm: var(--dyn-spacing-xs, var(--spacing-xs, 6px));
+  --dyn-button-padding-x-sm: var(--dyn-spacing-sm, var(--spacing-sm, 12px));
+  --dyn-button-padding-y-lg: var(--dyn-spacing-md, var(--spacing-md, 12px));
+  --dyn-button-padding-x-lg: var(--dyn-spacing-lg, var(--spacing-lg, 20px));
+
+  /* Gap */
+  --dyn-button-gap: var(--dyn-spacing-sm, var(--spacing-sm, 8px));
+  --dyn-button-gap-sm: var(--dyn-spacing-xs, var(--spacing-xs, 6px));
+  --dyn-button-gap-lg: var(--dyn-spacing-md, var(--spacing-md, 12px));
+
+  /* Typography */
+  --dyn-button-font-size: var(--dyn-font-size-base, var(--font-size-base, 16px));
+  --dyn-button-font-size-sm: var(--dyn-font-size-sm, var(--font-size-sm, 14px));
+  --dyn-button-font-size-lg: var(--dyn-font-size-lg, var(--font-size-lg, 18px));
+  --dyn-button-font-weight: var(--dyn-font-weight-medium, var(--font-weight-medium, 500));
+  --dyn-button-line-height: var(--dyn-line-height-normal, var(--line-height-normal, 1.5));
+
+  /* Effects */
+  --dyn-button-border-radius: var(--dyn-border-radius-md, var(--border-radius-md, 8px));
+  --dyn-button-border-width: 1px;
+  --dyn-button-shadow: none;
+  --dyn-button-shadow-hover: var(--dyn-shadow-sm, var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05)));
+  --dyn-button-shadow-active: none;
+  --dyn-button-shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.16);
+
+  /* Transitions */
+  --dyn-button-transition: var(--dyn-transition-base, var(--transition-base, 0.15s ease));
+
+  /* Opacity */
+  --dyn-button-opacity-disabled: var(--dyn-opacity-disabled, 0.5);
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dyn-button-bg: var(--dyn-color-primary-dark, var(--color-primary-dark, #3b82f6));
+    --dyn-button-bg-hover: var(--dyn-color-primary-dark-hover, var(--color-primary-dark-hover, #60a5fa));
+    --dyn-button-bg-active: var(--dyn-color-primary-dark-active, var(--color-primary-dark-active, #2563eb));
+    --dyn-button-bg-disabled: var(--dyn-color-surface-disabled-dark, var(--color-surface-disabled-dark, #334155));
+    --dyn-button-border: var(--dyn-color-primary-dark, var(--color-primary-dark, #3b82f6));
+    --dyn-button-border-disabled: var(--dyn-color-border-disabled-dark, var(--color-border-disabled-dark, #475569));
+    --dyn-button-color-disabled: var(--dyn-color-text-disabled-dark, var(--color-text-disabled-dark, #6b7280));
+    --dyn-button-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dyn-button-transition: none;
+  }
+}

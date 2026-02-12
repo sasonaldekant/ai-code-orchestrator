@@ -1,0 +1,33 @@
+.content {
+  /* Component tokens - 3-level fallback pattern */
+  --dyn-dialog-gap: var(--dyn-dialog-spacing-gap, var(--dyn-spacing-md, 1rem));
+  --dyn-dialog-text-color: var(--dyn-dialog-color-text, var(--dyn-semantic-text, #1e293b));
+  --dyn-dialog-actions-gap: var(--dyn-dialog-spacing-actions-gap, var(--dyn-spacing-sm, 0.75rem));
+  --dyn-dialog-actions-margin-top: var(--dyn-dialog-spacing-actions-margin, var(--dyn-spacing-sm, 0.5rem));
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--dyn-dialog-gap);
+}
+
+.message {
+  color: var(--dyn-dialog-text-color);
+  font-size: var(--dyn-font-size-base, 1rem);
+  line-height: var(--dyn-line-height-base, 1.5);
+  margin: 0;
+}
+
+.inputContainer {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--dyn-dialog-actions-gap);
+  margin-top: var(--dyn-dialog-actions-margin-top);
+}

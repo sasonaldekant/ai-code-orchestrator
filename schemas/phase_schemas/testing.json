@@ -3,12 +3,35 @@
   "title": "Testing schema",
   "type": "object",
   "properties": {
-    "phase": {"type": "string"},
-    "tests": {"type": "string"},
-    "tokens_in": {"type": "number"},
-    "tokens_out": {"type": "number"},
-    "model": {"type": "string"},
-    "provider": {"type": "string"}
+    "phase": {
+      "type": "string"
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "test_plan": {
+          "type": "string"
+        },
+        "test_cases": {
+          "type": "array"
+        }
+      }
+    },
+    "tokens_in": {
+      "type": "number"
+    },
+    "tokens_out": {
+      "type": "number"
+    },
+    "model": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    }
   },
-  "required": ["phase", "tests"]
+  "required": [
+    "phase",
+    "output"
+  ]
 }
