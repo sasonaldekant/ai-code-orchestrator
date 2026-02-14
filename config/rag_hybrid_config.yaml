@@ -1,0 +1,41 @@
+strategy: "hybrid"
+version: "1.0"
+
+rag:
+  provider: "chromadb"
+  collection: "dyn_ui_knowledge"
+  
+  tiers:
+    tier_1_rules:
+      files: ["MustFollowRules.md", "01-QUICK_START.md", "QUICK_REFERENCE.md", "00-INDEX.md"]
+      category: "rules"
+    tier_2_tokens:
+      files: ["02-DESIGN_TOKENS.md"]
+      category: "tokens"
+    tier_3_components:
+      files: ["03-COMPONENT_CATALOG.md", "DOCS.md", "*.stories.tsx"]
+      category: "components"
+    tier_4_backend:
+      files: ["04-BACKEND_INTEGRATION.md"]
+      category: "backend"
+  
+  query_routing:
+    component_discovery: { tier: 3, prefix: "DynUI component", top_k: 5 }
+    token_lookup:        { tier: 2, prefix: "design token",    top_k: 3 }
+    rule_check:          { tier: 1, prefix: "project rule",    top_k: 3 }
+    api_lookup:          { tier: 4, prefix: "API endpoint",    top_k: 3 }
+
+file_system:
+  enabled: true
+  base_paths:
+    dyn_ui_react: "packages/dyn-ui-react/src/components"
+    backend: "packages/dyn-ui-backend/src"
+    prisma: "packages/dyn-ui-backend/prisma"
+  
+  access_protocol:
+    analyst:       { can_read: false }
+    architect:     { can_read: false }
+    implementer:   { can_read: true,  paths: ["*.tsx", "*.module.css", "*.ts"] }
+    self_healer:   { can_read: true,  paths: ["*"] }
+    tester:        { can_read: true,  paths: ["*.test.tsx", "*.tsx"] }
+    swarm_manager: { can_read: false }

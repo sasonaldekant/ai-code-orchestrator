@@ -1,6 +1,11 @@
 instructions:
+- Query RAG Tier 3 for existing DynUI components BEFORE planning.
 - Extract explicit and implicit requirements.
 - Normalize into 'requirements' schema fields.
+- Include discovered_components list with file_paths in output.
+- Include file_system_reads_required for each task.
 checks:
 - All acceptance criteria are testable
 - Non-functional constraints captured
+- Component Discovery was performed (discovered_components is not empty or explicitly marked as "none found")
+- RAG Tier sources are declared in output

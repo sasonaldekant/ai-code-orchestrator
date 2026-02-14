@@ -267,11 +267,11 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                             onChange={(e) => updateNested(['default', 'model'], e.target.value)}
                             className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm outline-none"
                         >
-                            <option value="gpt-4o">GPT-4o</option>
-                            <option value="gpt-4o-mini">GPT-4o Mini</option>
-                            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                            <option value="sonar-reasoning-pro">Sonar Reasoning Pro (PPLX)</option>
+                            <option value="gpt-5.2">GPT-5.2 (High Intelligence)</option>
+                            <option value="gpt-5-mini">GPT-5 Mini (Fast & Cost-Effective)</option>
+                            <option value="claude-opus-4.6">Claude Opus 4.6 (Premium Reasoning)</option>
+                            <option value="gemini-3-pro">Gemini 3 Pro (Mega Context)</option>
+                            <option value="sonar-deep-research">Sonar Deep Research (PPLX)</option>
                         </select>
                     </div>
                 </div>
@@ -288,12 +288,12 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                         </div>
                         <ModelSelector
                             label="Model"
-                            value={config.routing?.phase?.analyst?.model}
-                            onChange={(v: any) => updateNested(['routing', 'phase', 'analyst', 'model'], v)}
+                            value={config.routing?.phases?.analyst?.model}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'analyst', 'model'], v)}
                         />
                         <TokenInput
-                            value={config.routing?.phase?.analyst?.max_tokens}
-                            onChange={(v: any) => updateNested(['routing', 'phase', 'analyst', 'max_tokens'], parseInt(v))}
+                            value={config.routing?.phases?.analyst?.max_tokens}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'analyst', 'max_tokens'], parseInt(v))}
                         />
                     </div>
 
@@ -305,15 +305,15 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                         </div>
                         <ModelSelector
                             label="Model"
-                            value={config.routing?.phase?.architect?.model}
-                            onChange={(v: any) => updateNested(['routing', 'phase', 'architect', 'model'], v)}
+                            value={config.routing?.phases?.architect?.model}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'architect', 'model'], v)}
                         />
                         <div className="flex items-center justify-between pt-1">
                             <span className="text-xs font-medium text-muted-foreground">Consensus Mode</span>
                             <input
                                 type="checkbox"
-                                checked={config.routing?.phase?.architect?.consensus_mode || false}
-                                onChange={(e) => updateNested(['routing', 'phase', 'architect', 'consensus_mode'], e.target.checked)}
+                                checked={config.routing?.phases?.architect?.consensus_mode || false}
+                                onChange={(e) => updateNested(['routing', 'phases', 'architect', 'consensus_mode'], e.target.checked)}
                                 className="accent-primary"
                             />
                         </div>
@@ -323,12 +323,38 @@ function ModelsPanel({ config, onChange }: { config: any, onChange: (v: any) => 
                     <div className="p-4 rounded-lg border border-border bg-muted/5 space-y-3">
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 rounded-full bg-amber-500" />
-                            <h4 className="font-medium text-sm">Implementation Agent</h4>
+                            <h4 className="font-medium text-sm">Implementation Agent (FE)</h4>
                         </div>
                         <ModelSelector
                             label="Model"
-                            value={config.routing?.phase?.implementation?.model}
-                            onChange={(v: any) => updateNested(['routing', 'phase', 'implementation', 'model'], v)}
+                            value={config.routing?.phases?.implementer_frontend?.model}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'implementer_frontend', 'model'], v)}
+                        />
+                    </div>
+
+                    {/* Self-Healer */}
+                    <div className="p-4 rounded-lg border border-border bg-muted/5 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500" />
+                            <h4 className="font-medium text-sm">Self-Healer Agent</h4>
+                        </div>
+                        <ModelSelector
+                            label="Model"
+                            value={config.routing?.phases?.self_healer?.model}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'self_healer', 'model'], v)}
+                        />
+                    </div>
+
+                    {/* Tester */}
+                    <div className="p-4 rounded-lg border border-border bg-muted/5 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <h4 className="font-medium text-sm">Testing Agent</h4>
+                        </div>
+                        <ModelSelector
+                            label="Model"
+                            value={config.routing?.phases?.tester?.model}
+                            onChange={(v: any) => updateNested(['routing', 'phases', 'tester', 'model'], v)}
                         />
                     </div>
                 </div>
@@ -346,12 +372,14 @@ function ModelSelector({ label, value, onChange }: any) {
                 onChange={(e) => onChange(e.target.value)}
                 className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:ring-1 focus:ring-primary"
             >
-                <option value="gpt-4o">GPT-4o (OpenAI)</option>
-                <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
-                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro (Google)</option>
-                <option value="sonar-reasoning-pro">Sonar Reasoning Pro (Perplexity)</option>
-                <option value="sonar-pro">Sonar Pro (Perplexity)</option>
+                <option value="gpt-5.2">GPT-5.2 (OpenAI)</option>
+                <option value="gpt-5-mini">GPT-5 Mini (OpenAI)</option>
+                <option value="gpt-5-nano">GPT-5 Nano (OpenAI)</option>
+                <option value="claude-opus-4.6">Claude Opus 4.6 (Anthropic)</option>
+                <option value="gemini-3-pro">Gemini 3 Pro (Google)</option>
+                <option value="gemini-3-flash">Gemini 3 Flash (Google)</option>
+                <option value="sonar-deep-research">Sonar Deep Research (Perplexity)</option>
+                <option value="sonar">Sonar Fact Checker (Perplexity)</option>
             </select>
         </div>
     )

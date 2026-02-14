@@ -22,45 +22,45 @@ AI Code Orchestrator je hibridni sistem koji kombinuje:
 
 | Provider | Models | Primary Use Case |
 |----------|--------|------------------|
-| **OpenAI** | `gpt-4o`, `gpt-4o-mini`, `o1`, `o1-mini` | General coding, architecture, implementation |
-| **Anthropic** | `claude-3-7-sonnet`, `claude-3-5-sonnet-latest`, `claude-3-5-haiku` | Advanced implementation, self-healing |
-| **Google** | `gemini-2.0-flash`, `gemini-2.0-pro-exp`, `gemini-1.5-pro` | Monitoring, large context research |
-| **Perplexity** | `sonar-reasoning-pro`, `sonar-reasoning`, `sonar-pro`, `sonar` | Real-time research, fact-checking |
+| **OpenAI** | `gpt-5.2`, `gpt-5-mini`, `gpt-5-nano` | General coding (agentic), architecture, implementation |
+| **Anthropic** | `claude-opus-4.6`, `claude-sonnet-4.5`, `claude-3-5-haiku` | Premium coding, complex logic, self-healing |
+| **Google** | `gemini-3-pro`, `gemini-3-flash` | Large context docs, monitoring, log analysis |
+| **Perplexity** | `sonar-deep-research`, `sonar-reasoning-pro`, `sonar` | Real-time research, multi-step citation search |
 
 ### 2.2 Phase Routing
 
 #### **Tier 0 (Gate & Monitor)**
-- **Gate**: `gemini-2.0-flash` - Jeftina validacija ulaznih prompt-ova
+- **Gate**: `gpt-5-nano` - Jeftina validacija ulaznih prompt-ova ($0.05/1M)
 - **Fact Checker**: `sonar` - Verifikacija biblioteka i API-ja ($1/1M tokens)
-- **Monitor**: `gemini-2.0-flash` - Log parsiranje
+- **Monitor**: `gemini-3-flash` - Log parsiranje ($0.50/1M)
 
-**Razlog**: Ove operacije se izvršavaju često (pre svakog zahteva), pa koristimo najjeftnije modele.
+**Razlog**: Ove operacije se izvršavaju često. GPT-5 Nano je najjeftiniji model u istoriji za brzu validaciju.
 
 #### **Tier 1 (Analyst, Implementer, Tester, Reviewer)**
-- **Model**: `gpt-4o-mini` (default)
-- **Cascade**: `claude-3-7-sonnet` (ako je low confidence ili fail)
+- **Model**: `gpt-5-mini` (default)
+- **Cascade**: `claude-sonnet-4.5` (ako je low confidence ili fail)
 
-**Razlog**: GPT-4o-mini je cost-effective i dovoljno dobar za većinu implementacija. Claude se poziva samo kada GPT ne zadovolji prag kvaliteta.
+**Razlog**: GPT-5 Mini je 2.5x jeftiniji od 4o-mini, a performanse su mu bolje od starog GPT-4.
 
 #### **Tier 2 (Architect)**
-- **Model**: `gpt-4o`
-- **Consensus Mode**: `claude-3-7-sonnet` kao secondary
-- **Cascade**: Obavezna dvojna provera (GPT + Claude glasaju)
+- **Model**: `gpt-5.2`
+- **Consensus Mode**: `claude-opus-4.6` kao secondary
+- **Cascade**: Obavezna dvojna provera (GPT-5.2 + Claude Opus 4.6 glasaju)
 
-**Razlog**: Arhitekture su kritične. Greške u dizajnu eksplodiraju troškove kasnije. Konsenzus između dva različita modela daje stabilnost.
+**Razlog**: GPT-5.2 je optimizovan za "agentic tasks". Konsenzus sa Claude Opus 4.6 (flagship Feb 2026) pruža maksimalnu stabilnost.
 
 #### **Tier 3 (Research, Self-Healer)**
-- **Research**: `sonar-reasoning-pro` → fallback `gemini-1.5-pro` (za > 100k context)
-- **Self-Healer**: `claude-3-7-sonnet` (fiksno)
+- **Research**: `sonar-deep-research` → fallback `gemini-3-pro` (za > 200k context)
+- **Self-Healer**: `claude-opus-4.6` (fiksno)
 
-**Razlog**: Claude je trenutno najbolji za debugging komplikovanih build grešaka. Sonar za research jer ima real-time web pristup.
+**Razlog**: Claude Opus 4.6 je trenutno apsolutni lider u rešavanju kompleksnih build grešaka.
 
 ### 2.3 Specialty Agents (Optimizacija po domenu)
 
-- **Backend (.NET/EF Core)**: `gpt-4o` (specialization: ASP.NET Core, Migrations)
-- **Frontend (React/TS)**: `gpt-4o-mini` (optimizovano za React hooks)
-- **Security**: `gpt-4o` (analiza vulnerabilities)
-- **Documentation**: `gemini-2.5-pro` (32k output za tehničke docs)
+- **Backend (.NET/EF Core)**: `gpt-5.2` (specialization: ASP.NET Core, Migrations)
+- **Frontend (React/TS)**: `gpt-5-mini` (ekstremno brz React code generation)
+- **Security**: `gpt-5.2` (duboka statička analiza)
+- **Documentation**: `gemini-3-pro` (podrška za 1M+ context window beta)
 
 **Razlog**: Optimum između Cost & Performance po domenu.
 
@@ -202,20 +202,20 @@ Return JSON format with a list of files: {"files": [{"path": "...", "content": "
 
 ```mermaid
 graph TD
-    A[User Request] --> B[Gate: gemini-2.0-flash]
-    B -->|Valid| C[Analyst: gpt-4o-mini]
+    A[User Request] --> B[Gate: gpt-5-nano]
+    B -->|Valid| C[Analyst: gpt-5-mini]
     B -->|Invalid| Z[Reject]
     
     C -->|Q&A Mode| D[Direct Answer]
     C -->|Implementation Mode| E[Milestones & Tasks]
     
-    E --> F[Architect: gpt-4o + claude-3-7-sonnet Consensus]
-    F --> G[Implementer: gpt-4o-mini]
-    G -->|Build Fail| H[Self-Healer: claude-3-7-sonnet]
+    E --> F[Architect: gpt-5.2 + claude-opus-4.6 Consensus]
+    F --> G[Implementer: gpt-5-mini]
+    G -->|Build Fail| H[Self-Healer: claude-opus-4.6]
     H --> G
-    G -->|Success| I[Tester: gpt-4o-mini]
-    I --> J[Reviewer: gpt-4o-mini]
-    J -->|Quality < 8.0| K[Iterate GPT + Claude]
+    G -->|Success| I[Tester: gpt-5-mini]
+    I --> J[Reviewer: gpt-5-mini]
+    J -->|Quality < 8.0| K[Iterate GPT-5.2 + Claude-4.6]
     K --> G
     J -->|Quality >= 8.0| L[Done]
 ```
@@ -224,12 +224,12 @@ graph TD
 
 **Primer: Implementer**
 
-1. **Prvi pokušaj**: `gpt-4o-mini` generiše kod
+1. **Prvi pokušaj**: `gpt-5-mini` generiše kod
 2. **Verifikacija**: `CodeExecutor` pokreće build
-3. **Fail**: Automatic cascade → `claude-3-7-sonnet` (Self-Healer)
+3. **Fail**: Automatic cascade → `claude-opus-4.6` (Self-Healer)
 4. **Success**: Continue
 
-**Razlog**: GPT-4o-mini je jeftin ali nije savršen. Claude interveniše samo kada GPT zakaže.
+**Razlog**: GPT-5-mini je značajno brži i 2.5x jeftiniji. Claude 4.6 interveniše samo kada GPT-5 zakaže.
 
 ---
 
@@ -264,21 +264,27 @@ graph TD
 
 **Primer**: Architect dizajnira bazu sa pogrešnom relacijom. Implementer napiše 500 linija koda. Tester otkrije grešku. Sve se baca.
 
-**Rešenje**: GPT-4o + Claude-3-7-Sonnet glasaju. Ako se ne slažu, Orchestrator traži "breaking tie" (human input ili treći model).
+**Rešenje**: GPT-5.2 + Claude-Opus-4.6 glasaju. Ako se ne slažu, Orchestrator traži "breaking tie".
 
 ### 5.4 Zašto Self-Healer koristi samo Claude?
 
-**Problem**: Build errors su često kompleksni (TypeScript generic constraints, C# null reference u lambda expression sa closure).
+**Problem**: Build errors su često kompleksni.
 
-**Benchmark**: Claude-3-7-Sonnet je najbolji model trenutno za "debugging logic" po SWE-bench testovima.
-
-**Rešenje**: Fiksno rutiranje Claude za Self-Healing.
+**Benchmark**: Claude-Opus-4.6 je trenutni šampion coding logike u 2026.
 
 ---
 
-## 6. Šta Treba Promeniti (Pre-DynUI Integracije)
+## 6. Prompt Caching (Nova Supermoć)
 
-### 6.1 Analyst Prompt Refactor
+Od Februara 2026, koristimo **Prompt Caching** na svim Tier 1-3 modelima. 
+- **T1 Rules/Context** se čuvaju u cache-u (ušteda do 90% na input tokenima).
+- Omogućava Agentu da u svakom turnu ima pun set Golden Rules bez bolesno visokih troškova.
+
+---
+
+## 7. Šta Treba Promeniti (Pre-DynUI Integracije)
+
+### 7.1 Analyst Prompt Refactor
 
 **Problem**: Nema "Storybook-First Discovery" protokola.
 

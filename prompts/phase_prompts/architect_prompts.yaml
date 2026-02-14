@@ -1,6 +1,12 @@
 instructions:
-- Translate requirements into containers/components.
-- Define interfaces and deployment model.
+- Map requirements to discovered DynUI components first.
+- Design compositions for unmatched requirements using primitives.
+- Include source_paths for every DynUI component used.
+- Define data_flow, token references, and storybook_patterns.
+- DO NOT read source .tsx files — leave that to Implementer.
 checks:
+- All UI elements map to DynUI components or compositions
 - Security and observability included
 - Trade-offs briefly noted
+- source_paths provided for Implementer
+- tokens_used includes specific token names

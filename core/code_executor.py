@@ -15,7 +15,7 @@ import time
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -467,7 +467,7 @@ class VerificationLoop:
                 return {
                     "verified": True,
                     "retries": self.retry_count,
-                    "result": result
+                    "result": asdict(result)
                 }
             
             self.retry_count += 1
@@ -483,7 +483,7 @@ class VerificationLoop:
                 return {
                     "verified": False,
                     "retries": self.retry_count,
-                    "result": result,
+                    "result": asdict(result),
                     "feedback": feedback
                 }
         
@@ -498,6 +498,9 @@ class VerificationLoop:
         
         if result.stderr:
             feedback_parts.append(f"Errors:\n{result.stderr}")
+        
+        if result.error:
+            feedback_parts.append(f"Execution error: {result.error}")
         
         if result.exit_code != 0:
             feedback_parts.append(f"Exit code: {result.exit_code}")

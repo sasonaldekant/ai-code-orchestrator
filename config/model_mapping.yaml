@@ -1,60 +1,80 @@
-version: '2.0'
+version: "3.0"
+updated: "2026-02-14"
+
 default:
-  model: gpt-4o-mini
+  model: "gpt-5-mini"
   temperature: 0
   max_tokens: 4000
-  timeout_seconds: 120
-  provider: openai
+  provider: "openai"
+
 routing:
-  phase:
+  phases:
+    gate:
+      model: "gpt-5-nano"
+      max_tokens: 500
+      provider: "openai"
+    
     analyst:
-      model: gpt-4o
-      temperature: 0.1
-      max_tokens: 8000
-      provider: openai
-    architect:
-      model: gpt-4o
-      temperature: 0.1
-      max_tokens: 16000
-      provider: openai
-    implementation:
-      model: gpt-4o
-      temperature: 0
-      max_tokens: 8000
-      provider: openai
-    testing:
-      model: gpt-4o-mini
-      temperature: 0
+      model: "gpt-5-mini"
       max_tokens: 4000
-      provider: openai
-  specialty:
-    backend:
-      model: gpt-4o
-      temperature: 0
+      provider: "openai"
+      cascade: ["claude-sonnet-4.5"]
+    
+    architect:
+      model: "gpt-5.2"
       max_tokens: 8000
-      provider: openai
-      efcore:
-        model: gpt-4o
-        temperature: 0
-        max_tokens: 8000
-        provider: openai
-    frontend:
-      model: gpt-4o-mini
-      temperature: 0
-      max_tokens: 6000
-      provider: openai
-      react:
-        model: gpt-4o-mini
-        temperature: 0
-        max_tokens: 6000
-        provider: openai
-    review:
-      model: gpt-4o
-      temperature: 0.1
+      provider: "openai"
+      consensus_mode: true
+      secondary: ["claude-opus-4.6"]
+    
+    implementer_frontend:
+      model: "gpt-5-mini"
+      max_tokens: 16000
+      provider: "openai"
+      cascade: ["claude-opus-4.6"]
+    
+    implementer_backend:
+      model: "gpt-5-mini"
+      max_tokens: 16000
+      provider: "openai"
+      cascade: ["claude-opus-4.6"]
+    
+    tester:
+      model: "gpt-5-mini"
       max_tokens: 8000
-      provider: openai
+      provider: "openai"
+    
+    reviewer:
+      model: "gpt-5-mini"
+      max_tokens: 4000
+      provider: "openai"
+      cascade: ["gpt-5.2"]
+    
+    self_healer:
+      model: "claude-opus-4.6"
+      max_tokens: 8000
+      provider: "anthropic"
+
+  specialties:
+    dotnet_api:
+      model: "gpt-5.2"
+      provider: "openai"
+    efcore:
+      model: "gpt-5.2"
+      provider: "openai"
+    react:
+      model: "gpt-5-mini"
+      provider: "openai"
+    typescript:
+      model: "gpt-5-mini"
+      provider: "openai"
     documentation:
-      model: gemini-2.5-pro
-      temperature: 0.2
+      model: "gemini-3-pro"
       max_tokens: 32000
-      provider: google
+      provider: "google"
+
+caching:
+  enabled: true
+  tier_1_rules: { ttl_seconds: 3600 }
+  tier_2_tokens: { ttl_seconds: 3600 }
+  tier_3_catalog: { ttl_seconds: 1800 }

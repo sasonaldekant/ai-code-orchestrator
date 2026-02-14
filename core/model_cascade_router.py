@@ -25,11 +25,11 @@ class CascadeTier:
     description: str
 
 TIERS = {
-    0: CascadeTier(0, "Gate", 0.08, "Filter, validate, classify (Gemini Flash)"),
-    1: CascadeTier(1, "Worker", 0.15, "Standard generation & monitoring (GPT-4o-mini)"),
-    2: CascadeTier(2, "Standard", 2.50, "Architecture, reasoning (GPT-4o)"),
-    3: CascadeTier(3, "Heavy", 3.00, "Complex fixes, self-healing (Claude Sonnet)"),
-    4: CascadeTier(4, "Mega", 1.25, "Massive context analysis (Gemini Pro)")
+    0: CascadeTier(0, "Gate", 0.05, "Filter, validate, classify (GPT-5 Nano)"),
+    1: CascadeTier(1, "Worker", 0.10, "Standard generation & monitoring (GPT-5 Mini)"),
+    2: CascadeTier(2, "Standard", 2.00, "Architecture, reasoning (GPT-5.2)"),
+    3: CascadeTier(3, "Heavy", 15.00, "Complex fixes, self-healing (Claude Opus 4.6)"),
+    4: CascadeTier(4, "Mega", 1.25, "Massive context analysis (Gemini 3 Pro)")
 }
 
 class ModelCascadeRouter:
