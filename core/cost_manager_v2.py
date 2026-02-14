@@ -1,1 +1,499 @@
-"""\nEnhanced cost management with real-time tracking and multi-tier budgets.\n\nThis module provides comprehensive cost tracking and budget enforcement\nfor LLM API calls across multiple providers (OpenAI, Anthropic, Google).\n\nFeatures:\n- Multi-tier budgets (per-task, hourly, daily)\n- Real-time cost tracking per model and provider\n- Alert system at 80% threshold\n- Per-phase cost breakdown\n- Cost reports and exports\n- Historical tracking\n\nVersion: 2.0.0\n\"""\n\nfrom __future__ import annotations\n\nimport logging\nimport json\nimport time\nfrom datetime import datetime, timedelta\nfrom typing import Dict, List, Optional, Tuple\nfrom dataclasses import dataclass, field, asdict\nfrom pathlib import Path\nfrom collections import defaultdict\n\nlogger = logging.getLogger(__name__)\n\n\n@dataclass\nclass ModelPricing:\n    \"\"\"Pricing information for a specific model.\"\"\"\n    input_per_million: float  # USD per million input tokens\n    output_per_million: float  # USD per million output tokens\n    provider: str\n    context_window: int = 128000\n\n\n@dataclass\nclass UsageRecord:\n    \"\"\"Single usage record for cost tracking.\"\"\"\n    timestamp: float\n    model: str\n    provider: str\n    phase: str\n    tokens_input: int\n    tokens_output: int\n    tokens_total: int\n    cost_usd: float\n    task_id: Optional[str] = None\n\n\n@dataclass\nclass CostAlert:\n    \"\"\"Alert when budget threshold is reached.\"\"\"\n    timestamp: float\n    level: str  # \"warning\" or \"critical\"\n    budget_type: str  # \"task\", \"hour\", \"day\"\n    current_cost: float\n    budget_limit: float\n    percentage: float\n    message: str\n\n\n@dataclass\nclass CostReport:\n    \"\"\"Comprehensive cost report.\"\"\"\n    start_time: float\n    end_time: float\n    total_cost: float\n    total_tokens: int\n    by_model: Dict[str, Dict[str, float]]  # model -> {cost, tokens}\n    by_provider: Dict[str, Dict[str, float]]  # provider -> {cost, tokens}\n    by_phase: Dict[str, Dict[str, float]]  # phase -> {cost, tokens}\n    num_calls: int\n    alerts: List[CostAlert]\n\n\nclass CostManagerV2:\n    \"\"\"\n    Enhanced cost manager with multi-tier budgets and real-time tracking.\n    \n    Example\n    -------\n    >>> manager = CostManagerV2(\n    ...     per_task_budget=0.50,\n    ...     per_hour_budget=5.0,\n    ...     per_day_budget=40.0\n    ... )\n    >>> \n    >>> # Track usage\n    >>> manager.track_usage(\n    ...     provider=\"openai\",\n    ...     model=\"gpt-4o\",\n    ...     tokens_used={\"prompt\": 1000, \"completion\": 500, \"total\": 1500},\n    ...     phase=\"implementer\"\n    ... )\n    >>> \n    >>> # Check if can proceed\n    >>> if manager.can_proceed():\n    ...     # Make LLM call\n    ...     pass\n    >>> \n    >>> # Get report\n    >>> report = manager.generate_report()\n    >>> print(f\"Total cost: ${report.total_cost:.4f}\")\n    \"\"\"\n    \n    # Pricing table (USD per million tokens)\n    # Source: Public pricing as of Feb 2026\n    PRICING = {\n        # OpenAI\n        \"gpt-4o\": ModelPricing(2.50, 10.0, \"openai\", 128000),\n        \"gpt-4o-mini\": ModelPricing(0.15, 0.60, \"openai\", 128000),\n        \"gpt-4-turbo\": ModelPricing(10.0, 30.0, \"openai\", 128000),\n        \"gpt-3.5-turbo\": ModelPricing(0.50, 1.50, \"openai\", 16000),\n        \n        # Anthropic\n        \"claude-3-5-sonnet\": ModelPricing(3.00, 15.0, \"anthropic\", 200000),\n        \"claude-3-opus\": ModelPricing(15.0, 75.0, \"anthropic\", 200000),\n        \"claude-3-sonnet\": ModelPricing(3.00, 15.0, \"anthropic\", 200000),\n        \"claude-3-haiku\": ModelPricing(0.25, 1.25, \"anthropic\", 200000),\n        \n        # Google\n        \"gemini-2.5-pro\": ModelPricing(1.25, 5.0, \"google\", 1000000),\n        \"gemini-1.5-pro\": ModelPricing(1.25, 5.0, \"google\", 2000000),\n        \"gemini-1.5-flash\": ModelPricing(0.075, 0.30, \"google\", 1000000),\n    }\n    \n    def __init__(\n        self,\n        per_task_budget: float = 0.50,\n        per_hour_budget: float = 5.0,\n        per_day_budget: float = 40.0,\n        alert_threshold: float = 0.8,  # Alert at 80%\n        enable_history: bool = True,\n        history_dir: Optional[str] = None\n    ):\n        \"\"\"\n        Initialize cost manager.\n        \n        Parameters\n        ----------\n        per_task_budget : float\n            Maximum cost per task in USD.\n        per_hour_budget : float\n            Maximum cost per hour in USD.\n        per_day_budget : float\n            Maximum cost per day in USD.\n        alert_threshold : float\n            Alert when budget reaches this percentage (0.0-1.0).\n        enable_history : bool\n            Whether to persist usage history to disk.\n        history_dir : str, optional\n            Directory for history files (default: ./cost_history).\n        \"\"\"\n        # Budgets\n        self.per_task_budget = per_task_budget\n        self.per_hour_budget = per_hour_budget\n        self.per_day_budget = per_day_budget\n        self.alert_threshold = alert_threshold\n        \n        # Tracking\n        self.usage_records: List[UsageRecord] = []\n        self.alerts: List[CostAlert] = []\n        self.current_task_cost = 0.0\n        self.current_task_id: Optional[str] = None\n        self.current_phase: str = \"unknown\"\n        \n        # Time-based tracking\n        self.hour_start = time.time()\n        self.day_start = time.time()\n        self.hour_cost = 0.0\n        self.day_cost = 0.0\n        \n        # Alert state\n        self._task_alert_fired = False\n        self._hour_alert_fired = False\n        self._day_alert_fired = False\n        \n        # History persistence\n        self.enable_history = enable_history\n        if enable_history:\n            self.history_dir = Path(history_dir or \"./cost_history\")\n            self.history_dir.mkdir(exist_ok=True)\n    \n    def track_usage(\n        self,\n        provider: str,\n        model: str,\n        tokens_used: Dict[str, int],\n        phase: Optional[str] = None,\n        task_id: Optional[str] = None\n    ) -> float:\n        \"\"\"\n        Track token usage and calculate cost.\n        \n        Parameters\n        ----------\n        provider : str\n            Provider name (\"openai\", \"anthropic\", \"google\").\n        model : str\n            Model identifier.\n        tokens_used : dict\n            Dict with \"prompt\", \"completion\", \"total\" keys.\n        phase : str, optional\n            Current phase (analyst, architect, etc.).\n        task_id : str, optional\n            Current task identifier.\n        \n        Returns\n        -------\n        float\n            Cost of this usage in USD.\n        \"\"\"\n        # Normalize model name\n        model_key = model.lower()\n        if model_key not in self.PRICING:\n            logger.warning(f\"Unknown model {model}, using gpt-4o pricing\")\n            model_key = \"gpt-4o\"\n        \n        pricing = self.PRICING[model_key]\n        \n        # Calculate cost\n        input_tokens = tokens_used.get(\"prompt\", 0)\n        output_tokens = tokens_used.get(\"completion\", 0)\n        total_tokens = tokens_used.get(\"total\", input_tokens + output_tokens)\n        \n        cost = (\n            (input_tokens / 1_000_000) * pricing.input_per_million +\n            (output_tokens / 1_000_000) * pricing.output_per_million\n        )\n        \n        # Create usage record\n        record = UsageRecord(\n            timestamp=time.time(),\n            model=model,\n            provider=provider,\n            phase=phase or self.current_phase,\n            tokens_input=input_tokens,\n            tokens_output=output_tokens,\n            tokens_total=total_tokens,\n            cost_usd=cost,\n            task_id=task_id or self.current_task_id\n        )\n        \n        self.usage_records.append(record)\n        \n        # Update running totals\n        self.current_task_cost += cost\n        self._update_time_based_costs(cost)\n        \n        # Check budgets and emit alerts\n        self._check_budgets()\n        \n        # Persist if enabled\n        if self.enable_history:\n            self._append_to_history(record)\n        \n        logger.info(\n            f\"Usage tracked: {model} ({provider}), {total_tokens} tokens, \"\n            f\"${cost:.4f} (task: ${self.current_task_cost:.4f})\"\n        )\n        \n        return cost\n    \n    def can_proceed(self) -> bool:\n        \"\"\"\n        Check if execution can proceed within budget constraints.\n        \n        Returns\n        -------\n        bool\n            True if all budgets allow continuation.\n        \"\"\"\n        if self.current_task_cost >= self.per_task_budget:\n            logger.error(\"Per-task budget exceeded\")\n            return False\n        \n        if self.hour_cost >= self.per_hour_budget:\n            logger.error(\"Hourly budget exceeded\")\n            return False\n        \n        if self.day_cost >= self.per_day_budget:\n            logger.error(\"Daily budget exceeded\")\n            return False\n        \n        return True\n    \n    def start_task(self, task_id: str, phase: str = \"unknown\"):\n        \"\"\"Start tracking a new task.\"\"\"\n        self.current_task_id = task_id\n        self.current_phase = phase\n        self.current_task_cost = 0.0\n        self._task_alert_fired = False\n        logger.info(f\"Started tracking task: {task_id} (phase: {phase})\")\n    \n    def end_task(self) -> float:\n        \"\"\"End current task and return its cost.\"\"\"\n        cost = self.current_task_cost\n        logger.info(f\"Task {self.current_task_id} completed. Cost: ${cost:.4f}\")\n        self.current_task_id = None\n        self.current_task_cost = 0.0\n        return cost\n    \n    def get_cumulative_cost(self) -> float:\n        \"\"\"Get cumulative cost across all usage.\"\"\"\n        return sum(r.cost_usd for r in self.usage_records)\n    \n    def generate_report(\n        self,\n        since: Optional[float] = None\n    ) -> CostReport:\n        \"\"\"\n        Generate comprehensive cost report.\n        \n        Parameters\n        ----------\n        since : float, optional\n            Unix timestamp to start report from.\n        \n        Returns\n        -------\n        CostReport\n            Detailed breakdown of costs.\n        \"\"\"\n        # Filter records\n        records = self.usage_records\n        if since:\n            records = [r for r in records if r.timestamp >= since]\n        \n        if not records:\n            return CostReport(\n                start_time=time.time(),\n                end_time=time.time(),\n                total_cost=0.0,\n                total_tokens=0,\n                by_model={},\n                by_provider={},\n                by_phase={},\n                num_calls=0,\n                alerts=self.alerts\n            )\n        \n        # Aggregate by model\n        by_model = defaultdict(lambda: {\"cost\": 0.0, \"tokens\": 0})\n        for r in records:\n            by_model[r.model][\"cost\"] += r.cost_usd\n            by_model[r.model][\"tokens\"] += r.tokens_total\n        \n        # Aggregate by provider\n        by_provider = defaultdict(lambda: {\"cost\": 0.0, \"tokens\": 0})\n        for r in records:\n            by_provider[r.provider][\"cost\"] += r.cost_usd\n            by_provider[r.provider][\"tokens\"] += r.tokens_total\n        \n        # Aggregate by phase\n        by_phase = defaultdict(lambda: {\"cost\": 0.0, \"tokens\": 0})\n        for r in records:\n            by_phase[r.phase][\"cost\"] += r.cost_usd\n            by_phase[r.phase][\"tokens\"] += r.tokens_total\n        \n        total_cost = sum(r.cost_usd for r in records)\n        total_tokens = sum(r.tokens_total for r in records)\n        \n        return CostReport(\n            start_time=records[0].timestamp,\n            end_time=records[-1].timestamp,\n            total_cost=total_cost,\n            total_tokens=total_tokens,\n            by_model=dict(by_model),\n            by_provider=dict(by_provider),\n            by_phase=dict(by_phase),\n            num_calls=len(records),\n            alerts=self.alerts\n        )\n    \n    def export_report(\n        self,\n        output_path: str,\n        format: str = \"json\"\n    ):\n        \"\"\"Export cost report to file.\"\"\"\n        report = self.generate_report()\n        \n        with open(output_path, \"w\") as f:\n            if format == \"json\":\n                json.dump(asdict(report), f, indent=2)\n            else:\n                raise ValueError(f\"Unsupported format: {format}\")\n        \n        logger.info(f\"Cost report exported to {output_path}\")\n    \n    def _update_time_based_costs(self, cost: float):\n        \"\"\"Update hourly and daily cost trackers.\"\"\"\n        now = time.time()\n        \n        # Check if hour has rolled over\n        if now - self.hour_start >= 3600:\n            logger.info(f\"Hour completed. Cost: ${self.hour_cost:.4f}\")\n            self.hour_start = now\n            self.hour_cost = 0.0\n            self._hour_alert_fired = False\n        \n        # Check if day has rolled over\n        if now - self.day_start >= 86400:\n            logger.info(f\"Day completed. Cost: ${self.day_cost:.4f}\")\n            self.day_start = now\n            self.day_cost = 0.0\n            self._day_alert_fired = False\n        \n        self.hour_cost += cost\n        self.day_cost += cost\n    \n    def _check_budgets(self):\n        \"\"\"Check budgets and emit alerts if thresholds reached.\"\"\"\n        # Task budget\n        task_pct = self.current_task_cost / self.per_task_budget\n        if not self._task_alert_fired and task_pct >= self.alert_threshold:\n            self._emit_alert(\n                level=\"warning\",\n                budget_type=\"task\",\n                current=self.current_task_cost,\n                limit=self.per_task_budget,\n                percentage=task_pct\n            )\n            self._task_alert_fired = True\n        \n        # Hour budget\n        hour_pct = self.hour_cost / self.per_hour_budget\n        if not self._hour_alert_fired and hour_pct >= self.alert_threshold:\n            self._emit_alert(\n                level=\"warning\",\n                budget_type=\"hour\",\n                current=self.hour_cost,\n                limit=self.per_hour_budget,\n                percentage=hour_pct\n            )\n            self._hour_alert_fired = True\n        \n        # Day budget\n        day_pct = self.day_cost / self.per_day_budget\n        if not self._day_alert_fired and day_pct >= self.alert_threshold:\n            self._emit_alert(\n                level=\"warning\",\n                budget_type=\"day\",\n                current=self.day_cost,\n                limit=self.per_day_budget,\n                percentage=day_pct\n            )\n            self._day_alert_fired = True\n    \n    def _emit_alert(\n        self,\n        level: str,\n        budget_type: str,\n        current: float,\n        limit: float,\n        percentage: float\n    ):\n        \"\"\"Emit cost alert.\"\"\"\n        alert = CostAlert(\n            timestamp=time.time(),\n            level=level,\n            budget_type=budget_type,\n            current_cost=current,\n            budget_limit=limit,\n            percentage=percentage,\n            message=f\"{level.upper()}: {budget_type} budget at {percentage:.0%} \"\n                    f\"(${current:.4f} / ${limit:.2f})\"\n        )\n        \n        self.alerts.append(alert)\n        logger.warning(alert.message)\n    \n    def _append_to_history(self, record: UsageRecord):\n        \"\"\"Append usage record to history file.\"\"\"\n        # Create daily history file\n        date_str = datetime.fromtimestamp(record.timestamp).strftime(\"%Y-%m-%d\")\n        history_file = self.history_dir / f\"usage_{date_str}.jsonl\"\n        \n        with open(history_file, \"a\") as f:\n            f.write(json.dumps(asdict(record)) + \"\\n\")\n
+"""
+Enhanced cost management with real-time tracking and multi-tier budgets.
+
+This module provides comprehensive cost tracking and budget enforcement
+for LLM API calls across multiple providers (OpenAI, Anthropic, Google).
+
+Features:
+- Multi-tier budgets (per-task, hourly, daily)
+- Real-time cost tracking per model and provider
+- Alert system at 80% threshold
+- Per-phase cost breakdown
+- Cost reports and exports
+- Historical tracking
+
+Version: 2.0.0
+"""
+
+from __future__ import annotations
+
+import logging
+import json
+import time
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from collections import defaultdict
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ModelPricing:
+    """Pricing information for a specific model."""
+    input_per_million: float  # USD per million input tokens
+    output_per_million: float  # USD per million output tokens
+    provider: str
+    context_window: int = 128000
+
+
+@dataclass
+class UsageRecord:
+    """Single usage record for cost tracking."""
+    timestamp: float
+    model: str
+    provider: str
+    phase: str
+    tokens_input: int
+    tokens_output: int
+    tokens_total: int
+    cost_usd: float
+    task_id: Optional[str] = None
+
+
+@dataclass
+class CostAlert:
+    """Alert when budget threshold is reached."""
+    timestamp: float
+    level: str  # "warning" or "critical"
+    budget_type: str  # "task", "hour", "day"
+    current_cost: float
+    budget_limit: float
+    percentage: float
+    message: str
+
+
+@dataclass
+class CostReport:
+    """Comprehensive cost report."""
+    start_time: float
+    end_time: float
+    total_cost: float
+    total_tokens: int
+    by_model: Dict[str, Dict[str, float]]  # model -> {cost, tokens}
+    by_provider: Dict[str, Dict[str, float]]  # provider -> {cost, tokens}
+    by_phase: Dict[str, Dict[str, float]]  # phase -> {cost, tokens}
+    num_calls: int
+    alerts: List[CostAlert]
+
+
+class CostManagerV2:
+    """
+    Enhanced cost manager with multi-tier budgets and real-time tracking.
+    
+    Example
+    -------
+    >>> manager = CostManagerV2(
+    ...     per_task_budget=0.50,
+    ...     per_hour_budget=5.0,
+    ...     per_day_budget=40.0
+    ... )
+    >>> 
+    >>> # Track usage
+    >>> manager.track_usage(
+    ...     provider="openai",
+    ...     model="gpt-4o",
+    ...     tokens_used={"prompt": 1000, "completion": 500, "total": 1500},
+    ...     phase="implementer"
+    ... )
+    >>> 
+    >>> # Check if can proceed
+    >>> if manager.can_proceed():
+    ...     # Make LLM call
+    ...     pass
+    >>> 
+    >>> # Get report
+    >>> report = manager.generate_report()
+    >>> print(f"Total cost: ${report.total_cost:.4f}")
+    """
+    
+    # Pricing table (USD per million tokens)
+    # Source: Public pricing as of Feb 2026
+    PRICING = {
+        # OpenAI
+        "gpt-4o": ModelPricing(2.50, 10.0, "openai", 128000),
+        "gpt-4o-mini": ModelPricing(0.15, 0.60, "openai", 128000),
+        "gpt-4-turbo": ModelPricing(10.0, 30.0, "openai", 128000),
+        "gpt-3.5-turbo": ModelPricing(0.50, 1.50, "openai", 16000),
+        
+        # Anthropic
+        "claude-3-5-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
+        "claude-3-opus": ModelPricing(15.0, 75.0, "anthropic", 200000),
+        "claude-3-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
+        "claude-3-haiku": ModelPricing(0.25, 1.25, "anthropic", 200000),
+        
+        # Google
+        "gemini-2.5-pro": ModelPricing(1.25, 5.0, "google", 1000000),
+        "gemini-1.5-pro": ModelPricing(1.25, 5.0, "google", 2000000),
+        "gemini-1.5-flash": ModelPricing(0.075, 0.30, "google", 1000000),
+    }
+    
+    def __init__(
+        self,
+        per_task_budget: float = 0.50,
+        per_hour_budget: float = 5.0,
+        per_day_budget: float = 40.0,
+        alert_threshold: float = 0.8,  # Alert at 80%
+        enable_history: bool = True,
+        history_dir: Optional[str] = None
+    ):
+        """
+        Initialize cost manager.
+        
+        Parameters
+        ----------
+        per_task_budget : float
+            Maximum cost per task in USD.
+        per_hour_budget : float
+            Maximum cost per hour in USD.
+        per_day_budget : float
+            Maximum cost per day in USD.
+        alert_threshold : float
+            Alert when budget reaches this percentage (0.0-1.0).
+        enable_history : bool
+            Whether to persist usage history to disk.
+        history_dir : str, optional
+            Directory for history files (default: ./cost_history).
+        """
+        # Budgets
+        self.per_task_budget = per_task_budget
+        self.per_hour_budget = per_hour_budget
+        self.per_day_budget = per_day_budget
+        self.alert_threshold = alert_threshold
+        
+        # Tracking
+        self.usage_records: List[UsageRecord] = []
+        self.alerts: List[CostAlert] = []
+        self.current_task_cost = 0.0
+        self.current_task_id: Optional[str] = None
+        self.current_phase: str = "unknown"
+        
+        # Time-based tracking
+        self.hour_start = time.time()
+        self.day_start = time.time()
+        self.hour_cost = 0.0
+        self.day_cost = 0.0
+        
+        # Alert state
+        self._task_alert_fired = False
+        self._hour_alert_fired = False
+        self._day_alert_fired = False
+        
+        # History persistence
+        self.enable_history = enable_history
+        if enable_history:
+            self.history_dir = Path(history_dir or "./cost_history")
+            self.history_dir.mkdir(exist_ok=True)
+    
+    def track_usage(
+        self,
+        provider: str,
+        model: str,
+        tokens_used: Dict[str, int],
+        phase: Optional[str] = None,
+        task_id: Optional[str] = None
+    ) -> float:
+        """
+        Track token usage and calculate cost.
+        
+        Parameters
+        ----------
+        provider : str
+            Provider name ("openai", "anthropic", "google").
+        model : str
+            Model identifier.
+        tokens_used : dict
+            Dict with "prompt", "completion", "total" keys.
+        phase : str, optional
+            Current phase (analyst, architect, etc.).
+        task_id : str, optional
+            Current task identifier.
+        
+        Returns
+        -------
+        float
+            Cost of this usage in USD.
+        """
+        # Normalize model name
+        model_key = model.lower()
+        if model_key not in self.PRICING:
+            logger.warning(f"Unknown model {model}, using gpt-4o pricing")
+            model_key = "gpt-4o"
+        
+        pricing = self.PRICING[model_key]
+        
+        # Calculate cost
+        input_tokens = tokens_used.get("prompt", 0)
+        output_tokens = tokens_used.get("completion", 0)
+        total_tokens = tokens_used.get("total", input_tokens + output_tokens)
+        
+        cost = (
+            (input_tokens / 1_000_000) * pricing.input_per_million +
+            (output_tokens / 1_000_000) * pricing.output_per_million
+        )
+        
+        # Create usage record
+        record = UsageRecord(
+            timestamp=time.time(),
+            model=model,
+            provider=provider,
+            phase=phase or self.current_phase,
+            tokens_input=input_tokens,
+            tokens_output=output_tokens,
+            tokens_total=total_tokens,
+            cost_usd=cost,
+            task_id=task_id or self.current_task_id
+        )
+        
+        self.usage_records.append(record)
+        
+        # Update running totals
+        self.current_task_cost += cost
+        self._update_time_based_costs(cost)
+        
+        # Check budgets and emit alerts
+        self._check_budgets()
+        
+        # Persist if enabled
+        if self.enable_history:
+            self._append_to_history(record)
+        
+        logger.info(
+            f"Usage tracked: {model} ({provider}), {total_tokens} tokens, "
+            f"${cost:.4f} (task: ${self.current_task_cost:.4f})"
+        )
+        
+        return cost
+    
+    def can_proceed(self) -> bool:
+        """
+        Check if execution can proceed within budget constraints.
+        
+        Returns
+        -------
+        bool
+            True if all budgets allow continuation.
+        """
+        if self.current_task_cost >= self.per_task_budget:
+            logger.error("Per-task budget exceeded")
+            return False
+        
+        if self.hour_cost >= self.per_hour_budget:
+            logger.error("Hourly budget exceeded")
+            return False
+        
+        if self.day_cost >= self.per_day_budget:
+            logger.error("Daily budget exceeded")
+            return False
+        
+        return True
+    
+    def start_task(self, task_id: str, phase: str = "unknown"):
+        """Start tracking a new task."""
+        self.current_task_id = task_id
+        self.current_phase = phase
+        self.current_task_cost = 0.0
+        self._task_alert_fired = False
+        logger.info(f"Started tracking task: {task_id} (phase: {phase})")
+    
+    def end_task(self) -> float:
+        """End current task and return its cost."""
+        cost = self.current_task_cost
+        logger.info(f"Task {self.current_task_id} completed. Cost: ${cost:.4f}")
+        self.current_task_id = None\
+        self.current_task_cost = 0.0
+        return cost
+    
+    def get_cumulative_cost(self) -> float:
+        """Get cumulative cost across all usage."""
+        return sum(r.cost_usd for r in self.usage_records)
+    
+    def generate_report(
+        self,
+        since: Optional[float] = None
+    ) -> CostReport:
+        """
+        Generate comprehensive cost report.
+        
+        Parameters
+        ----------
+        since : float, optional
+            Unix timestamp to start report from.
+        
+        Returns
+        -------
+        CostReport
+            Detailed breakdown of costs.
+        """
+        # Filter records
+        records = self.usage_records
+        if since:
+            records = [r for r in records if r.timestamp >= since]
+        
+        if not records:
+            return CostReport(
+                start_time=time.time(),
+                end_time=time.time(),
+                total_cost=0.0,
+                total_tokens=0,
+                by_model={},
+                by_provider={},
+                by_phase={},
+                num_calls=0,
+                alerts=self.alerts
+            )
+        
+        # Aggregate by model
+        by_model = defaultdict(lambda: {"cost": 0.0, "tokens": 0})
+        for r in records:
+            by_model[r.model]["cost"] += r.cost_usd
+            by_model[r.model]["tokens"] += r.tokens_total
+        
+        # Aggregate by provider
+        by_provider = defaultdict(lambda: {"cost": 0.0, "tokens": 0})
+        for r in records:
+            by_provider[r.provider]["cost"] += r.cost_usd
+            by_provider[r.provider]["tokens"] += r.tokens_total
+        
+        # Aggregate by phase
+        by_phase = defaultdict(lambda: {"cost": 0.0, "tokens": 0})
+        for r in records:
+            by_phase[r.phase]["cost"] += r.cost_usd
+            by_phase[r.phase]["tokens"] += r.tokens_total
+        
+        total_cost = sum(r.cost_usd for r in records)
+        total_tokens = sum(r.tokens_total for r in records)
+        
+        return CostReport(
+            start_time=records[0].timestamp,
+            end_time=records[-1].timestamp,
+            total_cost=total_cost,
+            total_tokens=total_tokens,
+            by_model=dict(by_model),
+            by_provider=dict(by_provider),
+            by_phase=dict(by_phase),
+            num_calls=len(records),
+            alerts=self.alerts
+        )
+    
+    def export_report(
+        self,
+        output_path: str,
+        format: str = "json"
+    ):
+        """Export cost report to file."""
+        report = self.generate_report()
+        
+        with open(output_path, "w") as f:
+            if format == "json":
+                json.dump(asdict(report), f, indent=2)
+            else:
+                raise ValueError(f"Unsupported format: {format}")
+        
+        logger.info(f"Cost report exported to {output_path}")
+    
+    def _update_time_based_costs(self, cost: float):
+        """Update hourly and daily cost trackers."""
+        now = time.time()
+        
+        # Check if hour has rolled over
+        if now - self.hour_start >= 3600:
+            logger.info(f"Hour completed. Cost: ${self.hour_cost:.4f}")
+            self.hour_start = now
+            self.hour_cost = 0.0
+            self._hour_alert_fired = False
+        
+        # Check if day has rolled over
+        if now - self.day_start >= 86400:
+            logger.info(f"Day completed. Cost: ${self.day_cost:.4f}")
+            self.day_start = now
+            self.day_cost = 0.0
+            self._day_alert_fired = False
+        
+        self.hour_cost += cost
+        self.day_cost += cost
+    
+    def _check_budgets(self):
+        """Check budgets and emit alerts if thresholds reached."""
+        # Task budget
+        task_pct = self.current_task_cost / self.per_task_budget
+        if not self._task_alert_fired and task_pct >= self.alert_threshold:
+            self._emit_alert(
+                level="warning",
+                budget_type="task",
+                current=self.current_task_cost,
+                limit=self.per_task_budget,
+                percentage=task_pct
+            )
+            self._task_alert_fired = True
+        
+        # Hour budget
+        hour_pct = self.hour_cost / self.per_hour_budget
+        if not self._hour_alert_fired and hour_pct >= self.alert_threshold:
+            self._emit_alert(
+                level="warning",
+                budget_type="hour",
+                current=self.hour_cost,
+                limit=self.per_hour_budget,
+                percentage=hour_pct
+            )
+            self._hour_alert_fired = True
+        
+        # Day budget
+        day_pct = self.day_cost / self.per_day_budget
+        if not self._day_alert_fired and day_pct >= self.alert_threshold:
+            self._emit_alert(
+                level="warning",
+                budget_type="day",
+                current=self.day_cost,
+                limit=self.per_day_budget,
+                percentage=day_pct
+            )
+            self._day_alert_fired = True
+    
+    def _emit_alert(
+        self,
+        level: str,
+        budget_type: str,
+        current: float,
+        limit: float,
+        percentage: float
+    ):
+        """Emit cost alert."""
+        alert_msg = f"{level.upper()}: {budget_type} budget at {percentage:.0%} " \
+                    f"(${current:.4f} / ${limit:.2f})"
+        
+        alert = CostAlert(
+            timestamp=time.time(),
+            level=level,
+            budget_type=budget_type,
+            current_cost=current,
+            budget_limit=limit,
+            percentage=percentage,
+            message=alert_msg
+        )
+        
+        self.alerts.append(alert)
+        logger.warning(alert.message)
+
+        # Emit properly formatted alert for VS Code Extension
+        try:
+            alert_payload = json.dumps({
+                "level": level,
+                "type": budget_type,
+                "percentage": percentage,
+                "message": alert_msg
+            })
+            print(f"[COST_ALERT] {alert_payload}", flush=True)
+        except Exception:
+            pass
+    
+    def _append_to_history(self, record: UsageRecord):
+        """Append usage record to history file."""
+        # Create daily history file
+        date_str = datetime.fromtimestamp(record.timestamp).strftime("%Y-%m-%d")
+        history_file = self.history_dir / f"usage_{date_str}.jsonl"
+        
+        with open(history_file, "a") as f:
+            f.write(json.dumps(asdict(record)) + "\\n")

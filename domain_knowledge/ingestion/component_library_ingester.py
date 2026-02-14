@@ -124,7 +124,7 @@ class ComponentLibraryIngester(Ingester):
         
         component_data = {
             "name": component_name,
-            "folder_path": str(primary_path.parent.relative_to(self.components_dir)),
+            "folder_path": str(primary_path.parent.resolve()),
             "description": "",
             "props": [],
             "types": "",

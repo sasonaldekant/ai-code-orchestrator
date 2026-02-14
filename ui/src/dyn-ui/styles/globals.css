@@ -1,5 +1,5 @@
 /* Base design tokens */
-@import '../../../design-tokens/index.css';
+@import '../../dyn-design-tokens/index.css';
 
 /* Reset i osnovni stilovi */
 *,

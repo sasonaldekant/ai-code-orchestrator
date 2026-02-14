@@ -1,0 +1,40 @@
+# Task: Refine UI and Implement Change Confirmation
+
+- [ ] Planning & Design [/]
+    - [x] Analyze user request and Antigravity features
+    - [/] Create implementation plan for "Review Changes" workflow
+- [ ] Backend (Python) [ ]
+    - [ ] Refine Orchestrator metadata output for "Steps"
+    - [ ] Update implementation phase to support "Staged" changes (output to temp/meta)
+- [ ] Backend (Python API) [ ]
+    - [ ] Update `config/limits.yaml` to include new fields (budget, retries, feedback)
+    - [ ] Verify `config_routes.py` handles new fields correctly
+- [x] Web UI (React) [x]
+    - [x] Create `AdminSettings` page/component
+    - [x] Implement form for Global Settings (Temperature, Budget, Retries)
+    - [x] Connect form to `GET/POST /config/settings` API
+- [x] Enforce DynUI-Only Constraint [x]
+    - [x] Update `rag/AI_CONTEXT.md` with strict rules and fallback protocol
+    - [x] Update `prompts/phase_prompts/architect.txt`
+    - [x] Update `prompts/phase_prompts/implementation_frontend.txt`
+- [x] Improve RAG Management & GUI [x]
+    - [x] Add `instruction_docs` and `specialization_rules` to backend ingestion
+    - [x] Update `IngestionPanel.tsx` with new data types
+    - [x] Implement document browser in `KnowledgeExplorer.tsx`
+- [x] Create Windows Launch Script [x]
+    - [x] Research start commands (done)
+    - [x] Create `start_all.bat` in project root
+- [x] Verification [x]
+    - [x] Verify DynUI-only generation via test prompts
+    - [x] Verify RAG GUI is functional via API check
+    - [x] Verify ingestion of `.md` and `.yaml` specialization docs
+    - [x] Test `start_all.bat` script
+    - [x] Fix VS Code Extension syntax errors (SidebarProvider.ts)
+- [x] VS Code Extension (TypeScript) [x]
+    - [x] Implement Markdown rendering in webview for better answer formatting
+    - [x] Create "Review Changes" UI component in sidebar
+    - [x] Implement diff view integration for proposed files
+    - [ ] Add "Accept/Reject" logic to apply changes to workspace
+- [/] Verification [/]
+    - [/] Test end-to-end flow: Prompt -> Thinking -> Generated Files -> Review -> Accept -> Applied
+    - [ ] Verify stop button reliability during generation

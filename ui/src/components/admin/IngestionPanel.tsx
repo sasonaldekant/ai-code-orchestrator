@@ -3,7 +3,8 @@ import { Database, FolderOpen, CheckCircle, AlertCircle, Loader2, Upload, Info, 
 import clsx from 'clsx';
 import { PathSelector } from './PathSelector';
 
-type IngestionType = 'database' | 'component_library' | 'project_codebase' | 'database_content';
+type IngestionType = 'database' | 'component_library' | 'project_codebase' | 'database_content' | 'instruction_docs' | 'specialization_rules' | 'custom';
+type IngestionTier = 1 | 2 | 3 | 4;
 type ContentMode = 'json' | 'sql';
 
 interface ValidationResult {
@@ -24,7 +25,9 @@ interface ValidationResult {
 }
 
 export function IngestionPanel() {
-    const [type, setType] = useState<IngestionType>('database');
+    const [type, setType] = useState<IngestionType>('custom');
+    const [tier, setTier] = useState<IngestionTier>(3);
+    const [category, setCategory] = useState('component');
     const [path, setPath] = useState('');
     const [modelsDir, setModelsDir] = useState('');
     const [collection, setCollection] = useState('');
@@ -54,6 +57,8 @@ export function IngestionPanel() {
                 body: JSON.stringify({
                     type,
                     path,
+                    tier,
+                    category,
                     models_dir: modelsDir || undefined,
                     collection: collection || undefined,
                     chunk_size: chunkSize,
@@ -84,6 +89,8 @@ export function IngestionPanel() {
             let body: any = {
                 type,
                 path,
+                tier,
+                category,
                 models_dir: modelsDir || undefined,
                 collection: collection || undefined,
                 chunk_size: chunkSize,
@@ -131,57 +138,62 @@ export function IngestionPanel() {
 
             {/* Main Form */}
             <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-                {/* Type Selection */}
+                {/* Tier Selection */}
                 <div>
-                    <label className="block text-sm font-medium mb-2">Ingestion Type</label>
+                    <label className="block text-sm font-medium mb-3">Knowledge Tier</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <button
-                            onClick={() => setType('database')}
-                            className={clsx(
-                                "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all",
-                                type === 'database'
-                                    ? "border-primary bg-primary/10 text-primary"
-                                    : "border-border hover:border-primary/50"
-                            )}
+                        {[
+                            { val: 1, label: 'T1: Rules', color: 'border-blue-500 bg-blue-500/10 text-blue-500', desc: 'Architecture & Rules' },
+                            { val: 2, label: 'T2: Tokens', color: 'border-purple-500 bg-purple-500/10 text-purple-500', desc: 'Design Tokens' },
+                            { val: 3, label: 'T3: Components', color: 'border-primary bg-primary/10 text-primary', desc: 'Code & Components' },
+                            { val: 4, label: 'T4: Backend', color: 'border-amber-500 bg-amber-500/10 text-amber-500', desc: 'DTOs & Patterns' },
+                        ].map((t) => (
+                            <button
+                                key={t.val}
+                                onClick={() => {
+                                    setTier(t.val as IngestionTier);
+                                    if (t.val === 1) setCategory('architecture');
+                                    if (t.val === 2) setCategory('design');
+                                    if (t.val === 3) setCategory('component');
+                                    if (t.val === 4) setCategory('backend');
+                                    setType('project_codebase'); // Generic codebase ingestion logic
+                                }}
+                                className={clsx(
+                                    "flex flex-col items-center justify-center p-3 rounded-lg border transition-all text-center",
+                                    tier === t.val ? t.color : "border-border hover:border-border/80"
+                                )}
+                            >
+                                <span className="font-bold text-sm">{t.label}</span>
+                                <span className="text-[10px] opacity-70 mt-1">{t.desc}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Category Name</label>
+                        <input
+                            type="text"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            placeholder="e.g. component, dto, rules"
+                            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:border-primary text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Parsing Logic (Optional)</label>
+                        <select
+                            value={type}
+                            onChange={(e) => setType(e.target.value as IngestionType)}
+                            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:border-primary text-sm"
                         >
-                            <Database className="w-5 h-5" />
-                            <span className="font-medium">Database Schema</span>
-                        </button>
-                        <button
-                            onClick={() => setType('component_library')}
-                            className={clsx(
-                                "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all",
-                                type === 'component_library'
-                                    ? "border-primary bg-primary/10 text-primary"
-                                    : "border-border hover:border-primary/50"
-                            )}
-                        >
-                            <FolderOpen className="w-5 h-5" />
-                            <span className="font-medium">Component Library</span>
-                        </button>
-                        <button
-                            onClick={() => setType('project_codebase')}
-                            className={clsx(
-                                "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all",
-                                type === 'project_codebase'
-                                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-500"
-                                    : "border-border hover:border-emerald-500/50"
-                            )}
-                        >
-                            <Upload className="w-5 h-5" />
-                            <span className="font-medium">Project Codebase</span>
-                        </button>
-                        <button
-                            onClick={() => setType('database_content')}
-                            className={clsx(
-                                "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all",
-                                type === 'database_content'
-                                    ? "border-amber-500 bg-amber-500/10 text-amber-500"
-                                    : "border-border hover:border-amber-500/50"
-                            )}
-                        >
-                            <span className="font-medium">Database Content</span>
-                        </button>
+                            <option value="custom">Generic Auto-Detect</option>
+                            <option value="project_codebase">Source Code Explorer</option>
+                            <option value="database">C# DbContext (T4 spec)</option>
+                            <option value="component_library">React Library (T3 spec)</option>
+                            <option value="instruction_docs">Text/MD Docs (T1 spec)</option>
+                        </select>
                     </div>
                 </div>
 

@@ -92,6 +92,23 @@ class CodeExecutor:
         if use_docker:
             from .sandbox_runner import SandboxRunner
             self.sandbox = SandboxRunner(timeout_seconds=timeout_seconds)
+
+    async def execute_command(self, cmd: Union[str, List[str]], cwd: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Public wrapper to execute a generic shell command.
+        """
+        if isinstance(cmd, str):
+            cmd_list = cmd.split()
+        else:
+            cmd_list = cmd
+            
+        result = await self._run_command(cmd_list, cwd=cwd)
+        return {
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "exit_code": result.exit_code,
+            "status": result.status
+        }
             
     async def execute_python(
         self,

@@ -121,11 +121,32 @@ async def stream_logs(request: Request):
 
 from api.shared import orchestrator_instance
 
+
+# Global reference to the current execution task for cancellation
+current_execution_task: Optional[asyncio.Task] = None
+
+@app.post("/stop")
+async def stop_execution():
+    """
+    Cancel the currently running orchestration request.
+    """
+    global current_execution_task
+    if current_execution_task and not current_execution_task.done():
+        current_execution_task.cancel()
+        # Publish event
+        await bus.publish(Event(type=EventType.ERROR, agent="API", content="Execution cancelled by user."))
+        return {"status": "cancelled"}
+    return {"status": "no_active_execution"}
+
 @app.post("/orchestrate")
 async def orchestrate_feature(req: ExecutionRequest, request: Request):
     # check_auth(request) # Optional for local UI mode
     
+    global current_execution_task
+    current_execution_task = asyncio.current_task()
+    
     if not req.request or not req.request.strip():
+
         raise HTTPException(status_code=400, detail="Request cannot be empty")
         
     # Notify start

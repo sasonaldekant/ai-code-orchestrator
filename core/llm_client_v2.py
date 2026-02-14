@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict
 from core.cost_manager import CostManager
 from core.memory.user_prefs import UserPreferences
+from core.cache_manager import CacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -126,35 +127,62 @@ class AnthropicProvider(LLMProvider):
             thinking=thinking_text if thinking_text else None
         )
 
-# Mock Google Provider for consistency if not installed or configured, 
-# otherwise use real implementation if desired. Keeping structure simple.
+    def _get_provider_name(self, model: str) -> str:
+        model_lower = model.lower()
+        if "gpt" in model_lower: return "openai"
+        if "claude" in model_lower: return "anthropic"
+        if "gemini" in model_lower: return "google"
+        if "sonar" in model_lower: return "perplexity"
+        return "openai" # Default fallback
+
+# Update Google provider to support JSON mode via generation_config
 class GoogleProvider(LLMProvider):
     async def complete(self, messages: List[Dict], model: str, **kwargs) -> LLMResponse:
-        # Simplified placeholder/implementation
         import google.generativeai as genai
         genai.configure(api_key=self.api_key)
+        
+        # Configure generation config for JSON if requested
+        safe_config = {}
+        if kwargs.get("json_mode"):
+            safe_config = {"response_mime_type": "application/json"}
+
         gemini = genai.GenerativeModel(model)
         
-        # Handle list content (multi-modal) by extracting text only
+        # Format messages for Gemini
         prompt_parts = []
         for m in messages:
             content = m["content"]
+            role = "user" if m["role"] in ["user", "system"] else "model"
             if isinstance(content, list):
-                # Extract text parts only for simplified provider
                 text_content = " ".join([p["text"] for p in content if p.get("type") == "text"])
-                prompt_parts.append(f"{m['role']}: {text_content}")
+                prompt_parts.append({"role": role, "parts": [text_content]})
             else:
-                prompt_parts.append(f"{m['role']}: {content}")
+                prompt_parts.append({"role": role, "parts": [str(content)]})
                 
-        prompt = "\n".join(prompt_parts)
-        response = await gemini.generate_content_async(prompt)
+        # Send
+        response = await gemini.generate_content_async(
+            prompt_parts,
+            generation_config=genai.types.GenerationConfig(
+                temperature=kwargs.get("temperature", 0.0),
+                max_output_tokens=kwargs.get("max_tokens", 4000),
+                **safe_config
+            )
+        )
         
-        # Rough token estimation
         tokens = {
-            "prompt": len(prompt) // 4,
-            "completion": len(response.text) // 4,
-            "total": (len(prompt) + len(response.text)) // 4
+            "prompt": 0, # Placeholder until usage metadata is parsed from response object
+            "completion": 0,
+            "total": 0
         }
+        
+        try:
+             # Attempt to extract usage metadata if available in newer SDK
+             if hasattr(response, "usage_metadata"):
+                 tokens["prompt"] = response.usage_metadata.prompt_token_count
+                 tokens["completion"] = response.usage_metadata.candidates_token_count
+                 tokens["total"] = response.usage_metadata.total_token_count
+        except:
+             pass
         
         return LLMResponse(
             content=response.text,
@@ -208,6 +236,7 @@ class LLMClientV2:
         self.cost_manager = cost_manager
         self.providers: Dict[str, LLMProvider] = {}
         self.user_prefs = UserPreferences()
+        self.cache_manager = CacheManager()
         
         # Init Providers
         if os.getenv("OPENAI_API_KEY"):
@@ -235,6 +264,7 @@ class LLMClientV2:
         temperature: float = 0.0,
         max_tokens: int = 4000,
         json_mode: bool = False,
+        bypass_cache: bool = False,
         **kwargs
     ) -> LLMResponse:
         provider_name = self._get_provider_name(model)
@@ -277,7 +307,18 @@ class LLMClientV2:
              else:
                  final_messages = [{"role": "system", "content": system_content}] + messages
         else:
-             final_messages = messages
+                  final_messages = messages
+        
+        # 2. Check Cache
+        # Only cache deterministic calls (temp=0)
+        cache_key_prompt = json.dumps(final_messages, sort_keys=True, default=str)
+        if not bypass_cache and temperature == 0.0:
+            cached_data = self.cache_manager.get(cache_key_prompt, model, temperature)
+            if cached_data:
+                logger.info(f"Cache Hit for {model}")
+                # Reconstruct LLMResponse
+                return LLMResponse(**cached_data)
+
 
         # Multi-modal handling happened before validation, but we can do it here/provider level.
         # But wait, Provider impls take `messages`. We should pass `final_messages`.
@@ -306,6 +347,16 @@ class LLMClientV2:
                 duration=time.time() - start_time,
                 cost=cost_info.get("cost_increment", 0.0) if isinstance(cost_info, dict) else 0.0
             )
+            
+            # Cache the response result if deterministic
+            if temperature == 0.0:
+                # Convert LLMResponse to dict for storage
+                self.cache_manager.set(
+                    cache_key_prompt, 
+                    model, 
+                    asdict(response), 
+                    temperature
+                )
             
             return response
             

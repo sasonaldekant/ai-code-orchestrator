@@ -19,10 +19,17 @@ class ModelConfig(BaseModel):
     max_tokens: int = 4000
 
 
+class GlobalConfig(BaseModel):
+    temperature: float = 0.0
+    max_retries: int = 3
+    max_feedback_iterations: int = 3
+    deep_search: bool = False
+
 class GlobalSettings(BaseModel):
     models: Dict[str, Any]
     limits: Optional[Dict[str, Any]] = None
     api_keys: Optional[Dict[str, str]] = None
+    global_config: Optional[GlobalConfig] = None
 
 
 def load_yaml_config():
@@ -36,7 +43,7 @@ def load_limits_config():
     if not LIMITS_PATH.exists():
         return {}
     with open(LIMITS_PATH, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return yaml.safe_load(f) or {}
 
 def save_yaml_config(data: Dict):
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
@@ -94,6 +101,9 @@ async def get_settings():
         config = load_yaml_config()
         limits = load_limits_config()
         
+        # Extract global config from limits
+        global_conf = limits.get("global", {})
+
         # Return masked API keys existence check
         api_keys = {
             "OPENAI_API_KEY": "sk-****" if os.getenv("OPENAI_API_KEY") else "",
@@ -105,6 +115,7 @@ async def get_settings():
         return {
             "models": config,
             "limits": limits,
+            "global_config": global_conf,
             "api_keys": api_keys
         }
     except Exception as e:
@@ -115,11 +126,19 @@ async def get_settings():
 async def update_settings(settings: GlobalSettings):
     try:
         # 1. Save YAML config
-        save_yaml_config(settings.models)
+        if settings.models:
+            save_yaml_config(settings.models)
         
-        # 2. Save Limits config
+        # 2. Save Limits config (merge global config)
+        current_limits = load_limits_config()
+        
         if settings.limits:
-            save_limits_config(settings.limits)
+            current_limits.update(settings.limits)
+            
+        if settings.global_config:
+            current_limits["global"] = settings.global_config.dict()
+            
+        save_limits_config(current_limits)
         
         # 2. Update .env if keys provided
         if settings.api_keys:

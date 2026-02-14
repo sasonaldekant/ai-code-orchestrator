@@ -133,8 +133,8 @@ class ChromaVectorStore(VectorStore):
         self.embedding_function = embedding_function
 
         
-        # Initialize Reranker (lazy loaded by the class itself)
-        self.reranker = CrossEncoderReranker()
+        # Initialize Reranker (lazy loaded by search)
+        self.reranker = None
 
     def add_documents(self, documents: List[Document]) -> None:
         """Add documents to Chroma collection."""
@@ -221,6 +221,8 @@ class ChromaVectorStore(VectorStore):
 
         # Apply Re-ranking
         if use_reranking and search_results:
+            if self.reranker is None:
+                self.reranker = CrossEncoderReranker()
             logger.info(f"Re-ranking {len(search_results)} candidates for query: '{query}'")
             # Prepare for reranker
             docs_for_reranking = [

@@ -15,8 +15,13 @@ The architecture design for this implementation is:
 [PROJECT STANDARDS & RULES]:
 {golden_rules}
 
-Produce the necessary React components, hooks, and types to implement the requested feature. 
-STRICTLY FOLLOW the 3-Layer Token System and Component Composition rules defined in the Golden Rules.
-Follow the mapping rules and validation requirements specified in the global request.
+IMPLEMENTATION RULES:
+1. Produce the necessary React components, hooks, and types to implement the requested feature. 
+2. STRICTLY FORBIDDEN: Do not use <div>, <span>, <button>, <a>, <input>, or any other native HTML tags directly. 
+3. ALL UI must be built using @dyn-ui/react components. If you need a semantic tag, use <DynBox as="...">.
+4. FOLLOW THE FALLBACK PROTOCOL: If a requirement isn't in DynUI, compose it from primitives (DynBox, DynFlex, DynStack, DynTypography).
+5. If composition is impossible, add a "PROPOSAL" block in the code comments explaining the DynUI-based alternative.
+6. STRICTLY FOLLOW the 3-Layer Token System and Component Composition rules.
+
 Return JSON format with a list of files: {"files": [{"path": "...", "content": "..."}]}.
 Code should be complete and ready to use.

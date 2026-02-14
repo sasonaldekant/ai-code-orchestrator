@@ -101,16 +101,25 @@ class CostManager:
         "claude-3-haiku": ModelPricing(0.25, 1.25, "anthropic", 200000),
         
         # Google
-        "gemini-2.5-pro": ModelPricing(1.25, 5.0, "google", 1000000),
+        "gemini-2.0-flash": ModelPricing(0.10, 0.40, "google", 1000000),
         "gemini-1.5-pro": ModelPricing(1.25, 5.0, "google", 2000000),
         "gemini-1.5-flash": ModelPricing(0.075, 0.30, "google", 1000000),
+
+        "gemini-1.5-flash": ModelPricing(0.075, 0.30, "google", 1000000),
+
     }
+    
+    @classmethod
+    def get_supported_models(cls) -> List[str]:
+        """Return list of supported model IDs."""
+        return list(cls.PRICING.keys())
     
     def __init__(
         self,
-        per_task_budget: float = 0.50,
-        per_hour_budget: float = 5.0,
-        per_day_budget: float = 40.0,
+        per_task_budget: float = 0.50, # Global Task Limit
+        per_hour_budget: float = 5.0,  # Global Hourly Limit
+        per_day_budget: float = 40.0,  # Global Daily Limit
+        local_task_budget: Optional[float] = None, # Client/Session Local Limit
         alert_threshold: float = 0.8,  # Alert at 80%
         enable_history: bool = True,
         history_dir: Optional[str] = None
@@ -118,10 +127,17 @@ class CostManager:
         """
         Initialize cost manager.
         """
-        # Budgets
+        # Global Budgets (Admin)
         self.per_task_budget = per_task_budget
         self.per_hour_budget = per_hour_budget
         self.per_day_budget = per_day_budget
+        
+        # Local Budget (Client override, must be <= Global)
+        self.local_task_budget = local_task_budget
+        if self.local_task_budget is not None and self.local_task_budget > self.per_task_budget:
+            logger.warning(f"Local budget ({self.local_task_budget}) exceeds global ({self.per_task_budget}). Clamping to global.")
+            self.local_task_budget = self.per_task_budget
+
         self.alert_threshold = alert_threshold
         
         # Tracking
@@ -130,11 +146,11 @@ class CostManager:
         self.current_task_cost = 0.0
         self.current_task_id: Optional[str] = None
         self.current_phase: str = "unknown"
-        self.total_cost = 0.0 # Maintain total_cost property for compatibility
+        self.total_cost = 0.0 
         
         # Time-based tracking
         self.hour_start = time.time()
-        self.day_start = time.time()
+        self.day_start = time.time() # This resets on init, handled below
         self.hour_cost = 0.0
         self.day_cost = 0.0
         
@@ -142,12 +158,36 @@ class CostManager:
         self._task_alert_fired = False
         self._hour_alert_fired = False
         self._day_alert_fired = False
+        self._local_alert_fired = False
         
         # History persistence
         self.enable_history = enable_history
         if enable_history:
             self.history_dir = Path(history_dir or "./cost_history")
             self.history_dir.mkdir(exist_ok=True)
+            self._load_todays_usage() # Sync state from persistent storage
+
+    def _load_todays_usage(self):
+        """Load today's usage from history to enforce global daily limits across processes."""
+        try:
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            history_file = self.history_dir / f"usage_{today_str}.jsonl"
+            
+            if history_file.exists():
+                total_today = 0.0
+                with open(history_file, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip():
+                            try:
+                                record = json.loads(line)
+                                total_today += record.get("cost_usd", 0.0)
+                            except: pass
+                
+                self.day_cost = total_today
+                self.total_cost = total_today # Assumes process lifecycle usually matches day or is irrelevant for total lifetime in this context
+                logger.info(f"Loaded existing daily usage: ${self.day_cost:.4f}")
+        except Exception as e:
+            logger.error(f"Failed to load cost history: {e}")
     
     def track_usage(
         self,
@@ -246,6 +286,10 @@ class CostManager:
         
         if self.day_cost >= self.per_day_budget:
             logger.error("Daily budget exceeded")
+            return False
+            
+        if self.local_task_budget and self.current_task_cost >= self.local_task_budget:
+            logger.error("Local task budget exceeded")
             return False
         
         return True
@@ -413,6 +457,23 @@ class CostManager:
                 percentage=day_pct
             )
             self._day_alert_fired = True
+
+        # Local Task Budget (Extension enforced)
+        if self.local_task_budget:
+            local_pct = self.current_task_cost / self.local_task_budget
+            if not self._local_alert_fired and local_pct >= self.alert_threshold:
+                self._emit_alert(
+                    level="warning",
+                    budget_type="local_task",
+                    current=self.current_task_cost,
+                    limit=self.local_task_budget,
+                    percentage=local_pct
+                )
+                self._local_alert_fired = True
+            
+            if self.current_task_cost >= self.local_task_budget:
+                logger.error("Local task budget exceeded")
+                # Force fail?
     
     def _emit_alert(
         self,
@@ -423,6 +484,9 @@ class CostManager:
         percentage: float
     ):
         """Emit cost alert."""
+        alert_msg = f"{level.upper()}: {budget_type} budget at {percentage:.0%} " \
+                    f"(${current:.4f} / ${limit:.2f})"
+        
         alert = CostAlert(
             timestamp=time.time(),
             level=level,
@@ -430,12 +494,19 @@ class CostManager:
             current_cost=current,
             budget_limit=limit,
             percentage=percentage,
-            message=f"{level.upper()}: {budget_type} budget at {percentage:.0%} "
-                    f"(${current:.4f} / ${limit:.2f})"
+            message=alert_msg
         )
         
         self.alerts.append(alert)
+        # Structured log for Extension Parsing (captures stderr)
+        logger.warning(f"[COST_ALERT] {json.dumps(asdict(alert))}")
         logger.warning(alert.message)
+        
+        # Explicit print to stdout for VS Code Extension capture
+        try:
+            print(f"[COST_ALERT] {json.dumps(asdict(alert))}", flush=True)
+        except Exception:
+            pass
     
     def _append_to_history(self, record: UsageRecord):
         """Append usage record to history file."""

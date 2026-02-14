@@ -60,6 +60,9 @@ class ImplementationAgent:
         )
 
         # 3. Parallel Execution
+        msg_be = "Generating Backend (C#/.NET)..."
+        print(f":::STEP:{{\"type\": \"editing\", \"text\": \"{msg_be}\"}}:::", flush=True)
+        
         backend_task = self.orchestrator.llm_client.complete(
             messages=[
                 {"role": "system", "content": "You are an expert C#/.NET Developer. Output JSON with 'files' list (filename, content)."},
@@ -69,6 +72,9 @@ class ImplementationAgent:
             temperature=backend_cfg.temperature,
             json_mode=True # Assuming supported provider
         )
+
+        msg_fe = "Generating Frontend (React)..."
+        print(f":::STEP:{{\"type\": \"editing\", \"text\": \"{msg_fe}\"}}:::", flush=True)
 
         frontend_task = self.orchestrator.llm_client.complete(
             messages=[
@@ -110,6 +116,15 @@ class ImplementationAgent:
             thinking += f"### Backend Thinking\n{backend_resp.thinking}\n\n"
         if not isinstance(frontend_resp, Exception) and frontend_resp.thinking:
             thinking += f"### Frontend Thinking\n{frontend_resp.thinking}\n"
+
+        # Emit Files for Review
+        all_files = output.get("backend_files", []) + output.get("frontend_files", [])
+        if all_files:
+            try:
+                files_json = json.dumps(all_files)
+                print(f":::FILES:{files_json}:::", flush=True)
+            except Exception as e:
+                logger.error(f"Failed to emit files for review: {e}")
 
         return {
             "phase": "implementation",

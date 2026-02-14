@@ -6,7 +6,8 @@ export type EventType =
     | "task"
     | "artifact"
     | "error"
-    | "done";
+    | "done"
+    | "info";
 
 export interface LogEvent {
     type: EventType;

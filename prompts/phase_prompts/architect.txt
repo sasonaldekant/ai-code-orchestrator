@@ -15,9 +15,11 @@ Domain Context (Database entities and existing components):
 [PROJECT STANDARDS & RULES]:
 {golden_rules}
 
-Design the system structure, including key components, their responsibilities, and interactions.
-You MUST use existing DynUI components. Do not invent new UI elements if they exist in the Golden Rules.
-Describe the layout structure (e.g., using DynStack, DynFlex).
+ARCHITECTURE DESIGN GOALS:
+1. Design the system structure, including key components, their responsibilities, and interactions.
+2. YOU MUST MAP ALL UI REQUIREMENTS EXCLUSIVELY TO DynUI COMPONENTS. Do not invent new UI elements if they exist in the Golden Rules.
+3. Explicitly describe the layout structure using DynUI primitives (e.g., DynStack, DynFlex, DynBox).
+4. If a requirement is not supported by a high-level component, describe it as a COMPOSITION of DynUI primitives in the architecture 'explanation'.
 
 Return the architecture in the prescribed JSON format with 'components', 'data_flow', and 'technologies' sections.
-Include a detailed 'explanation' field.
+Include a detailed 'explanation' field detailing the DynUI mapping strategy.

@@ -1,0 +1,11 @@
+Prilikom kreiranja planova, taskova i walkthrough dokumenata, Antigravity (ja) treba da poštuje sledeća pravila:
+
+1. **Glavna putanja**: Svi ovi fajlovi moraju biti smešteni unutar projekta u folder `docs/implementation_plans/`.
+2. **Datumski folder**: Unutar `implementation_plans` foldera, kreiraj folder za trenutni datum u formatu `DD_MM_YYYY` (npr. `12_02_2026`).
+3. **Task folder**: Unutar datumskog foldera, kreiraj podfolder za svaki zadatak koji počinje rednim brojem i kratkim opisom (npr. `06-naslov-zadatka`).
+4. **Sadržaj foldera**: Svaki task folder mora da sadrži:
+   - `implementation_plan.md`
+   - `task.md`
+   - `walkthrough.md` (nakon završetka)
+5. **Automatizacija**: Ukoliko folderi ne postoje, a ja primetim da ih treba napraviti, treba to da uradim automatski pri prvom kreiranju plana ili task liste.
+6. **Sinhronizacija**: Fajlovi u ovim folderima su primarni izvor istine za dokumentaciju projekta.

@@ -19,6 +19,7 @@ import os
 import logging
 import hashlib
 from pathlib import Path
+from dataclasses import asdict
 
 from rag.vector_store import ChromaVectorStore, Document
 from domain_knowledge.ingestion.database_schema_ingester import DatabaseSchemaIngester
@@ -41,6 +42,31 @@ PROJECT_ROOT = Path(".")
 # Global Knowledge Graph Instance (In-Memory MVP)
 knowledge_graph = KnowledgeGraph()
 
+from core.cascade_metrics import CascadeMetrics
+
+@router.get("/cascade-metrics", summary="Get model cascading statistics")
+async def get_cascade_metrics():
+    """
+    Returns usage stats for the 5-tier model cascade system.
+    """
+    try:
+        return CascadeMetrics().get_stats()
+    except Exception as e:
+        logger.error(f"Failed to get metrics: {e}")
+        return {"tier_usage": {}, "error": str(e)}
+
+@router.get("/models", summary="Get supported LLM models")
+async def get_supported_models():
+    """
+    Returns supported models with pricing from CostManager.
+    """
+    from core.cost_manager import CostManager
+    # Return full pricing info for UI display
+    return {
+        "models": CostManager.get_supported_models(),
+        "pricing": {k: asdict(v) for k, v in CostManager.PRICING.items()}
+    }
+
 
 # ============== Pydantic Models ==============
 
@@ -51,8 +77,10 @@ class ConfigUpdateRequest(BaseModel):
 
 class IngestionValidateRequest(BaseModel):
     """Request to validate ingestion before executing."""
-    type: str  # database, component_library
+    type: str  # database, component_library, project_codebase, etc.
     path: str
+    tier: int = 3  # Default to Tier 3
+    category: str = "generic"
     models_dir: Optional[str] = None
     collection: Optional[str] = None
     chunk_size: int = 800
@@ -302,11 +330,17 @@ async def validate_ingestion(req: IngestionValidateRequest):
         else:
             errors.append("Component library path must be a directory")
     
-    elif req.type == "project_codebase":
-        # Ingest existing project source code for context
+    elif req.type == "project_codebase" or req.type == "instruction_docs" or req.type == "specialization_rules":
+        # Ingest existing project source code or documentation for context
         if source_path.is_dir():
             # Count source files by type
-            code_extensions = ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.cs", "*.java", "*.go", "*.rs", "*.cpp", "*.c", "*.h"]
+            if req.type == "instruction_docs":
+                code_extensions = ["*.md", "*.txt", "*.pdf"]
+            elif req.type == "specialization_rules":
+                code_extensions = ["*.yaml", "*.yml", "*.json"]
+            else:
+                code_extensions = ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.cs", "*.java", "*.go", "*.rs", "*.cpp", "*.c", "*.h"]
+            
             all_files = []
             for ext in code_extensions:
                 all_files.extend(list(source_path.glob(f"**/{ext}")))
@@ -323,18 +357,21 @@ async def validate_ingestion(req: IngestionValidateRequest):
             
             # Get recommendations for the project
             if filtered_files:
-                sample_content = filtered_files[0].read_text(errors="ignore")[:2000]
-                recs = chunker.get_recommendations(sample_content, str(filtered_files[0]))
-                warnings.extend([r for r in recs])
+                try:
+                    sample_content = filtered_files[0].read_text(errors="ignore")[:2000]
+                    recs = chunker.get_recommendations(sample_content, str(filtered_files[0]))
+                    warnings.extend([r for r in recs])
+                except Exception:
+                    pass
             
             # Estimate based on files and average size
             info["estimated_documents"] = len(filtered_files) * 3  # ~3 chunks per file
             info["estimated_tokens"] = info["estimated_documents"] * 500
             info["estimated_cost_usd"] = round(info["estimated_tokens"] * 0.0001 / 1000, 4)
         else:
-            errors.append("Project codebase path must be a directory")
+            errors.append(f"{req.type.replace('_', ' ').capitalize()} path must be a directory")
     else:
-        errors.append(f"Unknown type: {req.type}. Use 'database', 'component_library', or 'project_codebase'")
+        errors.append(f"Unknown type: {req.type}. Use 'database', 'component_library', 'project_codebase', 'instruction_docs', or 'specialization_rules'")
     
     # Estimate documents and tokens (for db/component types)
     if not errors and req.type in ["database", "component_library"]:
@@ -352,7 +389,9 @@ async def validate_ingestion(req: IngestionValidateRequest):
         "request": {
             "type": req.type,
             "path": req.path,
-            "collection": req.collection or f"default_{req.type}"
+            "tier": req.tier,
+            "category": req.category,
+            "collection": req.collection or f"tier{req.tier}_{req.category}"
         }
     }
 
@@ -384,13 +423,20 @@ async def execute_ingestion(req: IngestionExecuteRequest):
             ingester = ComponentLibraryIngester(req.path)
             documents = ingester.ingest()
         
-        elif req.type == "project_codebase":
+        elif req.type in ["project_codebase", "instruction_docs", "specialization_rules"]:
             if not collection_name:
-                collection_name = "project_codebase"
+                collection_name = req.type
             
             # Simple generic ingestion - read source files and chunk them
             source_path = Path(req.path)
-            code_extensions = ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.cs", "*.java", "*.go", "*.rs", "*.cpp", "*.c", "*.h"]
+            
+            if req.type == "instruction_docs":
+                code_extensions = ["*.md", "*.txt", "*.pdf"]
+            elif req.type == "specialization_rules":
+                code_extensions = ["*.yaml", "*.yml", "*.json"]
+            else:
+                code_extensions = ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.cs", "*.java", "*.go", "*.rs", "*.cpp", "*.c", "*.h"]
+            
             ignore_patterns = ["node_modules", "__pycache__", "dist", "build", ".git", "bin", "obj", "venv", ".venv"]
             
             all_files = []
@@ -426,13 +472,16 @@ async def execute_ingestion(req: IngestionExecuteRequest):
                             continue
                             
                         documents.append(Document(
-                            id=f"code_{content_hash}_{len(documents)}",
+                            id=f"tier{req.tier}_{req.category}_{content_hash}_{len(documents)}",
                             text=chunk.content,
                             metadata={
                                 **chunk.metadata,
+                                "tier": req.tier,
+                                "category": req.category,
+                                "full_path": str(file_path.resolve()),
                                 "file": str(rel_path),
                                 "type": file_path.suffix,
-                                "source": "project_codebase",
+                                "source": req.type,
                                 "content_hash": content_hash
                             }
                         ))

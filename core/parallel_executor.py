@@ -1,1 +1,553 @@
-"""\nParallel execution engine for concurrent task processing.\n\nThis module enables parallel execution of independent tasks to reduce\nend-to-end latency. For example, backend and frontend implementation\ncan run concurrently, reducing total pipeline time by ~40%.\n\nFeatures:\n- Task dependency resolution\n- Concurrent execution with asyncio.gather\n- Resource pooling and limits\n- Error handling with partial results\n- Progress tracking\n\nVersion: 2.0.0\n\"""\n\nfrom __future__ import annotations\n\nimport asyncio\nimport logging\nimport time\nfrom typing import List, Dict, Any, Optional, Callable, Set\nfrom dataclasses import dataclass, field\nfrom enum import Enum\n\nlogger = logging.getLogger(__name__)\n\n\nclass TaskStatus(Enum):\n    \"\"\"Status of a task in the execution pipeline.\"\"\"\n    PENDING = \"pending\"\n    RUNNING = \"running\"\n    COMPLETED = \"completed\"\n    FAILED = \"failed\"\n    SKIPPED = \"skipped\"\n\n\n@dataclass\nclass Task:\n    \"\"\"\n    A single task to be executed.\n    \n    Attributes\n    ----------\n    id : str\n        Unique task identifier.\n    name : str\n        Human-readable task name.\n    executor : callable\n        Async function to execute the task.\n    dependencies : list\n        Task IDs that must complete before this task.\n    priority : int\n        Execution priority (higher = sooner).\n    timeout : int\n        Maximum execution time in seconds.\n    \"\"\"\n    id: str\n    name: str\n    executor: Callable[..., Any]\n    kwargs: Dict[str, Any] = field(default_factory=dict)\n    dependencies: List[str] = field(default_factory=list)\n    priority: int = 0\n    timeout: int = 300  # 5 minutes default\n    allow_failure: bool = False\n\n\n@dataclass\nclass TaskResult:\n    \"\"\"Result of a single task execution.\"\"\"\n    task_id: str\n    task_name: str\n    status: TaskStatus\n    output: Any\n    error: Optional[str]\n    start_time: float\n    end_time: float\n    duration: float\n    tokens_used: int = 0\n    cost: float = 0.0\n\n\n@dataclass\nclass ExecutionPlan:\n    \"\"\"\n    Execution plan with resolved dependencies.\n    \n    Tasks are organized into batches where each batch contains\n    tasks that can run in parallel.\n    \"\"\"\n    batches: List[List[Task]]\n    total_tasks: int\n    max_parallelism: int\n\n\n@dataclass\nclass ExecutionResult:\n    \"\"\"Overall result of parallel execution.\"\"\"\n    task_results: Dict[str, TaskResult]\n    total_duration: float\n    successful_tasks: int\n    failed_tasks: int\n    total_tokens: int\n    total_cost: float\n    speedup_factor: float  # Compared to sequential execution\n\n\nclass ParallelExecutor:\n    \"\"\"\n    Execute tasks in parallel with dependency resolution.\n    \n    The executor:\n    1. Resolves task dependencies\n    2. Groups tasks into parallel batches\n    3. Executes each batch concurrently\n    4. Handles errors and collects results\n    5. Tracks metrics and progress\n    \n    Example\n    -------\n    >>> executor = ParallelExecutor(max_concurrent=3)\n    >>> \n    >>> async def implement_backend(**kwargs):\n    ...     # Implementation logic\n    ...     return \"Backend code\"\n    >>> \n    >>> async def implement_frontend(**kwargs):\n    ...     # Implementation logic\n    ...     return \"Frontend code\"\n    >>> \n    >>> tasks = [\n    ...     Task(\n    ...         id=\"backend\",\n    ...         name=\"Backend Implementation\",\n    ...         executor=implement_backend,\n    ...         kwargs={\"spec\": backend_spec}\n    ...     ),\n    ...     Task(\n    ...         id=\"frontend\",\n    ...         name=\"Frontend Implementation\",\n    ...         executor=implement_frontend,\n    ...         kwargs={\"spec\": frontend_spec}\n    ...     )\n    ... ]\n    >>> \n    >>> result = await executor.execute(tasks)\n    >>> print(f\"Speedup: {result.speedup_factor:.1f}x\")\n    \"\"\"\n    \n    def __init__(\n        self,\n        max_concurrent: int = 5,\n        cost_manager: Optional[Any] = None\n    ):\n        self.max_concurrent = max_concurrent\n        self.cost_manager = cost_manager\n        self._semaphore = asyncio.Semaphore(max_concurrent)\n    \n    async def execute(\n        self,\n        tasks: List[Task],\n        fail_fast: bool = False\n    ) -> ExecutionResult:\n        \"\"\"\n        Execute tasks with dependency resolution and parallelism.\n        \n        Parameters\n        ----------\n        tasks : list\n            List of Task objects to execute.\n        fail_fast : bool\n            If True, stop execution on first failure.\n        \n        Returns\n        -------\n        ExecutionResult\n            Aggregated results from all tasks.\n        \"\"\"\n        logger.info(f\"Starting parallel execution of {len(tasks)} tasks\")\n        start_time = time.time()\n        \n        # Build execution plan\n        plan = self._build_execution_plan(tasks)\n        logger.info(\n            f\"Execution plan: {len(plan.batches)} batches, \"\n            f\"max parallelism: {plan.max_parallelism}\"\n        )\n        \n        # Execute batches sequentially, tasks within batch in parallel\n        task_results = {}\n        completed_tasks = set()\n        \n        for batch_num, batch in enumerate(plan.batches, 1):\n            logger.info(f\"Executing batch {batch_num}/{len(plan.batches)} ({len(batch)} tasks)\")\n            \n            batch_results = await self._execute_batch(\n                batch=batch,\n                completed_tasks=completed_tasks,\n                all_results=task_results\n            )\n            \n            # Update results and completed set\n            task_results.update(batch_results)\n            completed_tasks.update(batch_results.keys())\n            \n            # Check for failures in fail_fast mode\n            if fail_fast:\n                failed = [\n                    r for r in batch_results.values()\n                    if r.status == TaskStatus.FAILED\n                ]\n                if failed:\n                    logger.error(f\"Fail-fast triggered: {len(failed)} tasks failed\")\n                    # Mark remaining tasks as skipped\n                    for task in tasks:\n                        if task.id not in task_results:\n                            task_results[task.id] = TaskResult(\n                                task_id=task.id,\n                                task_name=task.name,\n                                status=TaskStatus.SKIPPED,\n                                output=None,\n                                error=\"Skipped due to fail-fast\",\n                                start_time=time.time(),\n                                end_time=time.time(),\n                                duration=0.0\n                            )\n                    break\n        \n        # Aggregate results\n        total_duration = time.time() - start_time\n        \n        successful = sum(\n            1 for r in task_results.values()\n            if r.status == TaskStatus.COMPLETED\n        )\n        failed = sum(\n            1 for r in task_results.values()\n            if r.status == TaskStatus.FAILED\n        )\n        \n        total_tokens = sum(r.tokens_used for r in task_results.values())\n        total_cost = sum(r.cost for r in task_results.values())\n        \n        # Calculate speedup (sequential time vs parallel time)\n        sequential_duration = sum(r.duration for r in task_results.values())\n        speedup = sequential_duration / total_duration if total_duration > 0 else 1.0\n        \n        logger.info(\n            f\"Execution complete: {successful}/{len(tasks)} successful, \"\n            f\"speedup: {speedup:.2f}x, duration: {total_duration:.1f}s\"\n        )\n        \n        return ExecutionResult(\n            task_results=task_results,\n            total_duration=total_duration,\n            successful_tasks=successful,\n            failed_tasks=failed,\n            total_tokens=total_tokens,\n            total_cost=total_cost,\n            speedup_factor=speedup\n        )\n    \n    def _build_execution_plan(self, tasks: List[Task]) -> ExecutionPlan:\n        \"\"\"\n        Resolve dependencies and organize tasks into parallel batches.\n        \n        Uses topological sorting to ensure dependencies are satisfied.\n        \"\"\"\n        task_map = {task.id: task for task in tasks}\n        batches = []\n        remaining = set(task_map.keys())\n        completed = set()\n        \n        while remaining:\n            # Find tasks with satisfied dependencies\n            ready = [\n                task_id for task_id in remaining\n                if all(dep in completed for dep in task_map[task_id].dependencies)\n            ]\n            \n            if not ready:\n                # Circular dependency or orphaned tasks\n                logger.error(f\"Cannot resolve dependencies for: {remaining}\")\n                # Add them anyway to avoid infinite loop\n                ready = list(remaining)\n            \n            # Sort by priority\n            ready.sort(key=lambda tid: task_map[tid].priority, reverse=True)\n            \n            batch = [task_map[tid] for tid in ready]\n            batches.append(batch)\n            \n            remaining -= set(ready)\n            completed.update(ready)\n        \n        max_parallelism = max(len(batch) for batch in batches) if batches else 0\n        \n        return ExecutionPlan(\n            batches=batches,\n            total_tasks=len(tasks),\n            max_parallelism=max_parallelism\n        )\n    \n    async def _execute_batch(\n        self,\n        batch: List[Task],\n        completed_tasks: Set[str],\n        all_results: Dict[str, TaskResult]\n    ) -> Dict[str, TaskResult]:\n        \"\"\"Execute all tasks in a batch concurrently.\"\"\"\n        # Create coroutines for each task\n        coroutines = [\n            self._execute_task(task, all_results)\n            for task in batch\n        ]\n        \n        # Execute in parallel\n        results = await asyncio.gather(*coroutines, return_exceptions=True)\n        \n        # Map results back to task IDs\n        batch_results = {}\n        for task, result in zip(batch, results):\n            if isinstance(result, Exception):\n                # Execution raised an exception\n                batch_results[task.id] = TaskResult(\n                    task_id=task.id,\n                    task_name=task.name,\n                    status=TaskStatus.FAILED,\n                    output=None,\n                    error=str(result),\n                    start_time=time.time(),\n                    end_time=time.time(),\n                    duration=0.0\n                )\n            else:\n                batch_results[task.id] = result\n        \n        return batch_results\n    \n    async def _execute_task(\n        self,\n        task: Task,\n        all_results: Dict[str, TaskResult]\n    ) -> TaskResult:\n        \"\"\"Execute a single task with timeout and error handling.\"\"\"\n        logger.info(f\"Starting task: {task.name} (ID: {task.id})\")\n        start_time = time.time()\n        \n        # Acquire semaphore to limit concurrency\n        async with self._semaphore:\n            try:\n                # Check cost budget if cost manager available\n                if self.cost_manager and not self.cost_manager.can_proceed():\n                    return TaskResult(\n                        task_id=task.id,\n                        task_name=task.name,\n                        status=TaskStatus.FAILED,\n                        output=None,\n                        error=\"Cost budget exceeded\",\n                        start_time=start_time,\n                        end_time=time.time(),\n                        duration=time.time() - start_time\n                    )\n                \n                # Inject dependency results into kwargs\n                task_kwargs = task.kwargs.copy()\n                for dep_id in task.dependencies:\n                    if dep_id in all_results:\n                        task_kwargs[f\"{dep_id}_result\"] = all_results[dep_id].output\n                \n                # Execute with timeout\n                output = await asyncio.wait_for(\n                    task.executor(**task_kwargs),\n                    timeout=task.timeout\n                )\n                \n                end_time = time.time()\n                duration = end_time - start_time\n                \n                # Extract tokens/cost if available\n                tokens_used = 0\n                cost = 0.0\n                if isinstance(output, dict):\n                    tokens_used = output.get(\"tokens_used\", 0)\n                    cost = output.get(\"cost\", 0.0)\n                \n                logger.info(\n                    f\"Task completed: {task.name} in {duration:.1f}s \"\n                    f\"({tokens_used} tokens, ${cost:.4f})\"\n                )\n                \n                return TaskResult(\n                    task_id=task.id,\n                    task_name=task.name,\n                    status=TaskStatus.COMPLETED,\n                    output=output,\n                    error=None,\n                    start_time=start_time,\n                    end_time=end_time,\n                    duration=duration,\n                    tokens_used=tokens_used,\n                    cost=cost\n                )\n            \n            except asyncio.TimeoutError:\n                logger.error(f\"Task timed out: {task.name} (>{task.timeout}s)\")\n                return TaskResult(\n                    task_id=task.id,\n                    task_name=task.name,\n                    status=TaskStatus.FAILED,\n                    output=None,\n                    error=f\"Timeout after {task.timeout}s\",\n                    start_time=start_time,\n                    end_time=time.time(),\n                    duration=time.time() - start_time\n                )\n            \n            except Exception as e:\n                logger.error(f\"Task failed: {task.name} - {e}\", exc_info=True)\n                \n                if task.allow_failure:\n                    logger.warning(f\"Task failure allowed: {task.name}\")\n                \n                return TaskResult(\n                    task_id=task.id,\n                    task_name=task.name,\n                    status=TaskStatus.FAILED,\n                    output=None,\n                    error=str(e),\n                    start_time=start_time,\n                    end_time=time.time(),\n                    duration=time.time() - start_time\n                )\n    \n    def get_metrics(self, result: ExecutionResult) -> Dict[str, Any]:\n        \"\"\"Extract metrics from execution result.\"\"\"\n        return {\n            \"total_tasks\": len(result.task_results),\n            \"successful_tasks\": result.successful_tasks,\n            \"failed_tasks\": result.failed_tasks,\n            \"success_rate\": result.successful_tasks / len(result.task_results) if result.task_results else 0,\n            \"total_duration_seconds\": result.total_duration,\n            \"speedup_factor\": result.speedup_factor,\n            \"total_tokens\": result.total_tokens,\n            \"total_cost_usd\": result.total_cost,\n            \"avg_task_duration\": sum(\n                r.duration for r in result.task_results.values()\n            ) / len(result.task_results) if result.task_results else 0\n        }\n
+"""
+Parallel execution engine for concurrent task processing.
+
+This module enables parallel execution of independent tasks to reduce
+end-to-end latency. For example, backend and frontend implementation
+can run concurrently, reducing total pipeline time by ~40%.
+
+Features:
+- Task dependency resolution
+- Concurrent execution with asyncio.gather
+- Resource pooling and limits
+- Error handling with partial results
+- Progress tracking
+
+Version: 2.0.0
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import time
+from typing import List, Dict, Any, Optional, Callable, Set
+from dataclasses import dataclass, field
+from enum import Enum
+
+logger = logging.getLogger(__name__)
+
+
+class TaskStatus(Enum):
+    """Status of a task in the execution pipeline."""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+@dataclass
+class Task:
+    """
+    A single task to be executed.
+    
+    Attributes
+    ----------
+    id : str
+        Unique task identifier.
+    name : str
+        Human-readable task name.
+    executor : callable
+        Async function to execute the task.
+    dependencies : list
+        Task IDs that must complete before this task.
+    priority : int
+        Execution priority (higher = sooner).
+    timeout : int
+        Maximum execution time in seconds.
+    """
+    id: str
+    name: str
+    executor: Callable[..., Any]
+    kwargs: Dict[str, Any] = field(default_factory=dict)
+    dependencies: List[str] = field(default_factory=list)
+    priority: int = 0
+    timeout: int = 300  # 5 minutes default
+    allow_failure: bool = False
+
+
+@dataclass
+class TaskResult:
+    """Result of a single task execution."""
+    task_id: str
+    task_name: str
+    status: TaskStatus
+    output: Any
+    error: Optional[str]
+    start_time: float
+    end_time: float
+    duration: float
+    tokens_used: int = 0
+    cost: float = 0.0
+
+
+@dataclass
+class ExecutionPlan:
+    """
+    Execution plan with resolved dependencies.
+    
+    Tasks are organized into batches where each batch contains
+    tasks that can run in parallel.
+    """
+    batches: List[List[Task]]
+    total_tasks: int
+    max_parallelism: int
+
+
+@dataclass
+class ExecutionResult:
+    """Overall result of parallel execution."""
+    task_results: Dict[str, TaskResult]
+    total_duration: float
+    successful_tasks: int
+    failed_tasks: int
+    total_tokens: int
+    total_cost: float
+    speedup_factor: float  # Compared to sequential execution
+
+
+class ParallelExecutor:
+    """
+    Execute tasks in parallel with dependency resolution.
+    
+    The executor:
+    1. Resolves task dependencies
+    2. Groups tasks into parallel batches
+    3. Executes each batch concurrently
+    4. Handles errors and collects results
+    5. Tracks metrics and progress
+    
+    Example
+    -------
+    >>> executor = ParallelExecutor(max_concurrent=3)
+    >>> 
+    >>> async def implement_backend(**kwargs):
+    ...     # Implementation logic
+    ...     return "Backend code"
+    >>> 
+    >>> async def implement_frontend(**kwargs):
+    ...     # Implementation logic
+    ...     return "Frontend code"
+    >>> 
+    >>> tasks = [
+    ...     Task(
+    ...         id="backend",
+    ...         name="Backend Implementation",
+    ...         executor=implement_backend,
+    ...         kwargs={"spec": backend_spec}
+    ...     ),
+    ...     Task(
+    ...         id="frontend",
+    ...         name="Frontend Implementation",
+    ...         executor=implement_frontend,
+    ...         kwargs={"spec": frontend_spec}
+    ...     )
+    ... ]
+    >>> 
+    >>> result = await executor.execute(tasks)
+    >>> print(f"Speedup: {result.speedup_factor:.1f}x")
+    """
+    
+    def __init__(
+        self,
+        max_concurrent: int = 5,
+        cost_manager: Optional[Any] = None
+    ):
+        self.max_concurrent = max_concurrent
+        self.cost_manager = cost_manager
+        self._semaphore = asyncio.Semaphore(max_concurrent)
+    
+    async def execute(
+        self,
+        tasks: List[Task],
+        fail_fast: bool = False
+    ) -> ExecutionResult:
+        """
+        Execute tasks with dependency resolution and parallelism.
+        
+        Parameters
+        ----------
+        tasks : list
+            List of Task objects to execute.
+        fail_fast : bool
+            If True, stop execution on first failure.
+        
+        Returns
+        -------
+        ExecutionResult
+            Aggregated results from all tasks.
+        """
+        logger.info(f"Starting parallel execution of {len(tasks)} tasks")
+        start_time = time.time()
+        
+        # Build execution plan
+        plan = self._build_execution_plan(tasks)
+        logger.info(
+            f"Execution plan: {len(plan.batches)} batches, "
+            f"max parallelism: {plan.max_parallelism}"
+        )
+        
+        # Execute batches sequentially, tasks within batch in parallel
+        task_results = {}
+        completed_tasks = set()
+        
+        for batch_num, batch in enumerate(plan.batches, 1):
+            logger.info(f"Executing batch {batch_num}/{len(plan.batches)} ({len(batch)} tasks)")
+            
+            batch_results = await self._execute_batch(
+                batch=batch,
+                completed_tasks=completed_tasks,
+                all_results=task_results
+            )
+            
+            # Update results and completed set
+            task_results.update(batch_results)
+            completed_tasks.update(batch_results.keys())
+            
+            # Check for failures in fail_fast mode
+            if fail_fast:
+                failed = [
+                    r for r in batch_results.values()
+                    if r.status == TaskStatus.FAILED
+                ]
+                if failed:
+                    logger.error(f"Fail-fast triggered: {len(failed)} tasks failed")
+                    # Mark remaining tasks as skipped
+                    for task in tasks:
+                        if task.id not in task_results:
+                            task_results[task.id] = TaskResult(
+                                task_id=task.id,
+                                task_name=task.name,
+                                status=TaskStatus.SKIPPED,
+                                output=None,
+                                error="Skipped due to fail-fast",
+                                start_time=time.time(),
+                                end_time=time.time(),
+                                duration=0.0
+                            )
+                    break
+        
+        # Aggregate results
+        total_duration = time.time() - start_time
+        
+        successful = sum(
+            1 for r in task_results.values()
+            if r.status == TaskStatus.COMPLETED
+        )
+        failed = sum(
+            1 for r in task_results.values()
+            if r.status == TaskStatus.FAILED
+        )
+        
+        total_tokens = sum(r.tokens_used for r in task_results.values())
+        total_cost = sum(r.cost for r in task_results.values())
+        
+        # Calculate speedup (sequential time vs parallel time)
+        sequential_duration = sum(r.duration for r in task_results.values())
+        speedup = sequential_duration / total_duration if total_duration > 0 else 1.0
+        
+        logger.info(
+            f"Execution complete: {successful}/{len(tasks)} successful, "
+            f"speedup: {speedup:.2f}x, duration: {total_duration:.1f}s"
+        )
+        
+        return ExecutionResult(
+            task_results=task_results,
+            total_duration=total_duration,
+            successful_tasks=successful,
+            failed_tasks=failed,
+            total_tokens=total_tokens,
+            total_cost=total_cost,
+            speedup_factor=speedup
+        )
+    
+    def _build_execution_plan(self, tasks: List[Task]) -> ExecutionPlan:
+        """
+        Resolve dependencies and organize tasks into parallel batches.
+        
+        Uses topological sorting to ensure dependencies are satisfied.
+        """
+        task_map = {task.id: task for task in tasks}
+        batches = []
+        remaining = set(task_map.keys())
+        completed = set()
+        
+        while remaining:
+            # Find tasks with satisfied dependencies
+            ready = [
+                task_id for task_id in remaining
+                if all(dep in completed for dep in task_map[task_id].dependencies)
+            ]
+            
+            if not ready:
+                # Circular dependency or orphaned tasks
+                logger.error(f"Cannot resolve dependencies for: {remaining}")
+                # Add them anyway to avoid infinite loop
+                ready = list(remaining)
+            
+            # Sort by priority
+            ready.sort(key=lambda tid: task_map[tid].priority, reverse=True)
+            
+            batch = [task_map[tid] for tid in ready]
+            batches.append(batch)
+            
+            remaining -= set(ready)
+            completed.update(ready)
+        
+        max_parallelism = max(len(batch) for batch in batches) if batches else 0
+        
+        return ExecutionPlan(
+            batches=batches,
+            total_tasks=len(tasks),
+            max_parallelism=max_parallelism
+        )
+    
+    async def _execute_batch(
+        self,
+        batch: List[Task],
+        completed_tasks: Set[str],
+        all_results: Dict[str, TaskResult]
+    ) -> Dict[str, TaskResult]:
+        """Execute all tasks in a batch concurrently."""
+        # Create coroutines for each task
+        coroutines = [
+            self._execute_task(task, all_results)
+            for task in batch
+        ]
+        
+        # Execute in parallel
+        results = await asyncio.gather(*coroutines, return_exceptions=True)
+        
+        # Map results back to task IDs
+        batch_results = {}
+        for task, result in zip(batch, results):
+            if isinstance(result, Exception):
+                # Execution raised an exception
+                batch_results[task.id] = TaskResult(
+                    task_id=task.id,
+                    task_name=task.name,
+                    status=TaskStatus.FAILED,
+                    output=None,
+                    error=str(result),
+                    start_time=time.time(),
+                    end_time=time.time(),
+                    duration=0.0
+                )
+            else:
+                batch_results[task.id] = result
+        
+        return batch_results
+    
+    async def _execute_task(
+        self,
+        task: Task,
+        all_results: Dict[str, TaskResult]
+    ) -> TaskResult:
+        """Execute a single task with timeout and error handling."""
+        logger.info(f"Starting task: {task.name} (ID: {task.id})\n")
+        start_time = time.time()
+        
+        # Acquire semaphore to limit concurrency
+        async with self._semaphore:
+            try:
+                # Check cost budget if cost manager available
+                if self.cost_manager and not self.cost_manager.can_proceed():
+                    return TaskResult(
+                        task_id=task.id,
+                        task_name=task.name,
+                        status=TaskStatus.FAILED,
+                        output=None,
+                        error="Cost budget exceeded",
+                        start_time=start_time,
+                        end_time=time.time(),
+                        duration=time.time() - start_time
+                    )
+                
+                # Inject dependency results into kwargs
+                task_kwargs = task.kwargs.copy()
+                for dep_id in task.dependencies:
+                    if dep_id in all_results:
+                        task_kwargs[f"{dep_id}_result"] = all_results[dep_id].output
+                
+                # Execute with timeout
+                output = await asyncio.wait_for(
+                    task.executor(**task_kwargs),
+                    timeout=task.timeout
+                )
+                
+                end_time = time.time()
+                duration = end_time - start_time
+                
+                # Extract tokens/cost if available
+                tokens_used = 0
+                cost = 0.0
+                if isinstance(output, dict):
+                    tokens_used = output.get("tokens_used", 0)
+                    cost = output.get("cost", 0.0)
+                
+                logger.info(
+                    f"Task completed: {task.name} in {duration:.1f}s "
+                    f"({tokens_used} tokens, ${cost:.4f})"
+                )
+                
+                return TaskResult(
+                    task_id=task.id,
+                    task_name=task.name,
+                    status=TaskStatus.COMPLETED,
+                    output=output,
+                    error=None,
+                    start_time=start_time,
+                    end_time=end_time,
+                    duration=duration,
+                    tokens_used=tokens_used,
+                    cost=cost
+                )
+            
+            except asyncio.TimeoutError:
+                logger.error(f"Task timed out: {task.name} (>{task.timeout}s)")
+                return TaskResult(
+                    task_id=task.id,
+                    task_name=task.name,
+                    status=TaskStatus.FAILED,
+                    output=None,
+                    error=f"Timeout after {task.timeout}s",
+                    start_time=start_time,
+                    end_time=time.time(),
+                    duration=time.time() - start_time
+                )
+            
+            except Exception as e:
+                logger.error(f"Task failed: {task.name} - {e}", exc_info=True)
+                
+                if task.allow_failure:
+                    logger.warning(f"Task failure allowed: {task.name}")
+                
+                return TaskResult(
+                    task_id=task.id,
+                    task_name=task.name,
+                    status=TaskStatus.FAILED,
+                    output=None,
+                    error=str(e),
+                    start_time=start_time,
+                    end_time=time.time(),
+                    duration=time.time() - start_time
+                )
+    
+    def get_metrics(self, result: ExecutionResult) -> Dict[str, Any]:
+        """Extract metrics from execution result."""
+        return {
+            "total_tasks": len(result.task_results),
+            "successful_tasks": result.successful_tasks,
+            "failed_tasks": result.failed_tasks,
+            "success_rate": result.successful_tasks / len(result.task_results) if result.task_results else 0,
+            "total_duration_seconds": result.total_duration,
+            "speedup_factor": result.speedup_factor,
+            "total_tokens": result.total_tokens,
+            "total_cost_usd": result.total_cost,
+            "avg_task_duration": sum(
+                r.duration for r in result.task_results.values()
+            ) / len(result.task_results) if result.task_results else 0
+        }
+
+
+class BatchLLMProcessor:
+    """
+    Specialized processor for batch LLM operations using ParallelExecutor.
+    Optimized for bulk content generation using cost-effective models (e.g. Haiku).
+    """
+    def __init__(
+        self, 
+        llm_client: Any, 
+        model: str = "claude-3-5-haiku",
+        max_concurrent: int = 10
+    ):
+        self.llm_client = llm_client
+        self.model = model
+        self.executor = ParallelExecutor(max_concurrent=max_concurrent)
+
+    async def process_batch(
+        self,
+        items: List[Any],
+        processing_function: Callable[[Any], List[Dict]],
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.0,
+        id_prefix: str = "batch_task"
+    ) -> List[Any]:
+        """
+        Process a batch of items in parallel using LLM.
+        
+        Args:
+            items: List of items to process (e.g. file paths, code snippets)
+            processing_function: Function that takes an item and returns LLM messages
+            system_prompt: Optional override for system prompt
+            temperature: LLM temperature
+            id_prefix: Prefix for task IDs
+            
+        Returns:
+            List of results in same order as items.
+        """
+        if not items:
+            return []
+            
+        tasks = []
+        for i, item in enumerate(items):
+            messages = processing_function(item)
+            
+            # Prepend system prompt if provided
+            final_messages = []
+            if system_prompt:
+                final_messages.append({"role": "system", "content": system_prompt})
+            
+            # Append other messages
+            for m in messages:
+                if m["role"] == "system" and system_prompt:
+                    continue # Skip existing system if overridden? Or append? Simple override here.
+                final_messages.append(m)
+                
+            tasks.append(
+                Task(
+                    id=f"{id_prefix}_{i}",
+                    name=f"Batch {id_prefix} #{i}",
+                    executor=self._safe_llm_call,
+                    kwargs={
+                        "messages": final_messages,
+                        "model": self.model,
+                        "temperature": temperature
+                    }
+                )
+            )
+            
+        logger.info(f"Batch processing {len(tasks)} items with model {self.model}...")
+        result = await self.executor.execute(tasks)
+        
+        # Extract outputs in order based on index
+        ordered_outputs = []
+        for i in range(len(items)):
+            task_id = f"{id_prefix}_{i}"
+            res = result.task_results.get(task_id)
+            
+            output_content = None
+            if res and res.status == TaskStatus.COMPLETED:
+                # Handle LLMResponse object or raw dict
+                if hasattr(res.output, "content"):
+                    output_content = res.output.content
+                elif isinstance(res.output, dict) and "content" in res.output:
+                    output_content = res.output["content"]
+                else:
+                    output_content = str(res.output)
+            else:
+                error = res.error if res else "Unknown error"
+                logger.error(f"Task {task_id} failed: {error}")
+                output_content = None
+                
+            ordered_outputs.append(output_content)
+                
+        return ordered_outputs
+
+    async def _safe_llm_call(self, messages, model, temperature):
+        """Wrapper for LLM call that fits Task executor signature."""
+        return await self.llm_client.complete(
+            messages=messages,
+            model=model,
+            temperature=temperature
+        )

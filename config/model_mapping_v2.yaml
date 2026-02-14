@@ -7,19 +7,22 @@ providers:
     models:
       - gpt-4o
       - gpt-4o-mini
+      - o1 # High reasoning for Architect phase
+      - o1-mini
   
   anthropic:
     api_key: ${ANTHROPIC_API_KEY}
     models:
-      - claude-3-7-sonnet
-      - claude-sonnet-4.5
+      - claude-3-7-sonnet # Best for Implementation/Self-Healing
       - claude-3-5-sonnet-latest
+      - claude-3-5-haiku # Cost-effective for simple Monitoring
   
   google:
     api_key: ${GOOGLE_API_KEY}
     models:
-      - gemini-2.0-pro-exp # Fixed version
-      - gemini-1.5-pro
+      - gemini-2.0-flash # Fastest for Monitoring logs (Tier 0)
+      - gemini-2.0-pro-exp
+      - gemini-1.5-pro # Best for large context research
  
   perplexity:
     api_key: ${PERPLEXITY_API_KEY}
@@ -27,7 +30,7 @@ providers:
       - sonar-reasoning-pro
       - sonar-reasoning
       - sonar-pro
-      - sonar
+      - sonar # Base model for fact checking ($1/1M)
 
 default:
   model: gpt-4o-mini
@@ -37,43 +40,100 @@ default:
 
 routing:
   phase:
-    analyst:
-      model: claude-3-7-sonnet
-      provider: anthropic
+    gate:
+      model: gemini-2.0-flash
+      provider: google
+      temperature: 0.0
+      max_tokens: 1000
+      tier: 0
+      reasoning: "Cheapest model for prompt validation and classification"
+
+    fact_checker:
+      model: sonar
+      provider: perplexity
+      temperature: 0.0
+      max_tokens: 2000
+      tier: 0
+      reasoning: "Real-time verification of libraries and APIs"
+
+    research:
+      model: sonar-reasoning-pro
+      provider: perplexity
       temperature: 0.1
       max_tokens: 8000
-      reasoning: "Best for requirements analysis and edge case discovery"
+      tier: 3
+      cascade:
+        - { model: sonar, provider: perplexity }
+        - { model: gemini-1.5-pro, provider: google, condition: "context > 100k" }
+      reasoning: "Deep web research and large context analysis"
+
+    analyst:
+      model: gpt-4o-mini
+      provider: openai
+      temperature: 0.1
+      max_tokens: 4000
+      tier: 1
+      cascade:
+        - { model: claude-3-7-sonnet, provider: anthropic, threshold: 0.8 }
+      reasoning: "Small model first, escalate to Sonnet if low confidence"
     
     architect:
       model: gpt-4o
       provider: openai
       temperature: 0.1
       max_tokens: 8000
-      reasoning: "Architecture design with single model for stability"
+      tier: 2
+      consensus_mode: true
+      cascade:
+        - { model: claude-3-7-sonnet, provider: anthropic, role: "secondary" }
+      reasoning: "Architecture design with consensus for stability"
     
     implementer:
       model: gpt-4o-mini
       provider: openai
       temperature: 0.0
       max_tokens: 8000
-      reasoning: "Strong C# performance (92% HumanEval)"
+      tier: 1
+      cascade:
+        - { model: claude-3-7-sonnet, provider: anthropic, on_failure: true }
+      reasoning: "Strong C# performance, auto-escalate on build fail"
     
     tester:
       model: gpt-4o-mini
       provider: openai
       temperature: 0.0
       max_tokens: 4000
+      tier: 1
       reasoning: "Cost-effective for test generation"
     
     reviewer:
-      model: gpt-4o
+      model: gpt-4o-mini
       provider: openai
       temperature: 0.0
-      max_tokens: 8000
+      max_tokens: 4000
+      tier: 1
+      cascade:
+        - { model: gpt-4o, provider: openai, condition: "complexity == 'high'" }
       producer_reviewer_loop: true
       max_iterations: 3
       quality_threshold: 8.0
-      reasoning: "Best code review capabilities"
+      reasoning: "Checklist review first, deep review only if needed"
+    
+    monitor:
+      model: gemini-2.0-flash
+      provider: google
+      temperature: 0.0
+      max_tokens: 2000
+      tier: 0
+      reasoning: "Lowest cost for log parsing"
+
+    self_healer:
+      model: claude-3-7-sonnet
+      provider: anthropic
+      temperature: 0.0
+      max_tokens: 8000
+      tier: 3
+      reasoning: "Best-in-class coding logic for resolving complex build errors"
 
   specialty:
     backend:

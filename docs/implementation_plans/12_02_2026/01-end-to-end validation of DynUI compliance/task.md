@@ -1,0 +1,49 @@
+# Analyze and Optimize RAG Strategy
+
+- [x] Analyze current RAG implementation <!-- id: 0 -->
+    - [x] Review `debug_context.py` <!-- id: 1 -->
+    - [x] Search for RAG/Context generation logic in the codebase <!-- id: 2 -->
+    - [x] Evaluate if the current context is sufficient or too noisy <!-- id: 3 -->
+- [x] Locate Source Code for DynUI Components <!-- id: 9 -->
+    - [x] Search `ui/src` for component definitions <!-- id: 10 -->
+    - [x] Verify if they handle props and events correctly <!-- id: 11 -->
+- [x] Develop RAG Optimization Strategy <!-- id: 4 -->
+    - [x] Define structure for "Curated Knowledge Base" (DynUI docs, API specs) <!-- id: 5 -->
+    - [x] Create `AI_CONTEXT.md` or similar "Golden Rules" document <!-- id: 6 -->
+    - [x] Propose improvements to System Prompts <!-- id: 7 -->
+- [x] Read DynUI Documentation <!-- id: 12 -->
+- [x] Read DynUI Documentation <!-- id: 12 -->
+    - [x] List contents of `dyn-ui-main-v01/docs` <!-- id: 13 -->
+    - [x] Extract architectural rules and patterns <!-- id: 14 -->
+    - [x] Analyze `DynBox` grid and inheritance rules <!-- id: 16 -->
+- [x] Refine RAG Strategy based on Docs <!-- id: 15 -->
+- [x] Present Proposal to User <!-- id: 8 -->
+- [x] Phase 1: Knowledge Ingestion <!-- id: 17 -->
+    - [x] Create `scripts/ingest_dyn_ui.py` <!-- id: 18 -->
+    - [x] Run ingestion for Components and Tokens <!-- id: 19 -->
+    - [x] Verify embeddings in ChromaDB <!-- id: 20 -->
+- [x] Phase 2: Context Manager Upgrade <!-- id: 21 -->
+    - [x] Update `core/context_manager_v3.py` <!-- id: 22 -->
+    - [x] Update `rag/domain_aware_retriever.py` <!-- id: 23 -->
+    - [x] Create `rag/AI_CONTEXT.md` <!-- id: 24 -->
+- [x] Phase 3: System Prompt Refinement <!-- id: 25 -->
+    - [x] Analyze `prompts/phase_prompts/*.yaml` <!-- id: 26 -->
+    - [x] Update Analyst Prompt with DynUI rules <!-- id: 27 -->
+    - [x] Update Architect Prompt with DynUI rules <!-- id: 28 -->
+    - [x] Update React Specialist Prompt <!-- id: 29 -->
+- [x] Phase 4: Integration & Validation <!-- id: 30 -->
+    - [x] Create E2E Test Script (`scripts/test_dynui_compliance.py`) <!-- id: 31 -->
+    - [x] Run Orchestrator with "Create User Profile Form" task <!-- id: 32 -->
+    - [x] Verify Architect Output (DynUI components usage) <!-- id: 33 -->
+    - [x] Verify Implementation Output (3-Layer Tokens usage) <!-- id: 34 -->
+
+- [x] Phase 5: VS Code Extension <!-- id: 35 -->
+    - [x] Initialize Extension Project (`vscode-extension`) <!-- id: 36 -->
+    - [x] Implement Python Bridge (`spawn` run_task.py) <!-- id: 37 -->
+    - [x] Add Context Menu Integration <!-- id: 38 -->
+    - [x] Implement Output Channel Streaming <!-- id: 39 -->
+
+- [x] Phase 6: Documentation & Handover <!-- id: 40 -->
+    - [x] Update `docs/USER_GUIDE_v4.md` with VS Code Extension Usage <!-- id: 41 -->
+    - [x] Update `docs/USER_GUIDE_v4.md` with CLI Context Usage (`run_task.py`) <!-- id: 42 -->
+    - [x] Update `docs/USER_GUIDE_v4.md` with Knowledge Ingestion instructions <!-- id: 43 -->

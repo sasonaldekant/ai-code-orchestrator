@@ -27,6 +27,12 @@ export function KnowledgeExplorer() {
     const [queryResults, setQueryResults] = useState<any[] | null>(null);
     const [isQuerying, setIsQuerying] = useState(false);
 
+    // Browsing state
+    const [documents, setDocuments] = useState<any[]>([]);
+    const [docOffset, setDocOffset] = useState(0);
+    const [isLoadDocs, setIsLoadDocs] = useState(false);
+    const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
+
     useEffect(() => {
         loadCollections();
     }, []);
@@ -50,6 +56,9 @@ export function KnowledgeExplorer() {
         setSelectedCollection(name);
         setStats(null);
         setQueryResults(null);
+        setDocuments([]);
+        setDocOffset(0);
+        setExpandedDoc(null);
         try {
             const resp = await fetch(`http://localhost:8000/admin/collections/${name}/stats`);
             if (!resp.ok) throw new Error('Failed to load stats');
@@ -57,6 +66,41 @@ export function KnowledgeExplorer() {
             setStats(data.stats);
         } catch (e) {
             console.error('Failed to load stats', e);
+        }
+    };
+
+    const loadDocuments = async (offset = 0) => {
+        if (!selectedCollection) return;
+        setIsLoadDocs(true);
+        try {
+            const resp = await fetch(`http://localhost:8000/admin/collections/${selectedCollection}/documents?limit=10&offset=${offset}`);
+            if (!resp.ok) throw new Error('Failed to load documents');
+            const data = await resp.json();
+            if (offset === 0) {
+                setDocuments(data.documents);
+            } else {
+                setDocuments(prev => [...prev, ...data.documents]);
+            }
+            setDocOffset(offset);
+        } catch (e) {
+            console.error('Failed to load documents', e);
+        } finally {
+            setIsLoadDocs(false);
+        }
+    };
+
+    const deleteDocument = async (docId: string) => {
+        if (!selectedCollection || !confirm('Delete this document chunk?')) return;
+        try {
+            const resp = await fetch(`http://localhost:8000/admin/collections/${selectedCollection}/documents/${docId}`, {
+                method: 'DELETE'
+            });
+            if (resp.ok) {
+                setDocuments(prev => prev.filter(d => d.id !== docId));
+                if (stats) setStats({ ...stats, count: stats.count - 1 });
+            }
+        } catch (e) {
+            console.error('Delete failed', e);
         }
     };
 
@@ -77,6 +121,7 @@ export function KnowledgeExplorer() {
             if (selectedCollection === name) {
                 setSelectedCollection(null);
                 setStats(null);
+                setDocuments([]);
             }
         } catch (e) {
             setDeleteResult({ success: false, message: 'Failed to delete collection' });
@@ -93,7 +138,7 @@ export function KnowledgeExplorer() {
             const resp = await fetch('http://localhost:8000/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: queryText, top_k: 5 }),
+                body: JSON.stringify({ query: queryText, top_k: 5, collection: selectedCollection }),
             });
             if (!resp.ok) throw new Error('Query failed');
             const data = await resp.json();
@@ -126,7 +171,7 @@ export function KnowledgeExplorer() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-20">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold">Knowledge Base Explorer</h2>
@@ -163,7 +208,7 @@ export function KnowledgeExplorer() {
                     </p>
                 </div>
             ) : (
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-6 items-start">
                     {/* Collection List */}
                     <div className="space-y-3">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
@@ -219,6 +264,13 @@ export function KnowledgeExplorer() {
                                                 <div className="text-2xl font-bold text-primary">{stats.count}</div>
                                                 <div className="text-xs text-muted-foreground">Documents</div>
                                             </div>
+                                            <button
+                                                onClick={() => loadDocuments(0)}
+                                                className="flex flex-col items-center justify-center bg-primary/10 border border-primary/20 rounded-lg p-3 hover:bg-primary/20 transition-colors"
+                                            >
+                                                <Search className="w-5 h-5 text-primary mb-1" />
+                                                <div className="text-xs font-medium">Browse Files</div>
+                                            </button>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center h-20">
@@ -254,14 +306,15 @@ export function KnowledgeExplorer() {
                                                 <p className="text-sm text-muted-foreground italic">No results found</p>
                                             ) : (
                                                 queryResults.map((r, i) => (
-                                                    <div key={i} className="bg-background rounded-lg p-3 text-xs">
-                                                        <div className="flex justify-between mb-1">
-                                                            <span className="font-mono text-muted-foreground">
+                                                    <div key={i} className="bg-background border border-border rounded-lg p-3 text-xs">
+                                                        <div className="flex justify-between mb-1 text-muted-foreground">
+                                                            <span className="font-mono">
                                                                 Score: {typeof r.score === 'number' ? r.score.toFixed(3) : 'N/A'}
                                                             </span>
+                                                            {r.metadata?.source && <span>{r.metadata.source}</span>}
                                                         </div>
                                                         <p className="text-foreground line-clamp-3">
-                                                            {r.document?.text || r.text || JSON.stringify(r)}
+                                                            {r.text || r.document?.text}
                                                         </p>
                                                     </div>
                                                 ))
@@ -269,9 +322,65 @@ export function KnowledgeExplorer() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Document Browser */}
+                                {documents.length > 0 && (
+                                    <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-sm font-semibold">Document Browser</h4>
+                                            <span className="text-xs text-muted-foreground">Showing {documents.length} of {stats?.count}</span>
+                                        </div>
+                                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                                            {documents.map((doc) => (
+                                                <div key={doc.id} className="bg-background border border-border rounded-lg overflow-hidden transition-all">
+                                                    <div
+                                                        onClick={() => setExpandedDoc(expandedDoc === doc.id ? null : doc.id)}
+                                                        className="p-3 text-xs flex items-center justify-between cursor-pointer hover:bg-muted/30"
+                                                    >
+                                                        <div className="flex-1 truncate mr-4">
+                                                            <span className="font-mono text-primary mr-2 opacity-50">[{doc.id.split('_').pop()}]</span>
+                                                            <span className="text-foreground">{doc.metadata?.file || doc.id}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); deleteDocument(doc.id); }}
+                                                                className="p-1 hover:text-red-500 rounded transition-colors"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    {expandedDoc === doc.id && (
+                                                        <div className="p-3 bg-muted/20 border-t border-border space-y-3">
+                                                            <div className="text-[11px] font-mono text-muted-foreground bg-black/20 p-2 rounded max-h-60 overflow-y-auto whitespace-pre-wrap">
+                                                                {doc.text}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {Object.entries(doc.metadata || {}).map(([k, v]) => (
+                                                                    <div key={k} className="text-[10px] bg-secondary px-1.5 py-0.5 rounded">
+                                                                        <span className="opacity-60">{k}:</span> {String(v)}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {stats && documents.length < stats.count && (
+                                            <button
+                                                onClick={() => loadDocuments(docOffset + 10)}
+                                                disabled={isLoadDocs}
+                                                className="w-full py-2 text-xs text-primary hover:bg-primary/5 rounded-lg border border-dashed border-primary/30 transition-all font-medium"
+                                            >
+                                                {isLoadDocs ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Load More Documents'}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         ) : (
-                            <div className="bg-card border border-dashed border-border rounded-xl p-8 text-center h-full flex items-center justify-center">
+                            <div className="bg-card border border-dashed border-border rounded-xl p-8 text-center h-full flex items-center justify-center min-h-[300px]">
                                 <div>
                                     <Search className="w-8 h-8 mx-auto text-muted-foreground/40" />
                                     <p className="text-muted-foreground mt-2">Select a collection to view details</p>

@@ -26,6 +26,7 @@ class ModelConfig:
     provider: str
     temperature: float
     max_tokens: int
+    tier: int = 1
     reasoning: Optional[str] = None
     consensus_mode: bool = False
     producer_reviewer_loop: bool = False
@@ -141,6 +142,7 @@ class ModelRouterV2:
         return ModelConfig(
             model=phase_config["model"],
             provider=phase_config["provider"],
+            tier=phase_config.get("tier", 1),
             temperature=phase_config.get("temperature", 0.0),
             max_tokens=phase_config.get("max_tokens", 4000),
             producer_reviewer_loop=phase_config.get("producer_reviewer_loop", False),

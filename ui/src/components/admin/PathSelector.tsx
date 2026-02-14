@@ -21,7 +21,7 @@ interface FileItem {
 
 export function PathSelector({ value, onChange, placeholder, label, filterExtensions, disabled }: PathSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [currentPath, setCurrentPath] = useState('E:\\PROGRAMING\\AI_Projects');
+    const [currentPath, setCurrentPath] = useState('.');
     const [items, setItems] = useState<FileItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export function PathSelector({ value, onChange, placeholder, label, filterExtens
             setItems(data.items || []);
             setCurrentPath(data.path);
         } catch (e) {
-            setError('Failed to load directory');
+            setError(`Failed to load directory: ${path}`);
             setItems([]);
         } finally {
             setIsLoading(false);

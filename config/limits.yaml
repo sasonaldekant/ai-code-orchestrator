@@ -7,3 +7,11 @@ retrieval:
   chunk_chars: 800
   chunk_overlap: 120
   top_k: 4
+global:
+  temperature: 0.0
+  max_retries: 3
+  max_feedback_iterations: 3
+  deep_search: true
+  per_task_budget: 0.25
+  per_hour_budget: 1.0
+  per_day_budget: 2.0

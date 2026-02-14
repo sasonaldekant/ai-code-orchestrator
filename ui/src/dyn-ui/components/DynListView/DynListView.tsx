@@ -134,7 +134,7 @@ export const DynListView = forwardRef<HTMLDivElement, DynListViewProps>(function
   const badgeSize = size === 'sm' ? 'xs' : 'sm';
   const iconSize = size === 'sm' ? 'xs' : 'sm';
   // Match DynTable button sizing logic
-  const buttonSize = size === 'sm' ? 'xs' : (size === 'lg' ? 'md' : 'sm');
+  const buttonSize = size === 'sm' ? 'sm' : (size === 'lg' ? 'lg' : 'md');
 
   const rootClasses = cn(
     styles.root,
@@ -198,7 +198,6 @@ export const DynListView = forwardRef<HTMLDivElement, DynListViewProps>(function
               size={buttonSize}
               checked={allChecked}
               onChange={() => commit(allChecked ? [] : allKeys)}
-              aria-label={selectAllText}
             />
           </DynBox>
           <DynBox width="50%" display="flex" align="center" gap="sm">
@@ -268,7 +267,6 @@ export const DynListView = forwardRef<HTMLDivElement, DynListViewProps>(function
                       checked={!!selectedState}
                       disabled={item.disabled}
                       onChange={() => !item.disabled && toggle(key)}
-                      aria-label={`Select ${title}`}
                     />
                   </DynBox>
                 )}

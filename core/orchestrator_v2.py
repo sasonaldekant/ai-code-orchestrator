@@ -20,12 +20,14 @@ from enum import Enum
 import json
 import time
 
-from .model_router_v2 import ModelRouterV2
+from .model_cascade_router import ModelCascadeRouter, ModelConfig
 from .llm_client_v2 import LLMClientV2
 from .cost_manager import CostManager
 from .validator import OutputValidator
 from .tracer import TracingService
 from .retriever import RAGRetriever
+from .self_healing_manager import SelfHealingManager
+from .prompt_gate import PromptGate
 from core.agents.specialist_agents.retrieval_agent import RetrievalAgent
 from .external_integration import ExternalIntegration
 
@@ -92,22 +94,44 @@ class OrchestratorV2:
         max_feedback_iterations: int = 3,
         retriever: Optional[Any] = None,
         llm_client: Optional[Any] = None,
+        local_task_budget: Optional[float] = None
     ) -> None:
-        self.cost_manager = CostManager()
-        self.model_router = ModelRouterV2(config_path)
+        # Configuration
+        import yaml
+        self.limits_config = {}
+        try:
+            with open("config/limits.yaml", "r") as f:
+                self.limits_config = yaml.safe_load(f) or {}
+        except Exception:
+            pass
+
+        global_conf = self.limits_config.get("global", {})
+        
+        # Initialize CostManager with global limits from config
+        self.cost_manager = CostManager(
+            per_task_budget=global_conf.get("per_task_budget", 0.50),
+            per_hour_budget=global_conf.get("per_hour_budget", 5.0),
+            per_day_budget=global_conf.get("per_day_budget", 40.0),
+            local_task_budget=local_task_budget
+        )
+        
+        self.model_router = ModelCascadeRouter(config_path)
         self.llm_client = llm_client or LLMClientV2(self.cost_manager)
         self.validator = OutputValidator()
         self.tracer = TracingService()
         self.retriever = retriever or RAGRetriever()
+        self.self_healer = SelfHealingManager(self.llm_client, self.model_router)
+        self.prompt_gate = PromptGate(self.llm_client, self.model_router)
         
         # Initialize Producer-Reviewer Loop
         from core.producer_reviewer import ProducerReviewerLoop
         self.producer_reviewer = ProducerReviewerLoop(self.llm_client, self.cost_manager)
 
-        # Configuration
-        self.max_retries = max_retries
+        self.max_retries = max_retries if max_retries != 3 else global_conf.get("max_retries", 3)
         self.retry_delay = retry_delay
-        self.max_feedback_iterations = max_feedback_iterations
+        self.max_feedback_iterations = max_feedback_iterations if max_feedback_iterations != 3 else global_conf.get("max_feedback_iterations", 3)
+        self.deep_search_default = global_conf.get("deep_search", False)
+        self.global_temperature = global_conf.get("temperature", 0.0)
 
         # Phase agents will be initialized lazily
         self._phase_agents: Optional[Dict[str, Any]] = None
@@ -176,7 +200,9 @@ class OrchestratorV2:
                 result.attempts = attempt + 1
                 result.status = PhaseStatus.RUNNING if attempt == 0 else PhaseStatus.RETRYING
                 
-                logger.info(f"Executing phase '{phase}' (attempt {attempt + 1}/{self.max_retries})")
+                msg = f"Executing phase '{phase}' (attempt {attempt + 1}/{self.max_retries})"
+                logger.info(msg)
+                print(f":::STEP:{{\"type\": \"analyzing\", \"text\": \"{msg}\"}}:::", flush=True)
                 
                 # Execute phase
                 output = await self._execute_phase(
@@ -197,6 +223,8 @@ class OrchestratorV2:
                 result.execution_time = time.time() - start_time
                 
                 logger.info(f"Phase '{phase}' completed successfully")
+                print(f":::STEP:{{\"type\": \"done\", \"text\": \"Phase '{phase}' finished\"}}:::", flush=True)
+
                 self.metrics["total_phases_executed"] += 1
                 
                 return result
@@ -256,33 +284,55 @@ class OrchestratorV2:
         
         # [Phase 15] Agentic Retrieval / Deep Search
         if deep_search and question:
-             logger.info(f"Running Deep Search (Investigator) for: {question} [Strategy: {retrieval_strategy}]")
+             msg = f"Running Deep Search (Investigator) for: {question[:50]}..."
+             logger.info(msg)
+             print(f":::STEP:{{\"type\": \"analyzing\", \"text\": \"{msg}\"}}:::", flush=True)
              
              # Preliminary RAG for planning
              rag_context = self.retriever.retrieve(question, top_k=top_k)
              
              initial_plan = None
-             if retrieval_strategy == "hybrid":
-                 try:
-                     ext = ExternalIntegration()
-                     context_nodes = []
-                     for doc in rag_context:
-                         # Handle both objects and dicts if necessary
-                         path = getattr(doc, 'metadata', {}).get('file_path', 'unknown')
-                         content = getattr(doc, 'page_content', str(doc))[:1000]
-                         context_nodes.append({"path": path, "content": content})
-                         
-                     initial_plan = ext.generate_search_plan(question, context_nodes)
-                     logger.info("Hybrid Plan Generated")
-                 except Exception as e:
-                     logger.error(f"Failed to generate hybrid plan: {e}")
-             
-             investigator = RetrievalAgent(self.llm_client)
-             deep_findings = await investigator.run(question, initial_plan=initial_plan)
-             rag_context.append({"source": "agentic_investigation", "content": deep_findings})
+        
+             # Phase 2.5: Deep Research (Tier 3/4)
+             msg = "Conducting Deep Research..."
+             print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+            
+             # Select research model via router (handles switching to Gemini 1.5 Pro if huge context)
+             research_config = self.model_router.select_model("research", complexity="high")
+            
+             # If router selected standard deep research (Perplexity)
+             if "sonar" in research_config.model:
+                  # Use retrieval agent or direct generation
+                  investigator = RetrievalAgent(self.llm_client)
+                  # Force the specific model on the agent if possible
+                  investigator.config = research_config 
+                  deep_findings = await investigator.run(question, initial_plan=initial_plan)
+             else:
+                  # Fallback/Escalation (e.g. Gemini 1.5 Pro) for massive context
+                  # Direct call with large context
+                  deep_findings = await self.llm_client.complete(
+                      messages=[{"role": "user", "content": f"Analyze this large context regarding: {question}"}],
+                      model=research_config.model,
+                      max_tokens=8000
+                  ).content
+            
+             rag_context.append({"source": "deep_research", "content": deep_findings})
 
         elif question:
             rag_context = self.retriever.retrieve(question, top_k=top_k)
+        
+        # Estimate context size for routing
+        # Rough calc: 1 token ~= 4 chars
+        context_str = json.dumps(context or {}) + json.dumps(rag_context)
+        context_tokens = len(context_str) // 4
+        
+        # Get optimal model via cascade for main task
+        complexity = "high" if deep_search or (question and len(question)>500) else "simple"
+        model_config = self.model_router.select_model(
+            phase, 
+            complexity=complexity, 
+            context_tokens=context_tokens
+        )
         
         # Persist context for audit
         rag_path = self.outputs_dir / f"rag_context_{phase}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
@@ -301,17 +351,27 @@ class OrchestratorV2:
             "review_strategy": review_strategy
         })
 
-        result = await agent.execute(context=execution_context, rag_context=rag_context)
+        try:
+            result = await agent.execute(context=execution_context, rag_context=rag_context)
+        except Exception as e:
+            # [Task 6.2] Record failure for Adaptive Tuning
+            self.model_router.metrics_tracker.record_outcome(model_config.tier, success=False)
+            raise e
         
         # Validate
         validation = self.validator.validate(result, schema_name)
         
         if not validation["valid"]:
+            error_msg = f"Validation failed for phase {phase}: {validation['errors']}"
             self.tracer.log_event("validation_failed", {
                 "phase": phase,
                 "errors": validation["errors"],
             })
-            raise ValueError(f"Validation failed for phase {phase}: {validation['errors']}")
+            
+            # [Task 6.2] Record failure for Adaptive Tuning
+            self.model_router.metrics_tracker.record_outcome(model_config.tier, success=False)
+            
+            raise ValueError(error_msg)
         
         # Save output
         out_path = self.outputs_dir / f"{phase}_{schema_name}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
@@ -322,6 +382,9 @@ class OrchestratorV2:
             "phase": phase,
             "output_path": str(out_path),
         })
+        
+        # [Task 6.2] Record success for Adaptive Tuning
+        self.model_router.metrics_tracker.record_outcome(model_config.tier, success=True)
         
         return result
 
@@ -356,7 +419,9 @@ class OrchestratorV2:
         best_score = 0.0
 
         for iteration in range(self.max_feedback_iterations):
-            logger.info(f"Feedback iteration {iteration + 1}/{self.max_feedback_iterations}")
+            msg = f"Feedback iteration {iteration + 1}/{self.max_feedback_iterations}"
+            logger.info(msg)
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
             
             # Execute phase
             result = await self.run_phase_with_retry(
@@ -521,6 +586,7 @@ class OrchestratorV2:
         question: Optional[str] = None,
         strategy: ExecutionStrategy = ExecutionStrategy.SEQUENTIAL,
         use_feedback: bool = True,
+        deep_search: bool = False,
     ) -> Dict[str, Any]:
         """
         Run pipeline with adaptive strategy selection.
@@ -548,14 +614,34 @@ class OrchestratorV2:
         }
         
         try:
-            # Analyst phase (always first)
-            # We assume agentic retrieval (if enabled elsewhere) might happen here
+            # Step 0: Prompt Validation (Gateway)
+            msg = "Validating prompt with Prompt Gate (Gemini Flash)..."
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+            
+            gate_res = await self.prompt_gate.validate_and_classify(initial_requirements)
+            if not gate_res.get("is_valid", True):
+                msg = f"Prompt Gate rejected the request: {gate_res.get('refined_prompt', 'The prompt is unclear or nonsense.')}"
+                logger.warning(msg)
+                raise ValueError(f"I'm sorry, but I couldn't understand that request. Could you please provide more details or clarify what you'd like me to do? (Ref: {gate_res.get('refined_prompt')})")
+
+            if gate_res["refined_prompt"] != initial_requirements:
+                logger.info("Prompt refined by Gate.")
+                initial_requirements = gate_res["refined_prompt"]
+            
+            # Store complexity for later decision making
+            task_complexity = gate_res["complexity"]
+            
+            # Analyst phase
+            msg = "Phase 1: Analyzing Requirements"
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+            
             analyst_result = await (
                 self.run_phase_with_feedback(
                     phase="analyst",
                     schema_name="requirements",
                     context={"requirements": initial_requirements},
                     question=question,
+                    deep_search=deep_search,
                 )
                 if use_feedback
                 else self.run_phase_with_retry(
@@ -563,6 +649,7 @@ class OrchestratorV2:
                     schema_name="requirements",
                     context={"requirements": initial_requirements},
                     question=question,
+                    deep_search=deep_search,
                 )
             )
             
@@ -578,6 +665,9 @@ class OrchestratorV2:
             }
             
             # Architect phase
+            msg = "Phase 2: Designing Architecture"
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+
             architect_result = await (
                 self.run_phase_with_feedback(
                     phase="architect",
@@ -604,6 +694,9 @@ class OrchestratorV2:
             }
             
             # Implementation phase
+            msg = "Phase 3: Generating Code"
+            print(f":::STEP:{{\"type\": \"editing\", \"text\": \"{msg}\"}}:::", flush=True)
+
             implementation_result = await self.run_phase_with_retry(
                 phase="implementation",
                 schema_name="implementation",
@@ -620,8 +713,22 @@ class OrchestratorV2:
                     "execution_time": implementation_result.execution_time,
                 },
             }
+
+            # Phase 3.5: Self-Healing Build Check (Auto-Detected)
+            msg = "Automatic Integrity Check & Self-Healing"
+            print(f":::STEP:{{\"type\": \"analyzing\", \"text\": \"{msg}\"}}:::", flush=True)
+            
+            # Let self_healer detect commands (pass None)
+            healing_res = await self.self_healer.run_self_healing_cycle(
+                build_commands=None,
+                context={"request": initial_requirements, "implementation": implementation_result.output}
+            )
+            results["self_healing"] = healing_res
             
             # Testing phase
+            msg = "Phase 4: Testing Implementation"
+            print(f":::STEP:{{\"type\": \"analyzing\", \"text\": \"{msg}\"}}:::", flush=True)
+
             testing_result = await self.run_phase_with_retry(
                 phase="testing",
                 schema_name="testing",

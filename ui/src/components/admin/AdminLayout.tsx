@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2, Lock } from 'lucide-react';
+import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2, Lock, Sliders } from 'lucide-react';
 import clsx from 'clsx';
 import { IngestionPanel } from './IngestionPanel';
 import { ModelConfigPanel } from './ModelConfigPanel';
@@ -8,9 +8,10 @@ import { KnowledgeExplorer } from './KnowledgeExplorer';
 import { MonitoringDashboard } from './MonitoringDashboard';
 import { DeveloperToolsPanel } from './DeveloperToolsPanel';
 import { ApiKeysPanel } from './ApiKeysPanel';
+import { GlobalSettingsPanel } from './GlobalSettingsPanel';
 import GraphTab from './GraphTab';
 
-type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph' | 'keys';
+type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph' | 'keys' | 'global';
 
 interface AdminLayoutProps {
     onBack: () => void;
@@ -20,6 +21,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
     const [activeTab, setActiveTab] = useState<AdminTab>('ingestion');
 
     const tabs = [
+        { id: 'global' as const, label: 'Global Settings', icon: Sliders },
         { id: 'ingestion' as const, label: 'RAG Ingestion', icon: Database },
         { id: 'models' as const, label: 'Model Config', icon: Bot },
         { id: 'budgets' as const, label: 'Budgets & Limits', icon: DollarSign },
@@ -72,6 +74,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
             {/* Content Area */}
             <main className="flex-1 overflow-y-auto p-6 md:p-8">
                 <div className="max-w-4xl mx-auto">
+                    {activeTab === 'global' && <GlobalSettingsPanel />}
                     {activeTab === 'ingestion' && <IngestionPanel />}
                     {activeTab === 'models' && <ModelConfigPanel />}
                     {activeTab === 'budgets' && <BudgetPanel />}

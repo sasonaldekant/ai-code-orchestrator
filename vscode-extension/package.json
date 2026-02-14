@@ -2,7 +2,7 @@
     "name": "ai-code-orchestrator-client",
     "displayName": "AI Code Orchestrator Client",
     "description": "VS Code Client for AI Code Orchestrator",
-    "version": "0.0.1",
+    "version": "0.0.6",
     "publisher": "ai-orchestrator",
     "engines": {
         "vscode": "^1.90.0"
@@ -18,7 +18,7 @@
                 {
                     "id": "ai-orchestrator-sidebar-view",
                     "title": "AI Orchestrator",
-                    "icon": "media/robot.svg"
+                    "icon": "media/icon.svg"
                 }
             ]
         },
@@ -28,7 +28,7 @@
                     "type": "webview",
                     "id": "ai-orchestrator-sidebar",
                     "name": "AI Chat",
-                    "icon": "media/robot.svg"
+                    "icon": "media/icon.svg"
                 }
             ]
         },
@@ -73,6 +73,11 @@
                     "type": "string",
                     "default": "",
                     "description": "Path to AI Orchestrator root directory"
+                },
+                "aiOrchestrator.apiBaseUrl": {
+                    "type": "string",
+                    "default": "http://localhost:8000",
+                    "description": "Base URL for the AI Orchestrator API"
                 }
             }
         }
