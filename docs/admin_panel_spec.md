@@ -11,6 +11,20 @@ Ovaj plan opisuje implementaciju **Admin Panel** sekcije u Nexus GUI, koja će o
 3. **Budget & Limits** - upravljanje troškovima i limitima
 4. **Knowledge Base Explorer** - pregled i brisanje kolekcija
 
+### DynUI Component Library Reference
+
+> [!NOTE]
+> Admin Panel koristi **DynUI** komponentnu biblioteku za konzistentan UI.
+> 
+> **Lokacija dokumentacije:** `c:\Users\mgasic\Documents\AIProjects\dyn-ui-main-v01\docs\rag-ready\`
+> 
+> **Ključni dokumenti:**
+> - `03-COMPONENT_CATALOG.md` - Katalog svih 45 komponenti
+> - `02-DESIGN_TOKENS.md` - Design tokeni (boje, spacing, veličine)
+> - `05-CODE_EXAMPLES.md` - Primeri upotrebe
+> 
+> **Import pattern:** `import { ComponentName } from '@dyn-ui/react'`
+
 ---
 
 ## 2. Administrable Features (Based on Codebase Analysis)

@@ -25,7 +25,7 @@ from .llm_client_v2 import LLMClientV2
 from .cost_manager import CostManager
 from .validator import OutputValidator
 from .tracer import TracingService
-from .retriever import RAGRetriever
+from rag.domain_aware_retriever import DomainAwareRetriever as RAGRetriever
 from .self_healing_manager import SelfHealingManager
 from .prompt_gate import PromptGate
 from core.agents.specialist_agents.retrieval_agent import RetrievalAgent
@@ -178,6 +178,7 @@ class OrchestratorV2:
         budget_limit: Optional[float] = None,
         consensus_mode: bool = False,
         review_strategy: str = "basic",
+        model_override: Optional[str] = None,
     ) -> PhaseResult:
         """
         Run a phase with automatic retry on failure.
@@ -216,6 +217,7 @@ class OrchestratorV2:
                     budget_limit=budget_limit,
                     consensus_mode=consensus_mode,
                     review_strategy=review_strategy,
+                    model_override=model_override,
                 )
                 
                 result.output = output
@@ -261,6 +263,7 @@ class OrchestratorV2:
         budget_limit: Optional[float] = None,
         consensus_mode: bool = False,
         review_strategy: str = "basic",
+        model_override: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Internal method to execute a single phase.
@@ -297,19 +300,13 @@ class OrchestratorV2:
              msg = "Conducting Deep Research..."
              print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
             
-             # Select research model via router (handles switching to Gemini 1.5 Pro if huge context)
              research_config = self.model_router.select_model("research", complexity="high")
             
-             # If router selected standard deep research (Perplexity)
              if "sonar" in research_config.model:
-                  # Use retrieval agent or direct generation
                   investigator = RetrievalAgent(self.llm_client)
-                  # Force the specific model on the agent if possible
                   investigator.config = research_config 
                   deep_findings = await investigator.run(question, initial_plan=initial_plan)
              else:
-                  # Fallback/Escalation (e.g. Gemini 1.5 Pro) for massive context
-                  # Direct call with large context
                   deep_findings = await self.llm_client.complete(
                       messages=[{"role": "user", "content": f"Analyze this large context regarding: {question}"}],
                       model=research_config.model,
@@ -319,7 +316,16 @@ class OrchestratorV2:
              rag_context.append({"source": "deep_research", "content": deep_findings})
 
         elif question:
-            rag_context = self.retriever.retrieve(question, top_k=top_k)
+             # [Task 3.2] Tier-Based Query Routing
+             tier_id = context.get("rag_tier") if context else None
+             if tier_id:
+                  logger.info(f"Performing Tier-Based RAG retrieval for Tier {tier_id}")
+                  if hasattr(self.retriever, "retrieve_tier"):
+                      rag_context = self.retriever.retrieve_tier(tier_id, question, top_k=top_k)
+                  else:
+                      rag_context = self.retriever.retrieve(question, top_k=top_k)
+             else:
+                  rag_context = self.retriever.retrieve(question, top_k=top_k)
         
         # Estimate context size for routing
         # Rough calc: 1 token ~= 4 chars
@@ -327,12 +333,21 @@ class OrchestratorV2:
         context_tokens = len(context_str) // 4
         
         # Get optimal model via cascade for main task
-        complexity = "high" if deep_search or (question and len(question)>500) else "simple"
-        model_config = self.model_router.select_model(
-            phase, 
-            complexity=complexity, 
-            context_tokens=context_tokens
-        )
+        if model_override:
+            logger.info(f"Using manual model override: {model_override}")
+            model_config = ModelConfig(
+                model=model_override,
+                provider="manual", # Or detect provider if needed
+                tier=2,
+                temperature=0.0
+            )
+        else:
+            complexity = "high" if deep_search or (question and len(question)>500) else "simple"
+            model_config = self.model_router.select_model(
+                phase, 
+                complexity=complexity, 
+                context_tokens=context_tokens
+            )
         
         # Persist context for audit
         rag_path = self.outputs_dir / f"rag_context_{phase}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
@@ -398,6 +413,7 @@ class OrchestratorV2:
         budget_limit: Optional[float] = None,
         consensus_mode: bool = False,
         review_strategy: str = "basic",
+        model_override: Optional[str] = None,
     ) -> PhaseResult:
         """
         Run phase with iterative feedback loop for quality improvement.
@@ -432,6 +448,7 @@ class OrchestratorV2:
                 budget_limit=budget_limit,
                 consensus_mode=consensus_mode,
                 review_strategy=review_strategy,
+                model_override=model_override,
             )
             
             if result.status != PhaseStatus.COMPLETED:
@@ -633,13 +650,13 @@ class OrchestratorV2:
             
             # Analyst phase
             msg = "Phase 1: Analyzing Requirements"
-            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\", \"tier\": \"T1: Rules\"}}:::", flush=True)
             
             analyst_result = await (
                 self.run_phase_with_feedback(
                     phase="analyst",
                     schema_name="requirements",
-                    context={"requirements": initial_requirements},
+                    context={"requirements": initial_requirements, "rag_tier": 3},
                     question=question,
                     deep_search=deep_search,
                 )
@@ -647,7 +664,7 @@ class OrchestratorV2:
                 else self.run_phase_with_retry(
                     phase="analyst",
                     schema_name="requirements",
-                    context={"requirements": initial_requirements},
+                    context={"requirements": initial_requirements, "rag_tier": 3},
                     question=question,
                     deep_search=deep_search,
                 )
@@ -666,19 +683,19 @@ class OrchestratorV2:
             
             # Architect phase
             msg = "Phase 2: Designing Architecture"
-            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\"}}:::", flush=True)
+            print(f":::STEP:{{\"type\": \"thinking\", \"text\": \"{msg}\", \"tier\": \"T4: Schema\"}}:::", flush=True)
 
             architect_result = await (
                 self.run_phase_with_feedback(
                     phase="architect",
                     schema_name="architecture",
-                    context=analyst_result.output,
+                    context={**analyst_result.output, "rag_tier": 4},
                 )
                 if use_feedback
                 else self.run_phase_with_retry(
                     phase="architect",
                     schema_name="architecture",
-                    context=analyst_result.output,
+                    context={**analyst_result.output, "rag_tier": 4},
                 )
             )
             
@@ -695,12 +712,12 @@ class OrchestratorV2:
             
             # Implementation phase
             msg = "Phase 3: Generating Code"
-            print(f":::STEP:{{\"type\": \"editing\", \"text\": \"{msg}\"}}:::", flush=True)
+            print(f":::STEP:{{\"type\": \"editing\", \"text\": \"{msg}\", \"tier\": \"T2: Tokens\"}}:::", flush=True)
 
             implementation_result = await self.run_phase_with_retry(
                 phase="implementation",
                 schema_name="implementation",
-                context=architect_result.output,
+                context={**architect_result.output, "rag_tier": 2},
             )
             
             if implementation_result.status != PhaseStatus.COMPLETED:

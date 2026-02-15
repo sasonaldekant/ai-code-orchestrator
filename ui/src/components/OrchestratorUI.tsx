@@ -48,7 +48,8 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     // Phase 17: Advanced Options
-    const [budgetLimit, setBudgetLimit] = useState<number | null>(null);
+    const [budgetLimit, setBudgetLimit] = useState<number | null>(1.0);
+    const [selectedModel, setSelectedModel] = useState<string>('gpt-5.2');
     const [consensusMode, setConsensusMode] = useState(false);
     const [reviewStrategy, setReviewStrategy] = useState<'basic' | 'strict'>('basic');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -123,7 +124,8 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                     auto_fix: autoFix,
                     budget_limit: budgetLimit,
                     consensus_mode: consensusMode,
-                    review_strategy: reviewStrategy
+                    review_strategy: reviewStrategy,
+                    model: selectedModel
                 })
             });
             if (!response.ok) throw new Error("Failed to start");
@@ -446,6 +448,39 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                                 Ask Agent (Q&A)
                                                 {features.askMode && <Check className="w-4 h-4 ml-auto" />}
                                             </button>
+                                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                Model Choice
+                                            </div>
+                                            <div className="px-2 pb-2">
+                                                <select
+                                                    value={selectedModel}
+                                                    onChange={(e) => setSelectedModel(e.target.value)}
+                                                    className="w-full bg-background/50 border border-border rounded-lg text-xs p-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                                                >
+                                                    <option value="gpt-5.2">GPT-5.2 (Recommended)</option>
+                                                    <option value="claude-opus-4.6">Claude Opus 4.6</option>
+                                                    <option value="gpt-5-mini">GPT-5 Mini</option>
+                                                    <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+                                                    <option value="gemini-3-pro">Gemini 3 Pro</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="h-px bg-border my-1" />
+
+                                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                Budget (USD)
+                                            </div>
+                                            <div className="px-2 pb-2">
+                                                <input
+                                                    type="number"
+                                                    value={budgetLimit}
+                                                    onChange={(e) => setBudgetLimit(e.target.value)}
+                                                    step="0.1"
+                                                    className="w-full bg-background/50 border border-border rounded-lg text-xs p-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                                                />
+                                            </div>
+
+                                            <div className="h-px bg-border my-1" />
                                         </div>
                                     )}
                                 </div>

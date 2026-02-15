@@ -81,225 +81,316 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
-        // Use a nonce to only allow a specific script to be run.
         const nonce = getNonce();
         const config = vscode.workspace.getConfiguration('aiOrchestrator');
-        // Ensure strictly no trailing slash to avoid double slashes in URLs
         let apiBaseUrl = config.get<string>('apiBaseUrl') || 'http://localhost:8000';
-        if (apiBaseUrl.endsWith('/')) {
-            apiBaseUrl = apiBaseUrl.slice(0, -1);
-        }
+        if (apiBaseUrl.endsWith('/')) apiBaseUrl = apiBaseUrl.slice(0, -1);
 
         return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} https:;">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>AI Orchestrator Chat</title>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600&display=swap');
+
                     :root {
-                        --step-bg: var(--vscode-editor-inactiveSelectionBackground);
+                        --step-bg: color-mix(in srgb, var(--vscode-editor-inactiveSelectionBackground), transparent 70%);
                         --step-border: var(--vscode-widget-border);
                         --text-main: var(--vscode-editor-foreground);
                         --text-sec: var(--vscode-descriptionForeground);
                         --accent: var(--vscode-button-background);
+                        --accent-hover: var(--vscode-button-hoverBackground);
+                        --bg-card: var(--vscode-sideBar-background);
+                        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
                     }
+
                     body {
                         padding: 0;
                         margin: 0;
-                        font-family: var(--vscode-font-family);
+                        font-family: 'Inter', var(--vscode-font-family), sans-serif;
                         color: var(--text-main);
                         font-size: 13px;
+                        background: var(--vscode-editor-background);
+                        overflow: hidden;
                     }
+
                     .app-container {
                         display: flex;
                         flex-direction: column;
                         height: 100vh;
-                        overflow: hidden;
+                        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
+                                    radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.05), transparent 40%);
                     }
-                    /* Tabs Header */
+
+                    /* Premium Tabs */
                     .tabs-header {
                         display: flex;
-                        background: var(--vscode-sideBar-background);
-                        border-bottom: 1px solid var(--vscode-widget-border);
-                        padding: 0 8px;
+                        background: var(--bg-card);
+                        border-bottom: 1px solid var(--vscode-panel-border);
+                        padding: 4px 12px 0;
+                        gap: 16px;
                     }
+
                     .tab-btn {
-                        padding: 8px 12px;
+                        padding: 10px 4px;
                         cursor: pointer;
                         border-bottom: 2px solid transparent;
                         color: var(--text-sec);
                         font-weight: 500;
                         font-size: 11px;
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 0.8px;
+                        transition: all 0.2s ease;
+                        font-family: 'Outfit', sans-serif;
                     }
+
+                    .tab-btn:hover { color: var(--text-main); }
                     .tab-btn.active {
                         color: var(--text-main);
-                        border-bottom-color: var(--accent);
+                        border-bottom-color: #6366f1;
+                        text-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
                     }
+
                     .tab-content {
                         flex: 1;
                         display: none;
                         flex-direction: column;
                         overflow: hidden;
                     }
-                    .tab-content.active {
-                        display: flex;
-                    }
 
-                    /* Chat Content */
+                    .tab-content.active { display: flex; animation: fadeIn 0.3s ease; }
+
+                    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+                    /* Chat Elements */
                     .chat-history {
                         flex: 1;
                         overflow-y: auto;
-                        padding: 12px;
+                        padding: 16px;
                         display: flex;
                         flex-direction: column;
-                        gap: 16px;
+                        gap: 20px;
+                        scroll-behavior: smooth;
                     }
+
                     .chat-input-container {
-                        padding: 12px;
-                        background: var(--vscode-sideBar-background);
-                        border-top: 1px solid var(--vscode-widget-border);
+                        padding: 16px;
+                        background: var(--bg-card);
+                        border-top: 1px solid var(--vscode-panel-border);
                         display: flex;
                         flex-direction: column;
-                        gap: 10px;
+                        gap: 12px;
+                        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
                     }
-                    .options-row {
-                        display: flex;
-                        gap: 6px;
-                        flex-wrap: wrap;
-                    }
+
+                    .options-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
                     .dropdown-group, .input-group {
                         display: flex;
                         align-items: center;
-                        gap: 4px;
+                        gap: 6px;
                         background: var(--vscode-input-background);
                         border: 1px solid var(--vscode-input-border);
-                        border-radius: 4px;
-                        padding: 2px 6px;
+                        border-radius: 6px;
+                        padding: 4px 8px;
+                        transition: border-color 0.2s;
                     }
+
+                    .dropdown-group:hover { border-color: var(--accent); }
+
                     select, input {
                         background: transparent;
                         color: var(--vscode-input-foreground);
                         border: none;
                         outline: none;
                         font-size: 11px;
+                        cursor: pointer;
                     }
+
                     .chat-input-area {
                         display: flex;
-                        gap: 8px;
+                        gap: 10px;
                         align-items: flex-end;
                         background: var(--vscode-input-background);
                         border: 1px solid var(--vscode-input-border);
-                        border-radius: 8px;
-                        padding: 4px 8px;
+                        border-radius: 12px;
+                        padding: 6px 10px;
+                        transition: all 0.2s;
                     }
+
+                    .chat-input-area:focus-within {
+                        border-color: #6366f1;
+                        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+                    }
+
                     textarea {
                         flex: 1;
                         background: transparent;
                         color: var(--vscode-input-foreground);
                         border: none;
-                        padding: 8px;
+                        padding: 8px 4px;
                         resize: none;
-                        height: 40px;
-                        max-height: 200px;
+                        height: 44px;
+                        max-height: 250px;
                         font-family: inherit;
                         font-size: 13px;
+                        line-height: 1.5;
                     }
+
                     .icon-btn {
                         background: transparent;
                         border: none;
                         color: var(--text-sec);
                         cursor: pointer;
-                        padding: 4px;
-                        border-radius: 4px;
+                        padding: 6px;
+                        border-radius: 6px;
                         display: flex;
                         align-items: center;
-                        justify-content: center;
+                        transition: all 0.2s;
                     }
-                    .icon-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
-                    #send-btn { background: var(--accent); color: var(--vscode-button-foreground); border-radius: 4px; width: 28px; height: 28px; }
-                    #stop-btn { background: var(--vscode-errorForeground); color: white; display: none; border-radius: 4px; width: 28px; height: 28px; }
 
-                    /* Knowledge Tab Styles */
-                    .kb-container { padding: 12px; overflow-y: auto; height: 100%; display: flex; flex-direction: column; gap: 16px; }
-                    .kb-section { display: flex; flex-direction: column; gap: 8px; }
-                    .kb-title { font-weight: bold; font-size: 11px; text-transform: uppercase; color: var(--text-sec); border-bottom: 1px solid var(--vscode-widget-border); padding-bottom: 4px; margin-bottom: 4px; }
-                    .collection-list { display: flex; flex-direction: column; gap: 4px; }
-                    .collection-item { background: var(--vscode-list-hoverBackground); padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
-                    .col-stats { font-size: 10px; color: var(--text-sec); }
-                    
-                    .ingest-form { display: flex; flex-direction: column; gap: 8px; background: var(--vscode-sideBar-background); border: 1px solid var(--vscode-widget-border); padding: 10px; border-radius: 4px; }
-                    .form-field { display: flex; flex-direction: column; gap: 4px; }
-                    .form-field label { font-size: 10px; color: var(--text-sec); }
-                    .input-with-browse { display: flex; gap: 4px; }
-                    .input-with-browse input { flex: 1; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); border-radius: 4px; padding: 4px 8px; color: var(--vscode-input-foreground); }
-                    .browse-btn { padding: 4px 8px; background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); border: none; border-radius: 4px; cursor: pointer; font-size: 10px; }
-                    .primary-btn { margin-top: 8px; padding: 6px; background: var(--accent); color: var(--vscode-button-foreground); border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-                    
-                    /* Settings Tab Styles */
-                    .settings-container { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-                    .setting-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-                    .setting-item label { font-size: 12px; }
-                    .setting-input { width: 60px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); color: var(--vscode-input-foreground); padding: 2px 4px; border-radius: 4px; }
+                    .icon-btn:hover { background: var(--vscode-toolbar-hoverBackground); color: var(--text-main); }
 
-                    /* Message Styles */
-                    .message { max-width: 95%; line-height: 1.5; font-size: 13px; }
-                    .message.user { align-self: flex-end; background: var(--accent); color: var(--vscode-button-foreground); padding: 8px 12px; border-radius: 12px 12px 2px 12px; }
-                    .message.bot { align-self: flex-start; width: 100%; }
-                    .steps-container { margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
-                    .step-item { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--vscode-input-border); background: var(--vscode-editor-inactiveSelectionBackground); opacity: 0.8; }
-                    .step-item.done { border-left: 3px solid #2ecc71; background: transparent; border-color: transparent; }
-                    .response-content { display: none; background: var(--vscode-editor-background); border: 1px solid var(--vscode-widget-border); border-radius: 6px; padding: 10px; white-space: pre-wrap; font-family: var(--vscode-editor-font-family); }
-                    .error-box { color: var(--vscode-errorForeground); font-size: 12px; padding: 8px; border: 1px solid var(--vscode-errorForeground); border-radius: 4px; margin: 4px 0; }
+                    #send-btn { 
+                        background: var(--primary-gradient); 
+                        color: white; 
+                        border-radius: 8px; 
+                        width: 32px; 
+                        height: 32px; 
+                        font-weight: bold;
+                        box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+                    }
+
+                    #stop-btn { background: #ef4444; color: white; display: none; border-radius: 8px; width: 32px; height: 32px; }
+
+                    /* Step Badges & Tiers */
+                    .step-item {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 11px;
+                        padding: 10px 12px;
+                        border-radius: 10px;
+                        border: 1px solid var(--vscode-input-border);
+                        background: var(--step-bg);
+                        backdrop-filter: blur(4px);
+                        margin-bottom: 6px;
+                    }
+
+                    .step-main { display: flex; align-items: center; gap: 8px; }
+
+                    .tier-badge {
+                        font-size: 9px;
+                        font-weight: 600;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        background: rgba(99, 102, 241, 0.15);
+                        color: #818cf8;
+                        border: 1px solid rgba(129, 140, 248, 0.3);
+                        text-transform: uppercase;
+                    }
+
+                    .tier-rules { color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+                    .tier-tokens { color: #ec4899; background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3); }
+                    .tier-components { color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+
+                    /* Message Bubbles */
+                    .message.user {
+                        align-self: flex-end;
+                        background: var(--primary-gradient);
+                        color: white;
+                        padding: 10px 16px;
+                        border-radius: 18px 18px 4px 18px;
+                        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+                        max-width: 85%;
+                    }
+
+                    .response-content {
+                        background: var(--vscode-editor-background);
+                        border: 1px solid var(--vscode-panel-border);
+                        border-radius: 12px;
+                        padding: 14px;
+                        white-space: pre-wrap;
+                        font-family: 'JetBrains Mono', var(--vscode-editor-font-family);
+                        font-size: 12px;
+                        line-height: 1.6;
+                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+                    }
+
+                    /* Knowledge & Settings */
+                    .kb-container, .settings-container { padding: 20px; gap: 16px; }
+                    .kb-title { font-family: 'Outfit', sans-serif; letter-spacing: 0.5px; margin-bottom: 12px; color: #a5b4fc; }
+                    
+                    .collection-item {
+                        background: color-mix(in srgb, var(--vscode-list-hoverBackground), transparent 20%);
+                        border: 1px solid var(--vscode-panel-border);
+                        padding: 12px;
+                        border-radius: 8px;
+                        margin-bottom: 6px;
+                        transition: transform 0.2s;
+                    }
+                    .collection-item:hover { transform: translateX(4px); border-color: #6366f1; }
+
+                    .primary-btn {
+                        background: var(--primary-gradient);
+                        padding: 10px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        transition: opacity 0.2s;
+                    }
+                    .primary-btn:hover { opacity: 0.9; }
                 </style>
 			</head>
 			<body>
                 <div class="app-container">
                     <div class="tabs-header">
-                        <div class="tab-btn active" onclick="switchTab('chat')">Chat</div>
+                        <div class="tab-btn active" onclick="switchTab('chat')">Assistant</div>
                         <div class="tab-btn" onclick="switchTab('knowledge')">Knowledge</div>
                         <div class="tab-btn" onclick="switchTab('settings')">Settings</div>
                     </div>
 
-                    <!-- Chat Tab -->
                     <div id="tab-chat" class="tab-content active">
                         <div id="chat-history" class="chat-history">
                             <div class="message bot">
-                                <div class="response-content">Hello! I am your AI Orchestrator. How can I help you today?</div>
+                                <div class="response-content" style="display: block;">Ready for new tasks. Powered by DynUI v2.1</div>
                             </div>
                         </div>
                         <div class="chat-input-container">
                             <div class="options-row">
-                                <div class="dropdown-group" title="Execution Strategy">
+                                <div class="dropdown-group" title="Execution Mode">
                                     <span>⚡</span>
                                     <select id="strategy-select">
-                                        <option value="adaptive">Adaptive</option>
-                                        <option value="planning">Planning</option>
-                                        <option value="fast">Fast</option>
+                                        <option value="deep-search">Deep Search (Agentic)</option>
+                                        <option value="auto-fix">Auto-Fix & Heal</option>
+                                        <option value="question">Ask Agent (Q&A)</option>
+                                        <option value="fast">Fast Execution</option>
                                     </select>
                                 </div>
                                 <div class="dropdown-group" title="Model Selection">
                                     <span>🤖</span>
                                     <select id="model-select">
-                                        <option value="gpt-4o">GPT-4o</option>
-                                        <option value="gpt-4o-mini">GPT-4o Mini</option>
-                                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                        <option value="gpt-5.2">GPT-5.2 (Recommended)</option>
+                                        <option value="claude-opus-4.6">Claude Opus 4.6</option>
+                                        <option value="gpt-5-mini">GPT-5 Mini</option>
+                                        <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+                                        <option value="gemini-3-pro">Gemini 3 Pro</option>
                                     </select>
                                 </div>
-                                <div class="dropdown-group" title="Session Budget Limit (USD)">
-                                    <span>💰</span>
-                                    <input id="limit-input" type="number" step="0.5" min="0" placeholder="∞" style="width: 35px;"/>
+                                <div class="dropdown-group" title="Local Budget">
+                                    <input id="limit-input" type="number" step="0.5" placeholder="Limit" style="width: 45px;"/>
+                                    <span style="font-size: 10px; color: #10b981">$</span>
                                 </div>
                             </div>
                             <div class="chat-input-area">
-                                <button class="icon-btn" title="Add files to context" onclick="vscode.postMessage({ type: 'onBrowse', target: 'context' })">📎</button>
-                                <textarea id="chat-input" placeholder="Ask anything..."></textarea>
+                                <button class="icon-btn" title="Add files" onclick="vscode.postMessage({ type: 'onBrowse', target: 'context' })">📎</button>
+                                <textarea id="chat-input" placeholder="Give me a requirement..."></textarea>
                                 <div class="actions">
-                                    <button id="send-btn" title="Send (Enter)">➔</button>
-                                    <button id="stop-btn" title="Stop Task">■</button>
+                                    <button id="send-btn">➔</button>
+                                    <button id="stop-btn">■</button>
                                 </div>
                             </div>
                         </div>
@@ -310,39 +401,31 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         <div class="kb-container">
                             <div class="kb-section">
                                 <div class="kb-title" style="display: flex; justify-content: space-between;">
-                                    <span>Active Collections</span>
+                                    <span>Stored Knowledge Tiers</span>
                                     <span style="cursor: pointer;" onclick="refreshCollections()">🔄</span>
                                 </div>
-                                <div id="collection-list" class="collection-list">
-                                    <div style="font-size: 10px; color: var(--text-sec);">Loading collections...</div>
-                                </div>
+                                <div id="collection-list" class="collection-list"></div>
                             </div>
-
                             <div class="kb-section">
-                                <div class="kb-title">Add Knowledge (Ingest)</div>
+                                <div class="kb-title">Data Ingestion</div>
                                 <div class="ingest-form">
                                     <div class="form-field">
-                                        <label>Source Type</label>
+                                        <label>Target Domain</label>
                                         <select id="ingest-type">
-                                            <option value="instruction_docs">Instruction Docs (MD/TXT)</option>
-                                            <option value="specialization_rules">Specialization Rules (YAML/JSON)</option>
-                                            <option value="project_codebase">Full Codebase</option>
-                                            <option value="database">Database Schema (C# Models)</option>
-                                            <option value="component_library">Component Library (TSX/JSX)</option>
+                                            <option value="instruction_docs">Documentation (T1)</option>
+                                            <option value="specialization_rules">Design Tokens (T2)</option>
+                                            <option value="component_library">UI Components (T3)</option>
+                                            <option value="database">DB Schema (T4)</option>
                                         </select>
                                     </div>
                                     <div class="form-field">
-                                        <label>Path</label>
+                                        <label>Source Path</label>
                                         <div class="input-with-browse">
-                                            <input type="text" id="ingest-path" placeholder="C:/path/to/docs" />
-                                            <button class="browse-btn" onclick="vscode.postMessage({ type: 'onBrowse', target: 'ingest-path' })">Browse</button>
+                                            <input type="text" id="ingest-path" />
+                                            <button class="browse-btn" onclick="vscode.postMessage({ type: 'onBrowse', target: 'ingest-path' })">...</button>
                                         </div>
                                     </div>
-                                    <div class="form-field">
-                                        <label>Target Collection (Optional)</label>
-                                        <input type="text" id="ingest-collection" placeholder="e.g. project_rules" style="background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); border-radius: 4px; padding: 4px 8px; color: var(--vscode-input-foreground); font-size: 11px;" />
-                                    </div>
-                                    <button class="primary-btn" onclick="executeIngest()">Start Ingestion</button>
+                                    <button class="primary-btn" onclick="executeIngest()">Ingest to RAG</button>
                                 </div>
                             </div>
                         </div>
@@ -351,48 +434,37 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     <!-- Settings Tab -->
                     <div id="tab-settings" class="tab-content">
                         <div class="settings-container">
-                            <div class="kb-title">Global Budget Limits (Admin)</div>
+                            <div class="kb-title">Admin Controls</div>
                             <div class="setting-item">
-                                <label>Task Limit (USD)</label>
-                                <input type="number" id="global-task-limit" class="setting-input" step="0.1" value="1.0" />
+                                <label>Strict Budget Mode</label>
+                                <input type="checkbox" id="strict-mode" checked />
                             </div>
                             <div class="setting-item">
-                                <label>Hourly Limit (USD)</label>
-                                <input type="number" id="global-hour-limit" class="setting-input" step="1" value="10.0" />
+                                <label>Max Task Cost ($)</label>
+                                <input type="number" id="global-task-limit" class="setting-input" step="0.1" value="0.5" />
                             </div>
                             <div class="setting-item">
-                                <label>Daily Limit (USD)</label>
-                                <input type="number" id="global-day-limit" class="setting-input" step="5" value="50.0" />
-                            </div>
-                            
-                            <div class="kb-title" style="margin-top: 10px;">Execution Defaults</div>
-                            <div class="setting-item">
-                                <label>Deep Search Enabled</label>
+                                <label>Agentic Search</label>
                                 <input type="checkbox" id="deep-search-check" checked />
                             </div>
-                            
                             <button class="primary-btn" onclick="saveSettings()">Save Configuration</button>
-                            
-                            <div style="margin-top: auto; font-size: 10px; color: var(--text-sec); text-align: center;">
-                                AI Orchestrator Client v0.0.7
+                            <div style="margin-top: 40px; text-align: center; opacity: 0.5; font-size: 10px;">
+                                Orchestrator v4.1.0 • Antigravity Engine
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <script nonce="${nonce}">
                     const vscode = acquireVsCodeApi();
                     const API_BASE_URL = "${apiBaseUrl}";
                     
-                    // Tab switching logic
                     function switchTab(tabId) {
                         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        
                         document.querySelector('.tab-btn[onclick*="' + tabId + '"]').classList.add('active');
                         document.getElementById('tab-' + tabId).classList.add('active');
-                        
                         if (tabId === 'knowledge') refreshCollections();
-                        if (tabId === 'settings') loadSettings();
                     }
 
                     const chatHistory = document.getElementById('chat-history');
@@ -405,300 +477,120 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     const deepSearchCheck = document.getElementById('deep-search-check');
 
                     let currentBotMessage = null;
-                    let pendingFiles = [];
-                    let GLOBAL_TASK_LIMIT = null;
 
-                    // Knowledge management
                     async function refreshCollections() {
                         const listDiv = document.getElementById('collection-list');
-                        listDiv.innerHTML = '<div style="font-size: 10px; color: var(--text-sec);">Loading...</div>';
+                        listDiv.innerHTML = '<div style="font-size: 10px; opacity: 0.5;">Querying RAG store...</div>';
                         try {
                             const res = await fetch(API_BASE_URL + '/knowledge/collections');
                             if (res.ok) {
                                 const data = await res.json();
                                 listDiv.innerHTML = '';
-                                if (data.collections.length === 0) {
-                                    listDiv.innerHTML = '<div style="font-size: 10px; color: var(--text-sec);">No collections found.</div>';
-                                    return;
-                                }
                                 data.collections.forEach(col => {
                                     const item = document.createElement('div');
                                     item.className = 'collection-item';
-                                    item.innerHTML = '<span>' + col.name + '</span> <span class="col-stats">' + col.count + ' docs</span>';
+                                    item.innerHTML = '<span>' + col.name + '</span> <span class="col-stats">' + col.count + ' chunks</span>';
                                     listDiv.appendChild(item);
                                 });
-                            } else {
-                                listDiv.innerHTML = '<div style="color: var(--vscode-errorForeground);">Backend not reachable.</div>';
                             }
-                        } catch (e) { listDiv.innerHTML = '<div style="color: var(--vscode-errorForeground);">Error loading collections.</div>'; }
+                        } catch (e) { listDiv.innerHTML = 'Offline'; }
                     }
 
-                    function executeIngest() {
-                        const type = document.getElementById('ingest-type').value;
-                        const path = document.getElementById('ingest-path').value;
-                        const collection = document.getElementById('ingest-collection').value;
-                        
-                        if (!path) {
-                            vscode.postMessage({ type: 'onError', value: 'Path is required for ingestion.' });
-                            return;
-                        }
-                        
-                        vscode.postMessage({ 
-                            type: 'onIngest', 
-                            value: { type, path, collection } 
-                        });
-                    }
-
-                    // Settings management
-                    async function loadSettings() {
-                        try {
-                            const res = await fetch(API_BASE_URL + '/admin/config/limits');
-                            if (res.ok) {
-                                const json = await res.json();
-                                const data = json.data;
-                                const taskBudget = data.global?.per_task_budget || 0.25;
-                                
-                                document.getElementById('global-task-limit').value = taskBudget;
-                                document.getElementById('global-hour-limit').value = data.global?.per_hour_budget || 1.0;
-                                document.getElementById('global-day-limit').value = data.global?.per_day_budget || 2.0;
-                                deepSearchCheck.checked = data.global?.deep_search ?? true;
-
-                                GLOBAL_TASK_LIMIT = taskBudget;
-                                const limitInp = document.getElementById('limit-input');
-                                limitInp.placeholder = 'Max ' + taskBudget;
-                                limitInp.max = taskBudget;
-                            }
-                        } catch (e) { console.error("Could not load settings"); }
-                    }
-
-                    function saveSettings() {
-                        const taskLimit = parseFloat(document.getElementById('global-task-limit').value);
-                        const hourLimit = parseFloat(document.getElementById('global-hour-limit').value);
-                        const dayLimit = parseFloat(document.getElementById('global-day-limit').value);
-                        
-                        vscode.postMessage({ 
-                            type: 'onUpdateConfig', 
-                            configName: 'limits',
-                            value: {
-                                global: {
-                                    per_task_budget: taskLimit,
-                                    per_hour_budget: hourLimit,
-                                    per_day_budget: dayLimit,
-                                    deep_search: deepSearchCheck.checked,
-                                    temperature: 0.0,
-                                    max_retries: 3,
-                                    max_feedback_iterations: 3
-                                },
-                                budgets: { max_input_tokens: 6000, max_output_tokens: 1000 },
-                                concurrency: { max_workers: 2 },
-                                retrieval: { chunk_chars: 800, chunk_overlap: 120, top_k: 4 }
-                            }
-                        });
-                    }
-
-                    // Load models from API on startup
-                    async function loadModels() {
-                        try {
-                            const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 2000);
-                            const res = await fetch(API_BASE_URL + '/admin/models', { signal: controller.signal });
-                            clearTimeout(timeoutId);
-                            
-                            if (res.ok) {
-                                const data = await res.json();
-                                if (data.models && data.models.length > 0) {
-                                    modelSelect.innerHTML = '';
-                                    data.models.forEach(m => {
-                                        const opt = document.createElement('option');
-                                        opt.value = m;
-                                        const priceInfo = data.pricing && data.pricing[m] 
-                                            ? ' ($' + data.pricing[m].input_per_million + '/$' + data.pricing[m].output_per_million + ')' 
-                                            : '';
-                                        opt.text = m + priceInfo;
-                                        if (m === 'gpt-4o') opt.selected = true;
-                                        modelSelect.appendChild(opt);
-                                    });
-                                }
-                            }
-                        } catch (e) { console.log('Using default models'); }
-                    }
-                    loadModels();
-                    loadSettings();
-
-                    function createBotMessageContainer() {
-                        const msgDiv = document.createElement('div');
-                        msgDiv.className = 'message bot';
-                        
-                        const stepsDiv = document.createElement('div');
-                        stepsDiv.className = 'steps-container';
-                        msgDiv.appendChild(stepsDiv);
-                        
-                        const contentDiv = document.createElement('div');
-                        contentDiv.className = 'response-content';
-                        contentDiv.style.display = 'none';
-                        msgDiv.appendChild(contentDiv);
-                        
-                        const actionsDiv = document.createElement('div');
-                        actionsDiv.className = 'review-actions';
-                        actionsDiv.style.display = 'none';
-                        msgDiv.appendChild(actionsDiv);
-
-                        chatHistory.appendChild(msgDiv);
-                        chatHistory.scrollTop = chatHistory.scrollHeight;
-                        return { container: msgDiv, steps: stepsDiv, content: contentDiv, actions: actionsDiv };
-                    }
-
-                    function addStep(text, type = 'thinking') {
-                        if (!currentBotMessage) {
-                            currentBotMessage = createBotMessageContainer();
-                        }
+                    function addStep(text, type = 'thinking', tier = null) {
+                        if (!currentBotMessage) currentBotMessage = createBotMessageContainer();
                         
                         const stepItem = document.createElement('div');
                         stepItem.className = 'step-item ' + type;
                         
                         let icon = '●';
-                        if (type === 'thinking') icon = '💭';
+                        if (type === 'thinking') icon = '🧠';
                         if (type === 'analyzing') icon = '🔍';
-                        if (type === 'editing') icon = '📝';
-                        if (type === 'done') icon = '✅';
+                        if (type === 'editing') icon = '✍️';
+                        if (type === 'done') icon = '✨';
                         
-                        stepItem.innerHTML = '<span class="icon">' + icon + '</span> <span>' + text + '</span>';
+                        let tierHtml = '';
+                        if (tier) {
+                            const tierClass = tier.toLowerCase().includes('token') ? 'tier-tokens' : 
+                                            tier.toLowerCase().includes('rule') ? 'tier-rules' : 
+                                            tier.toLowerCase().includes('component') ? 'tier-components' : '';
+                            tierHtml = '<span class="tier-badge ' + tierClass + '">' + tier + '</span>';
+                        }
+                        
+                        stepItem.innerHTML = '<div class="step-main"><span class="icon">' + icon + '</span> <span>' + text + '</span></div>' + tierHtml;
                         currentBotMessage.steps.appendChild(stepItem);
                         chatHistory.scrollTop = chatHistory.scrollHeight;
                     }
 
+                    function createBotMessageContainer() {
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'message bot';
+                        const stepsDiv = document.createElement('div');
+                        stepsDiv.className = 'steps-container';
+                        msgDiv.appendChild(stepsDiv);
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'response-content';
+                        msgDiv.appendChild(contentDiv);
+                        chatHistory.appendChild(msgDiv);
+                        return { steps: stepsDiv, content: contentDiv };
+                    }
+
                     function appendToResponse(text) {
-                        if (!currentBotMessage) {
-                            currentBotMessage = createBotMessageContainer();
-                        }
+                        if (!currentBotMessage) currentBotMessage = createBotMessageContainer();
                         currentBotMessage.content.style.display = 'block';
                         currentBotMessage.content.textContent += text;
                         chatHistory.scrollTop = chatHistory.scrollHeight;
                     }
 
-                    function showReviewButton(files) {
-                        if (!currentBotMessage) return;
-                        pendingFiles = files;
-                        currentBotMessage.actions.style.display = 'flex';
-                        currentBotMessage.actions.innerHTML = '<button class="review-btn" onclick="reviewChanges()">🔎 Review ' + files.length + ' Changes</button>';
-                        chatHistory.scrollTop = chatHistory.scrollHeight;
-                    }
-
-                    window.reviewChanges = () => {
-                        vscode.postMessage({ type: 'onReviewChanges', value: pendingFiles });
-                    };
-
-                    function addMessage(text, sender) {
-                        if (sender === 'user') {
-                            const div = document.createElement('div');
-                            div.className = 'message user';
-                            div.textContent = text;
-                            chatHistory.appendChild(div);
-                            currentBotMessage = null;
-                        } else {
-                            appendToResponse(text);
-                        }
-                        chatHistory.scrollTop = chatHistory.scrollHeight;
-                    }
-
-
-                    function setRunning(isRunning) {
-                        if (isRunning) {
-                            sendBtn.style.display = 'none';
-                            stopBtn.style.display = 'block';
-                            chatInput.disabled = true;
-                        } else {
-                            sendBtn.style.display = 'block';
-                            stopBtn.style.display = 'none';
-                            chatInput.disabled = false;
-                            chatInput.focus();
-                        }
-                    }
-
-                    sendBtn.addEventListener('click', () => {
-                        const text = chatInput.value;
-                        const localLimit = limitInput.value ? parseFloat(limitInput.value) : null;
-                        
-                        if (localLimit && GLOBAL_TASK_LIMIT && localLimit > GLOBAL_TASK_LIMIT) {
-                            vscode.postMessage({ type: 'onError', value: 'Local budget ($' + localLimit + ') cannot exceed global limit ($' + GLOBAL_TASK_LIMIT + ').' });
-                            return;
-                        }
-
-                        if (text) {
-                            addMessage(text, 'user');
-                            vscode.postMessage({ 
-                                type: 'onCommand', 
-                                value: text,
-                                options: { 
-                                    strategy: strategySelect.value, 
-                                    model: modelSelect.value,
-                                    localLimit: limitInput.value ? parseFloat(limitInput.value) : null,
-                                    deepSearch: deepSearchCheck.checked
-                                }
-                            });
-                            chatInput.value = '';
-                            setRunning(true);
-                        }
-                    });
-
-                    stopBtn.addEventListener('click', () => {
-                        vscode.postMessage({ type: 'onStop' });
-                        addStep("Stopping task...", "thinking");
-                    });
-
-                    chatInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (sendBtn.style.display !== 'none') sendBtn.click();
-                        }
-                    });
-
                     window.addEventListener('message', event => {
                         const message = event.data;
                         switch (message.type) {
-                            case 'addResponse':
-                                appendToResponse(message.value);
-                                break;
-                            case 'setRunning':
-                                setRunning(message.value);
-                                if (!message.value) addStep("Done", "done");
-                                break;
-                            case 'setPath':
-                                if (message.target === 'ingest-path') {
-                                    document.getElementById('ingest-path').value = message.value;
-                                } else if (message.target === 'context') {
-                                    vscode.postMessage({ type: 'onInfo', value: 'File added to task context.' });
-                                }
-                                break;
                             case 'appendResponse':
                                 const raw = message.value;
                                 if (raw.startsWith(':::STEP:')) {
                                     try {
                                         const stepData = JSON.parse(raw.replace(':::STEP:', '').replace(':::',''));
-                                        addStep(stepData.text, stepData.type);
+                                        addStep(stepData.text, stepData.type, stepData.tier);
                                     } catch(e) { appendToResponse(raw); }
                                 } else if (raw.includes(':::FILES:')) {
-                                     try {
-                                         const parts = raw.split(':::FILES:');
-                                         const files = JSON.parse(parts[1].replace(':::',''));
-                                         showReviewButton(files);
-                                     } catch(e) { appendToResponse(raw); }
-                                } else if (raw.includes('[INFO]') || raw.includes('[Error]')) {
-                                   if (raw.includes('Executing phase')) addStep(raw.split('- INFO - ')[1] || raw, 'analyzing');
-                                   else if (raw.includes('Starting phase')) addStep(raw.split('- INFO - ')[1] || raw, 'thinking');
-                                   else if (raw.includes('Quality score')) addStep(raw.split('- INFO - ')[1] || raw, 'thinking');
-                                   else if (raw.includes('[Error]')) {
-                                       const errDiv = document.createElement('div');
-                                       errDiv.className = 'error-box';
-                                       errDiv.textContent = raw;
-                                       currentBotMessage?.container.appendChild(errDiv);
-                                   }
-                                   else appendToResponse(raw);
+                                    // Handle file review button
                                 } else {
                                     appendToResponse(raw);
                                 }
                                 break;
+                            case 'setRunning':
+                                if (!message.value) addStep("Task Completed", "done");
+                                break;
+                            case 'setPath':
+                                if (message.target === 'context') {
+                                    vscode.postMessage({ type: 'onCommand', command: 'addContext', value: message.value });
+                                    addStep("Added to context: " + message.value.split(/[\\\/]/).pop(), "done");
+                                } else {
+                                    const input = document.getElementById(message.target);
+                                    if (input) input.value = message.value;
+                                }
+                                break;
                         }
+                    });
+
+                    sendBtn.addEventListener('click', () => {
+                        if (!chatInput.value) return;
+                        const div = document.createElement('div');
+                        div.className = 'message user';
+                        div.textContent = chatInput.value;
+                        chatHistory.appendChild(div);
+                        
+                        vscode.postMessage({ 
+                            type: 'onCommand', 
+                            value: chatInput.value,
+                            options: { 
+                                mode: strategySelect.value, 
+                                model: modelSelect.value,
+                                localLimit: limitInput.value ? parseFloat(limitInput.value) : null,
+                                deepSearch: deepSearchCheck.checked || strategySelect.value === 'deep-search'
+                            }
+                        });
+                        chatInput.value = '';
+                        currentBotMessage = null;
                     });
                 </script>
 			</body>
@@ -786,7 +678,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private async runPythonTask(prompt: string, options?: { strategy: string; model: string; localLimit?: number; deepSearch?: boolean }) {
+    private async runPythonTask(prompt: string, options?: { mode: string; model: string; localLimit?: number; deepSearch?: boolean }) {
         if (!this._view) {
             vscode.window.showErrorMessage("Webview not initialized");
             return;
@@ -834,10 +726,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         let args = ['-u', scriptPath, prompt];
 
         if (options) {
-            if (options.strategy) { args.push('--strategy'); args.push(options.strategy); }
+            if (options.mode) {
+                if (options.mode === 'fast') {
+                    args.push('--strategy'); args.push('fast');
+                } else if (options.mode === 'deep-search') {
+                    args.push('--strategy'); args.push('adaptive');
+                    args.push('--deep-search');
+                } else if (options.mode === 'auto-fix') {
+                    args.push('--strategy'); args.push('adaptive');
+                    args.push('--auto-fix');
+                } else if (options.mode === 'question') {
+                    args.push('--mode'); args.push('question');
+                }
+            }
             if (options.model) { args.push('--model'); args.push(options.model); }
             if (options.localLimit) { args.push('--local-limit'); args.push(options.localLimit.toString()); }
-            if (options.deepSearch) { args.push('--deep-search'); }
+            if (options.deepSearch && options.mode !== 'deep-search') { args.push('--deep-search'); }
         }
 
         this.contextFiles.forEach(file => {

@@ -74,6 +74,7 @@ class ExecutionRequest(BaseModel):
     budget_limit: Optional[float] = None
     consensus_mode: bool = False
     review_strategy: str = "basic"
+    model: Optional[str] = None
 
 class IngestRequest(BaseModel):
     type: str # database, component_library
@@ -165,7 +166,8 @@ async def orchestrate_feature(req: ExecutionRequest, request: Request):
             budget_limit=req.budget_limit,
             consensus_mode=req.consensus_mode,
             review_strategy=req.review_strategy,
-            image=req.image
+            image=req.image,
+            model=req.model
         )
         
         await bus.publish(Event(type=EventType.DONE, agent="Orchestrator", content=result))

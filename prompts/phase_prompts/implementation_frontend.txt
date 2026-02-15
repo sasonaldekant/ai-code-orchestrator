@@ -17,6 +17,52 @@ The architecture design for this implementation is:
 {golden_rules}
 
 ═══════════════════════════════════════════
+🚨 CRITICAL: DYNUI QUALITY RULES (MANDATORY)
+═══════════════════════════════════════════
+
+You MUST follow these rules when generating React/TypeScript code:
+
+1. **NEVER HARDCODE** colors, spacing, or sizes
+   ❌ WRONG: `color: "#2563eb"` or `padding: "16px"`
+   ✅ RIGHT: `color: "var(--dyn-color-primary)"` or `padding: "var(--dyn-spacing-md)"`
+
+2. **ALWAYS USE** design tokens from RAG Tier 2:
+   - Colors: `var(--dyn-color-*)`
+   - Spacing: `var(--dyn-spacing-*)`
+   - Sizes: `var(--dyn-size-*)`
+   - Typography: `var(--dyn-font-*)`
+
+3. **3-Level Token Fallback Pattern**:
+   ```css
+   /* Component → Semantic → Primitive */
+   background-color: var(
+     --dyn-button-background,
+     var(--dyn-color-primary, #007bff)
+   );
+   ```
+
+4. **Import Components from DynUI**:
+   ```typescript
+   import { DynButton, DynInput, DynBox } from '@dyn-ui/react';
+   ```
+
+5. **Default Values** (from RAG Tier 2 documentation):
+   - Size prop: `"md"` (medium)
+   - Spacing: `"sm"` (8px equivalent)
+   - Form component width: `100%`
+
+6. **Component Prop Validation**:
+   - ONLY use props documented in RAG Tier 3 (Component Catalog)
+   - Check stories/examples for valid prop combinations
+   - DO NOT invent props that don't exist
+
+7. **Quality Metrics** (Target: 100%):
+   - Token usage (no hardcoded values)
+   - Valid imports (`@dyn-ui/react`)
+   - Valid component props (from Tier 3)
+   - TypeScript compilation (no type errors)
+
+═══════════════════════════════════════════
 HYBRID IMPLEMENTATION PROTOCOL (MANDATORY)
 ═══════════════════════════════════════════
 

@@ -49,7 +49,8 @@ class AnalystAgent:
             model=cfg.model,
             temperature=cfg.temperature,
             max_tokens=cfg.max_tokens,
-            json_mode=json_mode
+            json_mode=json_mode,
+            tier="tier_1_rules" # Analyst calls always contain the massive Tier 1 Golden Rules
         )
         
         # Parse output

@@ -1,0 +1,139 @@
+{
+  "documentation_version": "1.0.0",
+  "library_version": "2.1.0",
+  "last_updated": "2026-02-13",
+  "status": "production",
+  "purpose": "RAG-optimized documentation for AI agents and code generators",
+  
+  "documents": {
+    "foundation": [
+      {
+        "id": "00-INDEX",
+        "file": "00-INDEX.md",
+        "title": "Documentation Index",
+        "type": "navigation",
+        "priority": "critical",
+        "tokens": 800,
+        "sections": 6,
+        "keywords": ["navigation", "index", "overview", "quick links"]
+      },
+      {
+        "id": "01-QUICK_START",
+        "file": "01-QUICK_START.md",
+        "title": "Quick Start Guide",
+        "type": "guide",
+        "priority": "high",
+        "tokens": 3200,
+        "sections": 8,
+        "keywords": ["getting started", "core concepts", "patterns", "rules", "examples"],
+        "code_examples": 12
+      },
+      {
+        "id": "02-DESIGN_TOKENS",
+        "file": "02-DESIGN_TOKENS.md",
+        "title": "Design Token System",
+        "type": "reference",
+        "priority": "high",
+        "tokens": 5500,
+        "sections": 15,
+        "keywords": ["tokens", "colors", "spacing", "typography", "css variables", "theming"],
+        "token_count": 85
+      }
+    ],
+    
+    "reference": [
+      {
+        "id": "03-COMPONENT_CATALOG",
+        "file": "03-COMPONENT_CATALOG.md",
+        "title": "Component Catalog",
+        "type": "reference",
+        "priority": "high",
+        "tokens": 4000,
+        "sections": 9,
+        "keywords": ["components", "api", "props", "catalog"],
+        "component_count": 45
+      },
+      {
+        "id": "04-STYLING_GUIDE",
+        "file": "04-STYLING_GUIDE.md",
+        "title": "Styling Guide",
+        "type": "guide",
+        "priority": "medium",
+        "tokens": 2800,
+        "sections": 7,
+        "keywords": ["styling", "customization", "css", "themes"],
+        "code_examples": 15
+      },
+      {
+        "id": "05-CODE_EXAMPLES",
+        "file": "05-CODE_EXAMPLES.md",
+        "title": "Code Examples",
+        "type": "examples",
+        "priority": "high",
+        "tokens": 3500,
+        "sections": 6,
+        "keywords": ["examples", "patterns", "implementation", "real-world"],
+        "code_examples": 8
+      }
+    ],
+    
+    "meta": [
+      {
+        "id": "RAG_GUIDELINES",
+        "file": "RAG_GUIDELINES.md",
+        "title": "RAG Implementation Guidelines",
+        "type": "meta",
+        "priority": "medium",
+        "tokens": 3000,
+        "sections": 10,
+        "keywords": ["rag", "indexing", "retrieval", "embeddings", "ai agents"]
+      }
+    ]
+  },
+  
+  "statistics": {
+    "total_documents": 7,
+    "total_tokens_approx": 22800,
+    "total_components": 45,
+    "total_code_examples": 35,
+    "total_design_tokens": 85
+  },
+  
+  "indexing_recommendations": {
+    "chunk_size": {
+      "optimal": 800,
+      "min": 200,
+      "max": 1500
+    },
+    "chunking_strategy": "semantic",
+    "split_on": ["h2_headers", "h3_headers", "code_blocks"],
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dimensions": 1536
+  },
+  
+  "query_routing": {
+    "how_to_queries": ["01-QUICK_START", "05-CODE_EXAMPLES"],
+    "what_is_queries": ["01-QUICK_START", "03-COMPONENT_CATALOG"],
+    "component_props": ["03-COMPONENT_CATALOG"],
+    "styling_queries": ["02-DESIGN_TOKENS", "04-STYLING_GUIDE"],
+    "token_queries": ["02-DESIGN_TOKENS"],
+    "example_queries": ["05-CODE_EXAMPLES"]
+  },
+  
+  "quality_rules": [
+    "Never hardcode colors - use var(--dyn-color-*)",
+    "Never hardcode spacing - use var(--dyn-spacing-*)",
+    "Never hardcode sizes - use var(--dyn-size-*)",
+    "Always use 3-level fallback for component tokens",
+    "Import from '@dyn-ui/react'",
+    "Default size: md",
+    "Default spacing: sm (8px)",
+    "Form components: 100% width"
+  ],
+  
+  "related_files": {
+    "source_code": "packages/dyn-ui-react/src/components/",
+    "design_tokens_source": "packages/design-tokens/styles/foundations/",
+    "legacy_docs": "docs/TECHNICAL_DOCUMENTATION.md"
+  }
+}

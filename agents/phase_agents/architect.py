@@ -58,7 +58,8 @@ class ArchitectAgent:
             model=config.model,
             temperature=config.temperature,
             max_tokens=config.max_tokens,
-            json_mode=json_mode
+            json_mode=json_mode,
+            tier="tier_1_rules"
         )
         
         parsed_output = self._parse_json(response.content)
@@ -112,25 +113,37 @@ class ArchitectAgent:
         # Synthesis step
         synthesis_prompt = (
             "You are a Lead Architect. Review the following architecture proposals "
-            "and synthesize the best aspects of each into a single, cohesive "
-            "JSON architecture specification.\n\n"
-            + "\n\n".join(proposals)
+            "from two different specialist models. Identify any conflicts or "
+            "differences in their approach.\n\n"
+            "Synthesize the best aspects into a single, cohesive JSON specification.\n\n"
+            "PROPOSALS:\n"
+            + "\n\n".join(proposals) +
+            "\n\nReturn JSON format:\n"
+            "{\n"
+            "  \"architecture\": { ... },\n"
+            "  \"consensus_report\": {\n"
+            "    \"agreement_score\": <0.0-1.0>,\n"
+            "    \"conflicts\": [\"conflict 1\", ...],\n"
+            "    \"confidence\": <0.0-1.0>\n"
+            "  }\n"
+            "}"
         )
         
         synthesis_model = consensus_cfg.synthesis_model
-        # Fallback config for synthesis
         synthesis_response = await self.orchestrator.llm_client.complete(
             messages=[{"role": "user", "content": synthesis_prompt}],
             model=synthesis_model,
             temperature=0.0,
-            json_mode=True # Assuming synthesis model supports it or we parse carefully
+            json_mode=True,
+            tier="tier_1_rules"
         )
         
         parsed_output = self._parse_json(synthesis_response.content)
         
         return {
             "phase": "architect",
-            "architecture": parsed_output,
+            "architecture": parsed_output.get("architecture"),
+            "consensus_report": parsed_output.get("consensus_report"),
             "proposals": proposals,
             "tokens_in": tokens_in + synthesis_response.tokens_used["prompt"],
             "tokens_out": tokens_out + synthesis_response.tokens_used["completion"],
@@ -143,7 +156,8 @@ class ArchitectAgent:
             messages=[{"role": "user", "content": prompt}],
             model=config.model,
             temperature=config.temperature,
-            max_tokens=config.max_tokens
+            max_tokens=config.max_tokens,
+            tier="tier_1_rules"
         )
 
     def _build_prompt_content(self, context: Dict[str, Any], rag_context: List[Dict[str, Any]]) -> str:

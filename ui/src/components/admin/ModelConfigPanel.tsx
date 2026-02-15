@@ -26,12 +26,15 @@ interface ModelConfig {
 }
 
 const AVAILABLE_MODELS = [
-    { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'openai' },
-    { value: 'claude-3-5-sonnet', label: 'Claude 3.5 Sonnet', provider: 'anthropic' },
-    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', provider: 'google' },
-    { value: 'sonar-reasoning-pro', label: 'Sonar Reasoning Pro', provider: 'perplexity' },
-    { value: 'sonar-pro', label: 'Sonar Pro', provider: 'perplexity' },
+    { value: 'gpt-5-nano', label: 'GPT-5 Nano', provider: 'openai' },
+    { value: 'gpt-5-mini', label: 'GPT-5 Mini', provider: 'openai' },
+    { value: 'gpt-5.2', label: 'GPT-5.2 (Recommended)', provider: 'openai' },
+    { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5', provider: 'anthropic' },
+    { value: 'claude-opus-4.6', label: 'Claude Opus 4.6', provider: 'anthropic' },
+    { value: 'gemini-3-flash', label: 'Gemini 3 Flash', provider: 'google' },
+    { value: 'gemini-3-pro', label: 'Gemini 3 Pro', provider: 'google' },
+    { value: 'sonar', label: 'Sonar', provider: 'perplexity' },
+    { value: 'sonar-deep-research', label: 'Sonar Deep Research', provider: 'perplexity' },
 ];
 
 const PHASES = ['analyst', 'architect', 'implementer', 'tester', 'reviewer'];

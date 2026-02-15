@@ -50,14 +50,21 @@ class DomainAwareRetriever:
              use_cache=use_cache
         )
         
+        # Load Hybrid Config
+        from pathlib import Path
+        import yaml
+        self.config = {}
+        config_path = Path("config/rag_hybrid_config.yaml")
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.config = yaml.safe_load(f)
+        
         # Initialize vector stores
-        # Fallback to SimplePersistentVectorStore due to Environment issues with ChromaDB
         self.db_store = SimplePersistentVectorStore(
             collection_name=database_collection,
             persist_directory=persist_dir,
             embedding_function=self.embedding_provider.embed_texts
         )
-        # Unified store for code interactions (components, tokens, docs)
         self.code_store = SimplePersistentVectorStore(
             collection_name=components_collection,
             persist_directory=persist_dir,
@@ -65,6 +72,40 @@ class DomainAwareRetriever:
         )
         
         self._context_cache: Dict[str, DomainContext] = {}
+
+    def retrieve_tier(self, tier_id: int, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        """
+        [Task 3.2] Retrieve documents specifically for a given tier.
+        T1: Rules/Docs, T2: Tokens, T3: Components, T4: Backend
+        """
+        # Map tier ID to internal categories
+        tier_map = {
+            1: "documentation",
+            2: "design_token",
+            3: "ui_component",
+            4: "database_schema"
+        }
+        category = tier_map.get(tier_id, "documentation")
+        store = self.db_store if tier_id == 4 else self.code_store
+        
+        try:
+            results = store.search(
+                query=query,
+                top_k=top_k,
+                filter_metadata={"type": category}
+            )
+            return [
+                {
+                    "content": r.document.text,
+                    "source": r.document.metadata.get("path") or r.document.metadata.get("source"),
+                    "metadata": r.document.metadata,
+                    "tier": tier_id
+                }
+                for r in results
+            ]
+        except Exception as e:
+            logger.error(f"Tier {tier_id} retrieval failed: {e}")
+            return []
 
     def retrieve_domain_context(
         self, 

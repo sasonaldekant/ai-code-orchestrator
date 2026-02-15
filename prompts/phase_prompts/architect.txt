@@ -107,5 +107,9 @@ OUTPUT FORMAT
   ],
   "data_flow": [...],
   "technologies": [...],
+  "consensus": {
+    "agreement_score": 0.0,
+    "rationale": "Self-assessment of architectural robustness"
+  },
   "explanation": "Architecture rationale and DynUI mapping strategy"
 }

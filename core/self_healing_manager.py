@@ -114,7 +114,8 @@ class SelfHealingManager:
                 {"role": "user", "content": user_content}
             ],
             model=config.model,
-            json_mode=True
+            json_mode=True,
+            tier="tier_1_rules" # Rules for analysis are stable
         )
         
         return json.loads(response.content)
@@ -168,7 +169,8 @@ class SelfHealingManager:
                 ],
                 model=config.model,
                 temperature=0.0,
-                json_mode=True
+                json_mode=True,
+                tier="tier_1_rules"
             )
             
             fix_data = json.loads(response.content)

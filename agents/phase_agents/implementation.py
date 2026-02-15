@@ -70,7 +70,8 @@ class ImplementationAgent:
             ],
             model=backend_cfg.model,
             temperature=backend_cfg.temperature,
-            json_mode=True # Assuming supported provider
+            json_mode=True,
+            tier="tier_1_rules"
         )
 
         msg_fe = "Generating Frontend (React)..."
@@ -83,7 +84,8 @@ class ImplementationAgent:
             ],
             model=frontend_cfg.model,
             temperature=frontend_cfg.temperature,
-            json_mode=True
+            json_mode=True,
+            tier="tier_2_tokens"
         )
 
         results = await asyncio.gather(backend_task, frontend_task, return_exceptions=True)

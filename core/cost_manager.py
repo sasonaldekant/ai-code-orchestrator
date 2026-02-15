@@ -85,28 +85,44 @@ class CostManager:
     
     # Pricing table (USD per million tokens)
     # Source: Public pricing as of Feb 2026
+    # Updated: 2026-02-15 - Added 2026 generation models
     PRICING = {
-        # OpenAI
+        # OpenAI GPT-5 Generation (2026)
+        "gpt-5-nano": ModelPricing(0.05, 0.40, "openai", 128000),
+        "gpt-5-mini": ModelPricing(0.25, 2.00, "openai", 128000),
+        "gpt-5.2": ModelPricing(1.75, 14.00, "openai", 200000),
+        
+        # OpenAI GPT-4 Generation (Legacy)
         "gpt-4o": ModelPricing(2.50, 10.0, "openai", 128000),
         "gpt-4o-mini": ModelPricing(0.15, 0.60, "openai", 128000),
         "gpt-4-turbo": ModelPricing(10.0, 30.0, "openai", 128000),
         "gpt-3.5-turbo": ModelPricing(0.50, 1.50, "openai", 16000),
         
-        # Anthropic
+        # Anthropic Claude 4.x Generation (2026)
+        "claude-opus-4.6": ModelPricing(15.0, 75.0, "anthropic", 200000),
         "claude-sonnet-4.5": ModelPricing(3.00, 15.0, "anthropic", 200000),
-        "claude-3-7-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
+        
+        # Anthropic Claude 3.x Generation (Legacy)
         "claude-3-5-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
         "claude-3-opus": ModelPricing(15.0, 75.0, "anthropic", 200000),
         "claude-3-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
         "claude-3-haiku": ModelPricing(0.25, 1.25, "anthropic", 200000),
         
-        # Google
+        # Google Gemini 3 Generation (2026)
+        "gemini-3-flash": ModelPricing(0.50, 3.00, "google", 200000),
+        "gemini-3-pro": ModelPricing(2.00, 12.00, "google", 200000),
+        
+        # Google Gemini 2.x/1.x Generation (Legacy)
         "gemini-2.0-flash": ModelPricing(0.10, 0.40, "google", 1000000),
         "gemini-1.5-pro": ModelPricing(1.25, 5.0, "google", 2000000),
         "gemini-1.5-flash": ModelPricing(0.075, 0.30, "google", 1000000),
-
-        "gemini-1.5-flash": ModelPricing(0.075, 0.30, "google", 1000000),
-
+        
+        # Perplexity Sonar
+        "sonar": ModelPricing(1.00, 1.00, "perplexity", 127000),
+        "sonar-pro": ModelPricing(3.00, 3.00, "perplexity", 200000),
+        "sonar-reasoning": ModelPricing(3.00, 3.00, "perplexity", 127000),
+        "sonar-reasoning-pro": ModelPricing(3.00, 3.00, "perplexity", 200000),
+        "sonar-deep-research": ModelPricing(5.00, 5.00, "perplexity", 200000),
     }
     
     @classmethod

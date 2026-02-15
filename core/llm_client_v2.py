@@ -90,9 +90,27 @@ class AnthropicProvider(LLMProvider):
         sys_msg = next((m["content"] for m in messages if m["role"] == "system"), "")
         user_msgs = [m for m in messages if m["role"] != "system"]
         
+        # [Phase 1.2] Anthropic Native Prompt Caching
+        # Tiers 1 and 2 (Rules and Tokens) are prime candidates for persistent block caching
+        tier = kwargs.get("tier", "default")
+        use_native_cache = tier in ["tier_1_rules", "tier_2_tokens"]
+        
+        anthropic_system = sys_msg
+        if use_native_cache and anthropic_system:
+            # Wrap system prompt in cache_control if supported by this model
+            # Note: In 2026 SDK, this is often simpler or auto-detected, 
+            # but we explicitly mark the block for reliability.
+            anthropic_system = [
+                {
+                    "type": "text",
+                    "text": sys_msg,
+                    "cache_control": {"type": "ephemeral"}
+                }
+            ]
+
         response = await client.messages.create(
             model=model,
-            system=sys_msg,
+            system=anthropic_system,
             messages=user_msgs,
             temperature=kwargs.get("temperature", 0.0),
             max_tokens=kwargs.get("max_tokens", 4000)
@@ -101,7 +119,9 @@ class AnthropicProvider(LLMProvider):
         tokens = {
             "prompt": response.usage.input_tokens,
             "completion": response.usage.output_tokens,
-            "total": response.usage.input_tokens + response.usage.output_tokens
+            "total": response.usage.input_tokens + response.usage.output_tokens,
+            "cache_creation_input_tokens": getattr(response.usage, "cache_creation_input_tokens", 0),
+            "cache_read_input_tokens": getattr(response.usage, "cache_read_input_tokens", 0)
         }
         
         # Combine text and thinking from all content blocks
@@ -114,7 +134,6 @@ class AnthropicProvider(LLMProvider):
                 elif block.type == "thinking":
                     thinking_text += block.thinking
         elif hasattr(response, "content"):
-             # Fallback for simple string content if API changes
              content_text = str(response.content)
 
         return LLMResponse(
@@ -123,7 +142,10 @@ class AnthropicProvider(LLMProvider):
             provider="anthropic",
             tokens_used=tokens,
             finish_reason=response.stop_reason,
-            metadata={"id": response.id},
+            metadata={
+                "id": response.id,
+                "cached": tokens["cache_read_input_tokens"] > 0
+            },
             thinking=thinking_text if thinking_text else None
         )
 
@@ -265,6 +287,7 @@ class LLMClientV2:
         max_tokens: int = 4000,
         json_mode: bool = False,
         bypass_cache: bool = False,
+        tier: str = "default",
         **kwargs
     ) -> LLMResponse:
         provider_name = self._get_provider_name(model)
@@ -313,10 +336,9 @@ class LLMClientV2:
         # Only cache deterministic calls (temp=0)
         cache_key_prompt = json.dumps(final_messages, sort_keys=True, default=str)
         if not bypass_cache and temperature == 0.0:
-            cached_data = self.cache_manager.get(cache_key_prompt, model, temperature)
+            cached_data = self.cache_manager.get(cache_key_prompt, model, temperature, tier)
             if cached_data:
-                logger.info(f"Cache Hit for {model}")
-                # Reconstruct LLMResponse
+                logger.info(f"Cache Hit for {model} (Tier: {tier})")
                 return LLMResponse(**cached_data)
 
 
@@ -350,12 +372,12 @@ class LLMClientV2:
             
             # Cache the response result if deterministic
             if temperature == 0.0:
-                # Convert LLMResponse to dict for storage
                 self.cache_manager.set(
                     cache_key_prompt, 
                     model, 
                     asdict(response), 
-                    temperature
+                    temperature,
+                    tier
                 )
             
             return response

@@ -107,11 +107,12 @@ class LifecycleOrchestrator:
         consensus_mode: bool = False,
         review_strategy: str = "basic",
         image: Optional[str] = None,
+        model: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Main entry point: break down request and execute tasks.
         """
-        logger.info(f"Starting lifecycle execution for request: {user_request[:50]}... Mode: {mode}")
+        logger.info(f"Starting lifecycle execution for request: {user_request[:50]}... Mode: {mode}, Model: {model}")
         await bus.publish(Event(type=EventType.LOG, agent="Orchestrator", content=f"Initializing request in {mode.upper()} mode"))
         # Reset state for new request
         self.state = {}
@@ -163,6 +164,7 @@ class LifecycleOrchestrator:
             budget_limit=budget_limit,
             consensus_mode=consensus_mode,
             review_strategy=review_strategy,
+            model_override=model,
         )
         
         if plan_result.status != PhaseStatus.COMPLETED:
@@ -223,7 +225,8 @@ class LifecycleOrchestrator:
                 auto_fix=auto_fix,
                 budget_limit=budget_limit,
                 consensus_mode=consensus_mode,
-                review_strategy=review_strategy
+                review_strategy=review_strategy,
+                model=model
             )
             
             # Update plan status broadcast
@@ -242,7 +245,8 @@ class LifecycleOrchestrator:
         auto_fix: bool = False,
         budget_limit: Optional[float] = None,
         consensus_mode: bool = False,
-        review_strategy: str = "basic"
+        review_strategy: str = "basic",
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Execute all tasks in a milestone, respecting dependencies.
@@ -260,7 +264,8 @@ class LifecycleOrchestrator:
                 auto_fix=auto_fix,
                 budget_limit=budget_limit,
                 consensus_mode=consensus_mode,
-                review_strategy=review_strategy
+                review_strategy=review_strategy,
+                model=model
             )
             results[task.id] = task_result
             if task.status == "failed":
@@ -284,7 +289,8 @@ class LifecycleOrchestrator:
         auto_fix: bool = False,
         budget_limit: Optional[float] = None,
         consensus_mode: bool = False,
-        review_strategy: str = "basic"
+        review_strategy: str = "basic",
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Execute a single task with domain context.
@@ -332,7 +338,8 @@ class LifecycleOrchestrator:
                 question=task.description,
                 budget_limit=budget_limit,
                 consensus_mode=consensus_mode,
-                review_strategy=review_strategy
+                review_strategy=review_strategy,
+                model_override=model
             )
         else:
             # Simple execution for other phases
@@ -343,7 +350,8 @@ class LifecycleOrchestrator:
                 question=task.description,
                 budget_limit=budget_limit,
                 consensus_mode=consensus_mode,
-                review_strategy=review_strategy
+                review_strategy=review_strategy,
+                model_override=model
             )
         
         if phase_result.status == PhaseStatus.COMPLETED:
