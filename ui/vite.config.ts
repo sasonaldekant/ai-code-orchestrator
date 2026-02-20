@@ -7,9 +7,7 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src'),
-            '@dyn-ui/react': path.resolve(__dirname, './src/dyn-ui'),
-            '@dyn-ui/design-tokens': path.resolve(__dirname, './src/dyn-design-tokens')
+            '@': path.resolve(__dirname, './src')
         }
     }
 })

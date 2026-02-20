@@ -9,103 +9,28 @@ class CodeGenerator:
     """
 
     def generate_component_code(self, mapped_data: Dict[str, Any]) -> str:
-        """Generates the React component code with complex layout support."""
-        metadata = mapped_data.get("metadata", {})
+        """Generates the React component code that uses the generic FormEngine."""
         component_name = "Form"
-        sections = mapped_data.get("sections", [])
-        actions = mapped_data.get("mappedActions", [])
-        layout = mapped_data.get("layout", "standard")
-
-        # Collect necessary imports
-        dynui_imports = {"DynBox", "DynFlex"}
-        for s in sections:
-            for f in s["fields"]:
-                dynui_imports.add(f["wrapper"])
-                dynui_imports.add(f["field"]["component"])
-        for a in actions:
-            dynui_imports.add(a["component"])
-
-        # Layout specific imports
-        if layout == "stepper": dynui_imports.add("DynStepper")
-        if layout == "tabs": dynui_imports.add("DynResponsiveTabs")
-        if layout == "accordion": dynui_imports.add("DynAccordion")
-
-        imports_str = f"import {{ {', '.join(sorted(list(dynui_imports)))} }} from '@dyn-ui/react';"
         
-        # Generate state hooks (flatten all fields)
-        state_lines = []
-        all_field_ids = []
-        for s in sections:
-            for f in s["fields"]:
-                field_id = f["field"]["id"]
-                all_field_ids.append(field_id)
-                default_val = f["field"]["props"].get("defaultValue", "")
-                if default_val is None:
-                    default_val = "''"
-                elif isinstance(default_val, str) and not default_val.startswith("'"):
-                    default_val = f"'{default_val}'"
-                elif isinstance(default_val, bool):
-                    default_val = "true" if default_val else "false"
-                state_lines.append(f"  const [{field_id}, set{field_id.capitalize()}] = useState({default_val});")
-
-        if layout == "stepper":
-            state_lines.append("  const [currentStep, setCurrentStep] = useState(0);")
-
-        # Layout selection logic helpers
-        render_content = ""
-        
-        form_title = metadata.get('title', 'Form')
-        if layout == "standard":
-            render_content = self._render_standard(sections, form_title)
-        elif layout == "stepper":
-            render_content = self._render_stepper(sections)
-        elif layout == "tabs":
-            render_content = self._render_tabs(sections)
-        else:
-            render_content = self._render_standard(sections, form_title)
-
-        # Generate actions
-        action_render_lines = []
-        for a in actions:
-            aProps = a["props"]
-            props_str = f'label="{aProps["label"]}" color="{aProps["color"]}" type="{aProps["type"]}"'
-            action_render_lines.append(f'          <{a["component"]} {props_str} />')
-
-        # Combine into full component
-        code = f"""import React, {{ useState }} from 'react';
-{imports_str}
+        # We only need the generic FormEngine import and the schema
+        code = f"""import React from 'react';
+import {{ FormEngine }} from '@form-studio/form-engine';
 import {{ submitForm }} from './api';
+import {{ formSchema }} from './schema';
 
 export function {component_name}() {{
-{chr(10).join(state_lines)}
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {{
-    e.preventDefault();
-    if (!e.currentTarget.checkValidity()) {{
-      return;
-    }}
-    
-    const payload = {{ {", ".join(all_field_ids)} }};
-    console.log("Submitting form data:", JSON.stringify(payload, null, 2));
-    await submitForm(payload);
+  const handleSubmit = async (data: Record<string, any>) => {{
+    console.log("Submitting form data:", JSON.stringify(data, null, 2));
+    await submitForm(data);
   }};
 
   return (
-    <form onSubmit={{handleSubmit}} noValidate={{false}}>
-      <DynBox as="div" style={{{{ display: 'flex', flexDirection: 'column', gap: 'var(--dyn-spacing-md)' }}}}>
-        <DynBox as="h2" style={{{{ marginBottom: 'var(--dyn-spacing-sm)' }}}}>{metadata.get('title', 'Form')}</DynBox>
-        
-{render_content}
-
-        <DynFlex direction="row" gap="sm" style={{{{ marginTop: 'var(--dyn-spacing-md)' }}}}>
-{chr(10).join(action_render_lines)}
-        </DynFlex>
-      </DynBox>
-    </form>
+    <FormEngine 
+      schema={{formSchema as any}} 
+      onSubmit={{handleSubmit}} 
+    />
   );
 }}
-
-{self._generate_render_helpers()}
 """
         return code
 
@@ -124,22 +49,48 @@ export function {component_name}() {{
         steps_data = []
         for i, s in enumerate(sections):
             fields_html = "\n".join([self._render_field(f) for f in s["fields"]])
-            steps_data.append(f'{{ title: "{s["title"]}", content: (<DynBox display="grid" gridTemplateColumns="repeat(12, 1fr)" gap="md">{fields_html.replace("<", "    <")}</DynBox>) }}')
+            # Indent fields for better formatting
+            indented_fields = fields_html.replace("\n", "\n  ")
+            # StepItem requires an 'id'
+            step_id = s.get("id", f"step-{i}")
+            steps_data.append(f"""{{ 
+            id: "{step_id}",
+            title: "{s["title"]}", 
+            content: (
+              <DynBox display="grid" gridTemplateColumns="repeat(12, 1fr)" gap="md">
+{indented_fields}
+              </DynBox>
+            ) 
+          }}""")
+        
+        steps_str = ",\n".join(steps_data)
         
         return f"""        <DynStepper 
-          steps={{{'[' + ', '.join(steps_data) + ']'}}} 
-          currentStep={{currentStep}} 
-          onChange={{setCurrentStep}} 
+          steps={{{'[' + steps_str + ']'}}} 
+          activeStep={{currentStep}} 
+          onChange={{(_val, _step, index) => setCurrentStep(index)}} 
         />"""
 
     def _render_tabs(self, sections):
         tabs_data = []
         for s in sections:
             fields_html = "\n".join([self._render_field(f) for f in s["fields"]])
-            tabs_data.append(f'{{ label: "{s["title"]}", content: (<DynBox padding="md"><DynBox display="grid" gridTemplateColumns="repeat(12, 1fr)" gap="md">{fields_html.replace("<", "    <")}</DynBox></DynBox>) }}')
+            indented_fields = fields_html.replace("\n", "\n  ")
+            tabs_data.append(f"""{{ 
+            label: "{s["title"]}", 
+            content: (
+              <DynBox padding="md">
+                <DynBox display="grid" gridTemplateColumns="repeat(12, 1fr)" gap="md">
+{indented_fields}
+                </DynBox>
+              </DynBox>
+            ) 
+          }}""")
+        
+        tabs_str = ",\n".join(tabs_data)
         
         return f"""        <DynResponsiveTabs 
-          tabs={{{'[' + ', '.join(tabs_data) + ']'}}} 
+          tabs={{{'[' + tabs_str + ']'}}} 
           defaultTab={{0}}
         />"""
 
@@ -161,7 +112,9 @@ export function {component_name}() {{
             else: field_props_list.append(f'{k}="{v}"')
         
         field_props_list.append(f'value={{{field["id"]}}}')
-        field_props_list.append(f'onChange={{(val: any) => set{field["id"].capitalize()}(val)}}')
+        # Better camelCase for setter: set + ID with first letter capitalized
+        setter_name = f"set{field['id'][0].upper()}{field['id'][1:]}"
+        field_props_list.append(f'onChange={{(val: any) => {setter_name}(val)}}')
 
         if f.get("wrapperProps", {}).get("required"):
              field_props_list.append('required')
@@ -245,50 +198,48 @@ export function applyBusinessLogic(data: any) {
 """
 
     def generate_schema_code(self, data: Dict[str, Any]) -> str:
-        """Generates schema.ts with real Zod validation based on fields."""
-        # data might be the whole template or the mapped_data dict which contains 'originalTemplate'
-        template = data.get("originalTemplate") or data
+        """Generates schema.ts exporting the original template JSON for FormEngine."""
+        import json
         
-        # Detect format
-        sections = template.get("sections") or []
-        form_fields = (template.get("form") or {}).get("fields") or []
+        # Construct a perfectly formatted FormSchema object by combining 
+        # original field data with the layout span chosen by the AI Architect.
+        form_schema = {
+            "formId": data.get("metadata", {}).get("formId", "generated-form"),
+            "metadata": data.get("metadata", {}),
+            "logic": data.get("originalTemplate", {}).get("logic"),
+            "sections": []
+        }
         
-        all_fields = list(form_fields)
-        for s in sections:
-            all_fields.extend(s.get("fields", []))
+        sections = data.get("sections", [])
+        for i, section in enumerate(sections):
+            schema_section = {
+                "id": f"section-{i}",
+                "title": section.get("title", ""),
+                "fields": []
+            }
             
-        zod_props = []
-        for f in all_fields:
-            fid = f.get("id")
-            if not fid: continue
-            
-            ftype = f.get("type", "text")
-            required = f.get("required", False) or (f.get("validation") or {}).get("required", False)
-            
-            # Map to Zod type
-            if ftype in ("number", "integer"):
-                z_line = f'  {fid}: z.number()'
-            elif ftype in ("checkbox", "switch"):
-                z_line = f'  {fid}: z.boolean()'
-            else:
-                z_line = f'  {fid}: z.string()'
+            for f in section.get("fields", []):
+                # Get the raw field data
+                raw_field = f.get("originalData", {})
                 
-            if not required:
-                z_line += ".optional()"
+                # Copy it so we can inject layout
+                field_def = dict(raw_field)
+                
+                # Inject layout span from the AI Architect's decision
+                col_span = f.get("wrapperProps", {}).get("colSpan", "full")
+                field_def["layout"] = { "span": col_span }
+                
+                schema_section["fields"].append(field_def)
+                
+            form_schema["sections"].append(schema_section)
             
-            zod_props.append(z_line + ",")
-
-        props_str = "\n".join(zod_props)
+        # Serialize to formatted JSON string
+        json_str = json.dumps(form_schema, indent=2, ensure_ascii=False)
         
-        return f"""import {{ z }} from 'zod';
-
-/**
- * Automatski generisana Zod shema na osnovu Form Studio šablona.
+        return f"""/**
+ * Automatski generisana šema iz Form Studia.
+ * Ovu šemu koristi interno @form-studio/form-engine za dinamičko renderovanje.
  */
-export const formSchema = z.object({{
-{props_str}
-}});
-
-export type FormData = z.infer<typeof formSchema>;
+export const formSchema = {json_str} as any;
 """
 

@@ -487,7 +487,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 <input type="checkbox" id="consensus-mode" disabled />
                             </div>
                             <div style="margin-top: 40px; text-align: center; opacity: 0.5; font-size: 10px;">
-                                Orchestrator v4.2.0 • Antigravity Engine
+                                Orchestrator v4.3.0 • AI Layout Architect
                             </div>
                         </div>
                     </div>

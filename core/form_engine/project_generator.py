@@ -48,6 +48,7 @@ class ProjectGenerator:
                 "react-dom": "^18.3.1",
                 "@dyn-ui/react": "workspace:*",
                 "@form-studio/shared-ui": "workspace:*",
+                "@form-studio/form-engine": "workspace:*",
                 "lucide-react": "latest",
                 "clsx": "latest",
                 "zod": "^3.22.4"

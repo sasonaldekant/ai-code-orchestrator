@@ -14,6 +14,7 @@ interface PreviewField {
     id: string;
     label: string;
     type: string;
+    layout?: { span?: 'full' | 'half' | 'third' | 'quarter' | string };
     required?: boolean;
     placeholder?: string;
     helperText?: string;
@@ -266,18 +267,25 @@ function FormPreview({ preview }: { preview: PreviewConfig }) {
                                 {section.title}
                             </h4>
                         )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-12 gap-4">
                             {section.fields.map(field => {
                                 const meta = preview.fieldMeta[field.id];
                                 const isCheckbox = field.type === 'checkbox';
+                                
+                                // Determine colSpan classes
+                                const span = field.layout?.span || 'full';
+                                let colSpanClass = 'col-span-12';
+                                if (span === 'half') colSpanClass = 'col-span-12 md:col-span-6';
+                                else if (span === 'third') colSpanClass = 'col-span-12 md:col-span-4';
+                                else if (span === 'quarter') colSpanClass = 'col-span-12 md:col-span-3';
+
                                 return (
                                     <div
                                         key={field.id}
                                         className={clsx(
                                             "space-y-1.5",
                                             isCheckbox && "flex items-center",
-                                            // Textarea/bio style fields span full width
-                                            meta?.originalType === 'textarea' && "md:col-span-2"
+                                            colSpanClass
                                         )}
                                     >
                                         {!isCheckbox && (

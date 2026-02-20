@@ -303,7 +303,7 @@ export function IngestionPanel() {
                         </h3>
                         <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
                             <Zap className="w-3 h-3" />
-                            Auto-Chunking Active (v3.0)
+                            Auto-Chunking Active (v3.1)
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">

@@ -38,7 +38,12 @@ class FormArchitectSpecialist:
         Grid Spanning (`colSpan`):
         DynUI supports 'full' (12 cols), 'half' (6 cols), 'third' (4 cols), 'quarter' (3 cols).
         You must decide the most visually pleasing layout for fields. 
-        Example: First Name and Last Name should typically be 'half'. A long text field should be 'full'.
+        CRITICAL RULES FOR GRID SPANNING:
+        - NEVER default to 'full' width unless it is strictly necessary (e.g. textarea, long text fields like Address).
+        - ALWAYS try to pack minimum 2-3 inputs per row (using 'half' or 'third').
+        - Evaluate the type and validation constraints (maxLength):
+            - If field is JMBG, PIB, Phone Number, ZIP code -> MUST BE 'third' or 'quarter' since they are short.
+            - If fields are logically related (First Name, Last Name) -> MUST BE 'half'.
         
         You MUST return a JSON object sticking to this schema:
         {
@@ -61,7 +66,7 @@ class FormArchitectSpecialist:
         Title: {template.get('metadata', {}).get('title')}
         Description: {template.get('metadata', {}).get('description')}
         Fields:
-        {json.dumps([{"id": f.get("id"), "label": f.get("label"), "type": f.get("type")} for f in fields], indent=2)}
+        {json.dumps([{"id": f.get("id"), "label": f.get("label"), "type": f.get("type"), "maxLength": f.get("maxLength") or f.get("validation", {}).get("maxLength")} for f in fields], indent=2)}
         """
         
         logger.info(f"Calling Architect AI for form analysis with {field_count} fields...")

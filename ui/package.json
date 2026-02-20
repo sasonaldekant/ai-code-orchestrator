@@ -20,6 +20,8 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "@dyn-ui/design-tokens": "link:..\\..\\dyn-ui-main-v01\\packages\\design-tokens",
+    "@dyn-ui/react": "link:..\\..\\dyn-ui-main-v01\\packages\\dyn-ui-react",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-scroll-area": "^1.2.10",

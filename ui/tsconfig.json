@@ -34,18 +34,6 @@
     "paths": {
       "@/*": [
         "src/*"
-      ],
-      "@dyn-ui/react": [
-        "src/dyn-ui"
-      ],
-      "@dyn-ui/react/*": [
-        "src/dyn-ui/*"
-      ],
-      "@dyn-ui/design-tokens": [
-        "src/dyn-design-tokens"
-      ],
-      "@dyn-ui/design-tokens/*": [
-        "src/dyn-design-tokens/*"
       ]
     }
   },

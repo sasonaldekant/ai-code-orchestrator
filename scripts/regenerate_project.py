@@ -16,10 +16,20 @@ async def main():
     orchestrator = FormEngineOrchestrator()
     base_dir = Path.cwd()
     
-    projects_to_regen = [
-        ("kreditni-zahtev", base_dir / "examples" / "form_templates" / "approved_kreditni-zahtev.json"),
-        ("korisni-ka-registracija", base_dir / "examples" / "form_templates" / "approved_korisni-ka-registracija.json")
-    ]
+    args = sys.argv[sys.argv.index(os.path.basename(__file__)) + 1:] if os.path.basename(__file__) in sys.argv else sys.argv[1:]
+    
+    if args:
+        projects_to_regen = []
+        for arg in args:
+            path = base_dir / "examples" / "form_templates" / f"approved_{arg}.json"
+            if not path.exists():
+                path = base_dir / "examples" / "form_templates" / f"{arg}.json"
+            projects_to_regen.append((arg, path))
+    else:
+        projects_to_regen = [
+            ("kreditni-zahtev", base_dir / "examples" / "form_templates" / "approved_kreditni-zahtev.json"),
+            ("korisni-ka-registracija", base_dir / "examples" / "form_templates" / "approved_korisni-ka-registracija.json")
+        ]
     
     for proj_name, template_path in projects_to_regen:
         template_path_str = str(template_path)

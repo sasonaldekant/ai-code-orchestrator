@@ -105,9 +105,19 @@ class DynUIMapper:
             "props": {**mapping.default_props}
         }
 
-        # Handle options for select/dropdown/radio
+        # Handle options for select/dropdown/radio (normalize to object format)
         if json_type in ("select", "dropdown", "radio") and "options" in field_json:
-            component["props"]["options"] = field_json["options"]
+            raw_options = field_json["options"]
+            normalized_options = []
+            for opt in raw_options:
+                if isinstance(opt, dict):
+                    normalized_options.append({
+                        "value": str(opt.get("value", "")),
+                        "label": opt.get("label", str(opt.get("value", "")))
+                    })
+                else:
+                    normalized_options.append({"value": str(opt), "label": str(opt)})
+            component["props"]["options"] = normalized_options
 
         # Handle dropdownRef / lookupRef for external lists
         if json_type in ("dropdown", "select"):
@@ -142,7 +152,8 @@ class DynUIMapper:
                 "required": field_json.get("required", False) or validation.get("required", False),
                 "helperText": field_json.get("helperText", "")
             },
-            "field": component
+            "field": component,
+            "originalData": field_json
         }
 
         # Visibility / conditional dependency
@@ -178,7 +189,7 @@ class DynUIMapper:
                 sections.append({
                     "id": sec.get("id", ""),
                     "title": sec.get("title", "Section"),
-                    "fieldIds": [f["id"] for f in sec_fields],
+                    "fields": [{"id": f["id"], "colSpan": "full"} for f in sec_fields],
                     "showWhen": sec.get("showWhen"),
                     "description": sec.get("description"),
                 })
@@ -326,7 +337,7 @@ class DynUIMapper:
             if not layout_decision:
                 layout_decision = {
                     "recommendedLayout": "standard",
-                    "structure": [{"title": "General", "fieldIds": [f["id"] for f in fields_json]}]
+                    "structure": [{"title": "General", "fields": [{"id": f["id"], "colSpan": "full"} for f in fields_json]}]
                 }
             layout = layout_decision["recommendedLayout"]
             effective_sections = layout_decision["structure"]
@@ -346,7 +357,16 @@ class DynUIMapper:
         config_sections = []
         for section in effective_sections:
             section_fields = []
-            for fid in section["fieldIds"]:
+            
+            # Extract IDs from the new 'fields' format or old 'fieldIds' (backward compatibility)
+            raw_fields = section.get("fields", [])
+            if not raw_fields and "fieldIds" in section:
+                raw_fields = [{"id": fid, "colSpan": "full"} for fid in section["fieldIds"]]
+            
+            for f_info in raw_fields:
+                fid = f_info if isinstance(f_info, str) else f_info["id"]
+                col_span = "full" if isinstance(f_info, str) else f_info.get("colSpan", "full")
+
                 if fid not in fields_by_id:
                     warnings.append(f"Field '{fid}' referenced in section '{section['title']}' but not found.")
                     continue
@@ -358,6 +378,7 @@ class DynUIMapper:
                     "id": fid,
                     "label": fj.get("label", fid),
                     "type": fe_type,
+                    "layout": {"span": col_span}
                 }
 
                 validation_dict = fj.get("validation") or {}

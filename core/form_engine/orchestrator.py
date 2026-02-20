@@ -51,8 +51,10 @@ class FormEngineOrchestrator:
             
         return await self.generate_ui_project(str(temp_path), project_name)
 
-    async def generate_ui_project(self, template_path: str, project_name: str, layout_override: str = None) -> str:
-        """Processes a JSON template and generates a full UI project."""
+    async def generate_ui_project(self, template_path: str, project_name: str, layout_override=None, layout_decision_input=None):
+        """
+        Full project generation from a template. Returns path to the new project.
+        """
         logger.info(f"Starting generation for project: {project_name}")
         
         # Load Template with explicit UTF-8
@@ -79,8 +81,12 @@ class FormEngineOrchestrator:
         # CACHE LAYER 1: Compute Structural Fingerprint
         fingerprint = self.cache.compute_fingerprint(template)
         
-        # 1. Analyze for Layout
-        layout_decision = await self.architect.analyze_form(template)
+        # 1. Analyze for Layout (or use provided decision from Preview)
+        if layout_decision_input:
+            layout_decision = layout_decision_input
+        else:
+            layout_decision = await self.architect.analyze_form(template)
+
         if layout_override:
             layout_decision["recommendedLayout"] = layout_override
             

@@ -207,6 +207,7 @@ class GenerateRequest(BaseModel):
     schema_data: FormSchemaInput
     project_name: str
     layout_override: Optional[str] = None
+    layout_decision: Optional[Dict[str, Any]] = None
 
 
 # ─── Preview Endpoint (Deterministic, 0 AI tokens) ─────────────────────────
@@ -381,7 +382,12 @@ async def generate_project(req: GenerateRequest):
         # Run full generation pipeline
         engine = FormEngineOrchestrator()
         await bus.publish(Event(type=EventType.LOG, agent="FormEngine", content="Mapiranje DynUI form komponenti u toku..."))
-        project_path = await engine.generate_ui_project(str(temp_path), req.project_name, req.layout_override)
+        project_path = await engine.generate_ui_project(
+            str(temp_path), 
+            req.project_name, 
+            req.layout_override,
+            layout_decision_input=req.layout_decision
+        )
         
         await bus.publish(Event(type=EventType.DONE, agent="FormEngine", content=f"Projekat {req.project_name} uspešno izgenerisan!"))
 

@@ -150,7 +150,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
             <aside className="w-80 border-r border-border bg-card/30 flex flex-col hidden md:flex shrink-0">
                 <div className="p-4 border-b border-border flex items-center gap-2 h-14">
                     <Activity className="w-5 h-5 text-primary" />
-                    <h1 className="font-semibold text-lg tracking-tight">Nexus <span className="text-xs text-muted-foreground ml-1 font-normal">v3.0</span></h1>
+                    <h1 className="font-semibold text-lg tracking-tight">Nexus <span className="text-xs text-muted-foreground ml-1 font-normal">v3.1</span></h1>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
