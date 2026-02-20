@@ -9,6 +9,7 @@ class ChunkingEngine:
     Orchestrates different chunking strategies based on file content.
     """
     
+    # Supported for ingestion, but project standards prefer .ts/.tsx
     CODE_EXTENSIONS = {'.py', '.cs', '.ts', '.tsx', '.js', '.jsx', '.java', '.go', '.cpp', '.h'}
     
     def __init__(self):

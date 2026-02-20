@@ -1,0 +1,54 @@
+{
+    "metadata": {
+        "version": "1.0",
+        "formType": "simple",
+        "title": "Contact Us",
+        "description": "Simple contact form for basic inquiries"
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "full_name",
+                "type": "text",
+                "label": "Full Name",
+                "placeholder": "John Doe",
+                "required": true
+            },
+            {
+                "id": "subject",
+                "type": "select",
+                "label": "Inquiry Subject",
+                "required": true,
+                "options": [
+                    {
+                        "value": "support",
+                        "label": "Technical Support"
+                    },
+                    {
+                        "value": "sales",
+                        "label": "Sales Inquiry"
+                    },
+                    {
+                        "value": "feedback",
+                        "label": "General Feedback"
+                    }
+                ]
+            },
+            {
+                "id": "message",
+                "type": "textarea",
+                "label": "Your Message",
+                "placeholder": "How can we help you?",
+                "required": true
+            }
+        ],
+        "actions": [
+            {
+                "type": "submit",
+                "label": "Send Message",
+                "endpoint": "/api/contact",
+                "variant": "primary"
+            }
+        ]
+    }
+}

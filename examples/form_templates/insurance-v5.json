@@ -1,0 +1,844 @@
+{
+  "formId": "insurance-person-entry",
+  "metadata": {
+    "version": "5.0",
+    "title": "Insurance Person Entry Form",
+    "description": "Kompletan unos osiguranika i ugovarača - fizičko i pravno lice",
+    "lastUpdated": "2026-01-30"
+  },
+  "sections": [
+    {
+      "id": "tip-ugovaraca-section",
+      "title": "Podaci ugovarača",
+      "sectionNumber": "1",
+      "fields": [
+        {
+          "id": "tipUgovaraca",
+          "type": "radio",
+          "label": "Tip ugovarača",
+          "options": [
+            {
+              "value": "fizicko",
+              "label": "Fizičko lice"
+            },
+            {
+              "value": "pravno",
+              "label": "Pravno lice"
+            }
+          ],
+          "defaultValue": "fizicko",
+          "validation": {
+            "required": true,
+            "errorMessage": "Morate odabrati tip ugovarača"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fizicko-lice-section",
+      "title": "Podaci Fizičkog Lica - Ugovarač",
+      "sectionNumber": "1",
+      "fields": [
+        {
+          "id": "imeUgovaraca",
+          "type": "text",
+          "label": "Ime",
+          "placeholder": "Unesite ime",
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Ime mora sadržati samo slova"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "prezimeUgovaraca",
+          "type": "text",
+          "label": "Prezime",
+          "placeholder": "Unesite prezime",
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Prezime mora sadržati samo slova"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "jmbgUgovaraca",
+          "type": "text",
+          "label": "JMBG",
+          "placeholder": "13 cifara",
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{13}$",
+            "errorMessage": "JMBG mora sadržati tačno 13 cifara",
+            "custom": {
+              "rule": "jmbgChecksum",
+              "errorMessage": "JMBG kontrolna suma nije validna"
+            }
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "polUgovaraca",
+          "type": "radio",
+          "label": "Pol",
+          "options": [
+            {
+              "value": "M",
+              "label": "Muško"
+            },
+            {
+              "value": "Ž",
+              "label": "Žensko"
+            }
+          ],
+          "validation": {
+            "required": true,
+            "errorMessage": "Morate odabrati pol"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "datumRodjenjaUgovaraca",
+          "type": "date",
+          "label": "Datum rođenja",
+          "validation": {
+            "required": true,
+            "errorMessage": "Datum rođenja je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "drzavljanstvoUgovaraca",
+          "type": "dropdown",
+          "label": "Državljanstvo",
+          "lookupRef": "nationalities",
+          "validation": {
+            "required": true,
+            "errorMessage": "Državljanstvo je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "mestoRodjenjaUgovaraca",
+          "type": "text",
+          "label": "Mesto rođenja",
+          "validation": {
+            "required": true,
+            "errorMessage": "Mesto rođenja je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "zanimanjeUgovaraca",
+          "type": "dropdown",
+          "label": "Zanimanje (šifra)",
+          "lookupRef": "occupations",
+          "validation": {
+            "required": true,
+            "errorMessage": "Zanimanje je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "opisZanimanjaUgovaraca",
+          "type": "textarea",
+          "label": "Opis zanimanja",
+          "placeholder": "Opišite vaše zanimanje...",
+          "validation": {
+            "maxLength": 200
+          },
+          "layout": {
+            "span": "full"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pravno-lice-section",
+      "title": "Podaci Pravnog Lica - Ugovarač",
+      "sectionNumber": "1",
+      "fields": [
+        {
+          "id": "nazivPravnoLice",
+          "type": "text",
+          "label": "Naziv",
+          "placeholder": "Unesite naziv pravnog lica",
+          "validation": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 200,
+            "errorMessage": "Naziv mora imati između 3 i 200 karaktera"
+          },
+          "layout": {
+            "span": "full"
+          }
+        },
+        {
+          "id": "maticniBroj",
+          "type": "text",
+          "label": "Matični broj (MB)",
+          "placeholder": "9 cifara",
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{9}$",
+            "errorMessage": "Matični broj mora sadržati tačno 9 cifara"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "pib",
+          "type": "text",
+          "label": "PIB",
+          "placeholder": "9 cifara",
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{9}$",
+            "errorMessage": "PIB mora sadržati tačno 9 cifara",
+            "custom": {
+              "rule": "pibChecksum",
+              "errorMessage": "PIB kontrolna suma nije validna"
+            }
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "tekuciRacun",
+          "type": "text",
+          "label": "Tekući račun",
+          "placeholder": "16-18 cifara",
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{16,18}$",
+            "errorMessage": "Tekući račun mora sadržati 16-18 cifara"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "sifraDelatnosti",
+          "type": "dropdown",
+          "label": "Šifra delatnosti (NKDS)",
+          "lookupRef": "activities",
+          "validation": {
+            "required": true,
+            "errorMessage": "Šifra delatnosti je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "opisDelatnosti",
+          "type": "textarea",
+          "label": "Opis delatnosti",
+          "placeholder": "Opišite delatnost pravnog lica...",
+          "validation": {
+            "required": true,
+            "maxLength": 300,
+            "errorMessage": "Opis delatnosti je obavezno polje"
+          },
+          "layout": {
+            "span": "full"
+          }
+        }
+      ]
+    },
+    {
+      "id": "adresa-ugovaraca-section",
+      "title": "Adresa Ugovarača",
+      "sectionNumber": "1",
+      "fields": [
+        {
+          "id": "drzavaUgovaraca",
+          "type": "dropdown",
+          "label": "Država",
+          "lookupRef": "countries",
+          "validation": {
+            "required": true,
+            "errorMessage": "Država je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "opstinaUgovaraca",
+          "type": "dropdown",
+          "label": "Opština",
+          "lookupRef": "municipalities",
+          "validation": {
+            "required": true,
+            "errorMessage": "Opština je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "gradUgovaraca",
+          "type": "dropdown",
+          "label": "Grad/Mesto",
+          "lookupRef": "cities",
+          "lookupParams": {
+            "dependsOn": "opstinaUgovaraca"
+          },
+          "validation": {
+            "required": true,
+            "errorMessage": "Grad je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "adresaUgovaraca",
+          "type": "text",
+          "label": "Adresa",
+          "placeholder": "Ulica i broj",
+          "validation": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 100,
+            "errorMessage": "Adresa je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "emailUgovaraca",
+          "type": "email",
+          "label": "Email",
+          "placeholder": "primer@email.com",
+          "validation": {
+            "required": true,
+            "errorMessage": "Email je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "mobilniTelefonUgovaraca",
+          "type": "tel",
+          "label": "Mobilni telefon",
+          "placeholder": "+381 6x xxx xxxx",
+          "validation": {
+            "required": true,
+            "errorMessage": "Mobilni telefon je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "ugovaracIstoKaoOsiguranik",
+          "type": "radio",
+          "label": "Ugovarač i osiguranik su isto lice?",
+          "options": [
+            {
+              "value": true,
+              "label": "Da"
+            },
+            {
+              "value": false,
+              "label": "Ne"
+            }
+          ],
+          "validation": {
+            "required": true,
+            "errorMessage": "Morate odabrati odnos između ugovarača i osiguranika"
+          },
+          "layout": {
+            "span": "full"
+          }
+        }
+      ]
+    },
+    {
+      "id": "osiguranik-section",
+      "title": "Podaci Osiguranika",
+      "sectionNumber": "1.5",
+      "description": "Unesite podatke osiguranika (ako nije isto lice kao ugovarač)",
+      "fields": [
+        {
+          "id": "imeOsiguranika",
+          "type": "text",
+          "label": "Ime",
+          "placeholder": "Unesite ime",
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Ime mora sadržati samo slova"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "prezimeOsiguranika",
+          "type": "text",
+          "label": "Prezime",
+          "placeholder": "Unesite prezime",
+          "validation": {
+            "required": true,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$",
+            "errorMessage": "Prezime mora sadržati samo slova"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "jmbgOsiguranika",
+          "type": "text",
+          "label": "JMBG",
+          "placeholder": "13 cifara",
+          "validation": {
+            "required": true,
+            "pattern": "^[0-9]{13}$",
+            "errorMessage": "JMBG mora sadržati tačno 13 cifara",
+            "custom": {
+              "rule": "jmbgChecksum",
+              "errorMessage": "JMBG kontrolna suma nije validna"
+            }
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "polOsiguranika",
+          "type": "radio",
+          "label": "Pol",
+          "options": [
+            {
+              "value": "M",
+              "label": "Muško"
+            },
+            {
+              "value": "Ž",
+              "label": "Žensko"
+            }
+          ],
+          "validation": {
+            "required": true,
+            "errorMessage": "Morate odabrati pol"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "datumRodjenjaOsiguranika",
+          "type": "date",
+          "label": "Datum rođenja",
+          "validation": {
+            "required": true,
+            "errorMessage": "Datum rođenja je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "drzavaOsiguranika",
+          "type": "dropdown",
+          "label": "Država",
+          "lookupRef": "countries",
+          "validation": {
+            "required": true,
+            "errorMessage": "Država je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "opstinaOsiguranika",
+          "type": "dropdown",
+          "label": "Opština",
+          "lookupRef": "municipalities",
+          "validation": {
+            "required": true,
+            "errorMessage": "Opština je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "gradOsiguranika",
+          "type": "dropdown",
+          "label": "Grad/Mesto",
+          "lookupRef": "cities",
+          "lookupParams": {
+            "dependsOn": "opstinaOsiguranika"
+          },
+          "validation": {
+            "required": true,
+            "errorMessage": "Grad je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "adresaOsiguranika",
+          "type": "text",
+          "label": "Adresa",
+          "placeholder": "Ulica i broj",
+          "validation": {
+            "required": true,
+            "minLength": 3,
+            "maxLength": 100,
+            "errorMessage": "Adresa je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "emailOsiguranika",
+          "type": "email",
+          "label": "Email",
+          "placeholder": "primer@email.com",
+          "validation": {
+            "required": true,
+            "errorMessage": "Email je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "mobilniTelefonOsiguranika",
+          "type": "tel",
+          "label": "Mobilni telefon",
+          "placeholder": "+381 6x xxx xxxx",
+          "validation": {
+            "required": true,
+            "errorMessage": "Mobilni telefon je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "osiguranje-section",
+      "title": "Detalji Osiguranja",
+      "sectionNumber": "2",
+      "showWhen": {
+        "field": "ugovaracIstoKaoOsiguranik",
+        "operator": "notEquals",
+        "value": null
+      },
+      "fields": [
+        {
+          "id": "godisnjaPremija",
+          "type": "number",
+          "label": "Godišnja premija",
+          "placeholder": "0.00",
+          "validation": {
+            "required": true,
+            "min": 0,
+            "errorMessage": "Godišnja premija mora biti pozitivan broj"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "rataPremije",
+          "type": "number",
+          "label": "Rata premije",
+          "placeholder": "0.00",
+          "validation": {
+            "required": true,
+            "min": 0,
+            "errorMessage": "Rata premije mora biti pozitivan broj"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "valuta",
+          "type": "dropdown",
+          "label": "Valuta",
+          "lookupRef": "currencies",
+          "validation": {
+            "required": true,
+            "errorMessage": "Valuta je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        },
+        {
+          "id": "nacinPlacanja",
+          "type": "dropdown",
+          "label": "Način plaćanja",
+          "lookupRef": "payment-methods",
+          "validation": {
+            "required": true,
+            "errorMessage": "Način plaćanja je obavezno polje"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "logic": {
+    "conditionalVisibility": [
+      {
+        "targetField": "fizicko-lice-section",
+        "showWhen": {
+          "field": "tipUgovaraca",
+          "operator": "equals",
+          "value": "fizicko"
+        }
+      },
+      {
+        "targetField": "pravno-lice-section",
+        "showWhen": {
+          "field": "tipUgovaraca",
+          "operator": "equals",
+          "value": "pravno"
+        }
+      },
+      {
+        "targetField": "osiguranik-section",
+        "showWhen": {
+          "field": "ugovaracIstoKaoOsiguranik",
+          "operator": "equals",
+          "value": false
+        }
+      }
+    ],
+    "crossFieldValidation": [
+      {
+        "rule": "field rataPremije <= field godisnjaPremija",
+        "errorMessage": "Rata premije ne može biti veća od godišnje premije",
+        "errorTarget": "rataPremije"
+      }
+    ]
+  },
+  "lookups": {
+    "cities": {
+      "endpoint": "api/lookups/cities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "occupations": {
+      "endpoint": "api/lookups/occupations",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "countries": {
+      "endpoint": "api/lookups/countries",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 7200
+    },
+    "nationalities": {
+      "endpoint": "api/lookups/nationalities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 7200
+    },
+    "activities": {
+      "endpoint": "api/lookups/activities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "currencies": {
+      "endpoint": "api/lookups/currencies",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    },
+    "payment-methods": {
+      "endpoint": "api/lookups/payment-methods",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    },
+    "municipalities": {
+      "endpoint": "api/lookups/municipalities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    }
+  }
+}

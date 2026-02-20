@@ -5,7 +5,8 @@ from ..base import BaseChunker, Chunk
 class CodeChunker(BaseChunker):
     """
     Chunks code based on logical boundaries (classes, functions).
-    Supports .py, .cs, .ts, .tsx, .js, .jsx.
+    Primarily supports .ts and .tsx (TypeScript/React). 
+    Also compatible with .py, .cs, .js, .jsx for ingestion.
     """
     
     def split(self, content: str, chunk_size: int = 1000, overlap: int = 100) -> List[Chunk]:

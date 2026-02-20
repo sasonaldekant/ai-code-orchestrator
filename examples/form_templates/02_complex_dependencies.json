@@ -1,0 +1,77 @@
+{
+    "metadata": {
+        "title": "Kreditni Zahtev",
+        "version": "1.0",
+        "description": "Kompleksnija forma za kredit sa uslovnim poljima (zavisnostima)",
+        "outputSchema": true
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "radniStatus",
+                "type": "select",
+                "label": "Radni Status",
+                "required": true,
+                "options": [
+                    {
+                        "value": "Zaposlen na neodređeno",
+                        "label": "Zaposlen na neodređeno"
+                    },
+                    {
+                        "value": "Zaposlen na određeno",
+                        "label": "Zaposlen na određeno"
+                    },
+                    {
+                        "value": "Nezaposlen",
+                        "label": "Nezaposlen"
+                    },
+                    {
+                        "value": "Penzioner",
+                        "label": "Penzioner"
+                    }
+                ],
+                "defaultValue": "Zaposlen na neodređeno"
+            },
+            {
+                "id": "nazivPoslodavca",
+                "type": "text",
+                "label": "Naziv Poslodavca",
+                "required": true,
+                "visibility": {
+                    "dependsOn": "radniStatus",
+                    "condition": "notEquals",
+                    "value": "Nezaposlen"
+                }
+            },
+            {
+                "id": "istekUgovora",
+                "type": "date",
+                "label": "Datum isteka ugovora",
+                "required": true,
+                "visibility": {
+                    "dependsOn": "radniStatus",
+                    "condition": "equals",
+                    "value": "Zaposlen na određeno"
+                }
+            },
+            {
+                "id": "iznosKredita",
+                "type": "number",
+                "label": "Traženi iznos kredita (EUR)",
+                "required": true,
+                "validation": {
+                    "min": 1000,
+                    "max": 50000
+                },
+                "helperText": "Iznos mora biti između 1,000 i 50,000 EUR"
+            }
+        ],
+        "actions": [
+            {
+                "type": "submit",
+                "label": "Podnesi Zahtev",
+                "variant": "primary"
+            }
+        ]
+    }
+}

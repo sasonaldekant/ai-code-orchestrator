@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 class Orchestrator:
     """Coordinates the multi‑phase AI code generation workflow."""
 
-    def __init__(self, config_path: str = "config/model_mapping.yaml") -> None:
+    def __init__(self, config_path: str = "config/model_mapping_v2.yaml") -> None:
         self.cost_manager = CostManager()
         self.model_router = ModelRouter(config_path)
         self.llm_client = LLMClient(self.cost_manager)

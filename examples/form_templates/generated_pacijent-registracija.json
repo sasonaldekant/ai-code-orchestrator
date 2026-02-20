@@ -1,0 +1,71 @@
+{
+  "form": {
+    "id": "patientRegistrationForm",
+    "title": "Registracija Pacijenata",
+    "fields": [
+      {
+        "id": "firstName",
+        "type": "text",
+        "label": "Ime",
+        "required": true
+      },
+      {
+        "id": "lastName",
+        "type": "text",
+        "label": "Prezime",
+        "required": true
+      },
+      {
+        "id": "jmbg",
+        "type": "text",
+        "label": "JMBG",
+        "required": true
+      },
+      {
+        "id": "dateOfBirth",
+        "type": "date",
+        "label": "Datum Rođenja",
+        "required": true
+      },
+      {
+        "id": "gender",
+        "type": "select",
+        "label": "Pol",
+        "required": true,
+        "options": [
+          {
+            "value": "male",
+            "label": "Muški"
+          },
+          {
+            "value": "female",
+            "label": "Ženski"
+          },
+          {
+            "value": "other",
+            "label": "Drugo"
+          }
+        ]
+      },
+      {
+        "id": "email",
+        "type": "email",
+        "label": "Email",
+        "required": true
+      },
+      {
+        "id": "anamnesis",
+        "type": "textarea",
+        "label": "Anamneza",
+        "required": false
+      }
+    ],
+    "actions": [
+      {
+        "id": "submit",
+        "type": "submit",
+        "label": "Registruj"
+      }
+    ]
+  }
+}

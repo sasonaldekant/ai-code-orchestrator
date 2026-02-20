@@ -1,0 +1,54 @@
+{
+  "fields": [
+    {
+      "id": "userId",
+      "label": "User ID",
+      "type": "text"
+    },
+    {
+      "id": "username",
+      "label": "Username",
+      "type": "text"
+    },
+    {
+      "id": "email",
+      "label": "Email",
+      "type": "email"
+    },
+    {
+      "id": "age",
+      "label": "Age",
+      "type": "number"
+    },
+    {
+      "id": "isPremium",
+      "label": "Is Premium",
+      "type": "checkbox"
+    },
+    {
+      "id": "joinedDate",
+      "label": "Joined Date",
+      "type": "date"
+    },
+    {
+      "id": "preferences",
+      "label": "Preferences",
+      "type": "select",
+      "options": [
+        "dark_mode",
+        "email_notifications"
+      ]
+    },
+    {
+      "id": "bio",
+      "label": "Bio",
+      "type": "textarea"
+    }
+  ],
+  "actions": [
+    {
+      "type": "submit",
+      "label": "Submit"
+    }
+  ]
+}

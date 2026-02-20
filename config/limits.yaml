@@ -15,3 +15,14 @@ global:
   per_task_budget: 0.25
   per_hour_budget: 1.0
   per_day_budget: 2.0
+allowed_user_models:
+  - gpt-5-mini
+  - gpt-5.2
+  - claude-sonnet-4.5
+allowed_user_options:
+  modes: ["fast", "thinking", "agentic"]
+  form_studio: true
+  show_review_strategy: false
+  show_consensus_mode: false
+  show_retrieval_mode: false
+allowed_rag_tiers: [3, 4]

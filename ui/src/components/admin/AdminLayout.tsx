@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2, Lock, Sliders } from 'lucide-react';
+import { Settings, Database, Bot, DollarSign, BookOpen, ChevronLeft, Wrench, Activity, Share2, Lock, Sliders, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { IngestionPanel } from './IngestionPanel';
 import { ModelConfigPanel } from './ModelConfigPanel';
@@ -9,18 +9,20 @@ import { MonitoringDashboard } from './MonitoringDashboard';
 import { DeveloperToolsPanel } from './DeveloperToolsPanel';
 import { ApiKeysPanel } from './ApiKeysPanel';
 import { GlobalSettingsPanel } from './GlobalSettingsPanel';
+import { ClientSettingsPanel } from './ClientSettingsPanel';
 import GraphTab from './GraphTab';
 
-type AdminTab = 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph' | 'keys' | 'global';
+type AdminTab = 'client' | 'ingestion' | 'models' | 'budgets' | 'knowledge' | 'tools' | 'monitoring' | 'graph' | 'keys' | 'global';
 
 interface AdminLayoutProps {
     onBack: () => void;
 }
 
 export function AdminLayout({ onBack }: AdminLayoutProps) {
-    const [activeTab, setActiveTab] = useState<AdminTab>('ingestion');
+    const [activeTab, setActiveTab] = useState<AdminTab>('client');
 
     const tabs = [
+        { id: 'client' as const, label: 'Client Config', icon: Users },
         { id: 'global' as const, label: 'Global Settings', icon: Sliders },
         { id: 'ingestion' as const, label: 'RAG Ingestion', icon: Database },
         { id: 'models' as const, label: 'Model Config', icon: Bot },
@@ -33,7 +35,7 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
     ];
 
     return (
-        <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+        <div className="flex flex-1 min-h-0 bg-background text-foreground overflow-hidden font-sans">
             {/* Admin Sidebar */}
             <aside className="w-64 border-r border-border bg-card/30 flex flex-col">
                 <div className="p-4 border-b border-border flex items-center gap-2">
@@ -66,14 +68,15 @@ export function AdminLayout({ onBack }: AdminLayoutProps) {
                 </nav>
 
                 <div className="p-4 border-t border-border text-xs text-muted-foreground">
-                    <p>Orchestrator v3.0</p>
+                    <p>Orchestrator v3.1</p>
                     <p className="mt-1">Changes auto-save</p>
                 </div>
             </aside>
 
             {/* Content Area */}
             <main className="flex-1 overflow-y-auto p-6 md:p-8">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-[75vw] xl:max-w-[80vw] mx-auto">
+                    {activeTab === 'client' && <ClientSettingsPanel />}
                     {activeTab === 'global' && <GlobalSettingsPanel />}
                     {activeTab === 'ingestion' && <IngestionPanel />}
                     {activeTab === 'models' && <ModelConfigPanel />}

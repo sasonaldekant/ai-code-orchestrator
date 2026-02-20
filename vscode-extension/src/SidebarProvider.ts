@@ -29,10 +29,18 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(async (data) => {
             switch (data.type) {
                 case "onCommand": {
+                    if (data.command === "addContext") {
+                        if (data.value) this.addContext(data.value);
+                    } else {
+                        if (data.value) this.runPythonTask(data.value, data.options);
+                    }
+                    break;
+                }
+                case "onGenerateForm": {
                     if (!data.value) {
                         return;
                     }
-                    this.runPythonTask(data.value, data.options);
+                    this.runFormEngine(data.value, data.name);
                     break;
                 }
                 case "onStop": {
@@ -68,8 +76,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     this.updateConfig(data.configName, data.value);
                     break;
                 }
-                case "onReviewChanges": {
-                    // Logic for reviewing changes (existing)
+                case "onSaveSettings": {
+                    // Note: User requested that extension shouldn't change admin settings. 
+                    // This is now handled by making the UI read-only or informational.
+                    // But we keep the message handler for potential future allow-listed changes.
+                    this.updateSettings(data.content);
                     break;
                 }
             }
@@ -90,7 +101,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} https:;">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src ${apiBaseUrl} http://127.0.0.1:8000; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} https:;">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>AI Orchestrator Chat</title>
                 <style>
@@ -348,9 +359,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			<body>
                 <div class="app-container">
                     <div class="tabs-header">
-                        <div class="tab-btn active" onclick="switchTab('chat')">Assistant</div>
-                        <div class="tab-btn" onclick="switchTab('knowledge')">Knowledge</div>
-                        <div class="tab-btn" onclick="switchTab('settings')">Settings</div>
+                        <div class="tab-btn active" data-tab="chat">Assistant</div>
+                        <div class="tab-btn" data-tab="form-studio">Form Studio</div>
+                        <div class="tab-btn" data-tab="knowledge">Knowledge</div>
+                        <div class="tab-btn" data-tab="settings">Settings</div>
                     </div>
 
                     <div id="tab-chat" class="tab-content active">
@@ -364,20 +376,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 <div class="dropdown-group" title="Execution Mode">
                                     <span>⚡</span>
                                     <select id="strategy-select">
-                                        <option value="deep-search">Deep Search (Agentic)</option>
-                                        <option value="auto-fix">Auto-Fix & Heal</option>
-                                        <option value="question">Ask Agent (Q&A)</option>
-                                        <option value="fast">Fast Execution</option>
+                                        <option value="agentic">Agentic</option>
                                     </select>
                                 </div>
                                 <div class="dropdown-group" title="Model Selection">
                                     <span>🤖</span>
                                     <select id="model-select">
-                                        <option value="gpt-5.2">GPT-5.2 (Recommended)</option>
-                                        <option value="claude-opus-4.6">Claude Opus 4.6</option>
-                                        <option value="gpt-5-mini">GPT-5 Mini</option>
-                                        <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
-                                        <option value="gemini-3-pro">Gemini 3 Pro</option>
+                                        <option value="gpt-5.2">Loading models...</option>
                                     </select>
                                 </div>
                                 <div class="dropdown-group" title="Local Budget">
@@ -385,14 +390,41 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                     <span style="font-size: 10px; color: #10b981">$</span>
                                 </div>
                             </div>
-                            <div class="chat-input-area">
-                                <button class="icon-btn" title="Add files" onclick="vscode.postMessage({ type: 'onBrowse', target: 'context' })">📎</button>
+                             <div class="chat-input-area">
+                                <button id="browse-context-btn" class="icon-btn" title="Add files">📎</button>
                                 <textarea id="chat-input" placeholder="Give me a requirement..."></textarea>
                                 <div class="actions">
                                     <button id="send-btn">➔</button>
                                     <button id="stop-btn">■</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Studio Tab -->
+                    <div id="tab-form-studio" class="tab-content">
+                        <div class="kb-container">
+                            <div class="kb-title" style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2em;">🪄</span>
+                                <span>DynUI Form Architect</span>
+                            </div>
+                            <p style="color: var(--text-sec); font-size: 11px; margin-bottom: 20px;">
+                                Provide a requirement in **natural language** OR paste a **JSON data model** below. The engine will infer the best field types and layout.
+                            </p>
+                            
+                            <div class="form-field">
+                                <label>Project Name</label>
+                                <input type="text" id="form-project-name" placeholder="my-awesome-form" style="width: 100%; margin-bottom: 12px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); padding: 6px; border-radius: 4px;" />
+                            </div>
+
+                            <div class="form-field">
+                                <label>Requirement / JSON Data</label>
+                                <textarea id="form-prompt" placeholder='{ "firstName": "John", "age": 30 }  ... OR ...  "Create a membership form"' style="width: 100%; height: 120px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); padding: 8px; border-radius: 4px; margin-bottom: 16px; font-family: monospace; font-size: 12px;"></textarea>
+                            </div>
+
+                            <button class="primary-btn" style="width: 100%;" onclick="generateForm()">Generate DynUI Project</button>
+                            
+                            <div id="form-status" style="margin-top: 16px;"></div>
                         </div>
                     </div>
 
@@ -425,7 +457,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                             <button class="browse-btn" onclick="vscode.postMessage({ type: 'onBrowse', target: 'ingest-path' })">...</button>
                                         </div>
                                     </div>
-                                    <button class="primary-btn" onclick="executeIngest()">Ingest to RAG</button>
+                                    <button class="primary-btn" onclick="vscode.postMessage({ type: 'onIngest', value: { type: document.getElementById('ingest-type').value, path: document.getElementById('ingest-path').value } })">Ingest to RAG</button>
                                 </div>
                             </div>
                         </div>
@@ -434,22 +466,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     <!-- Settings Tab -->
                     <div id="tab-settings" class="tab-content">
                         <div class="settings-container">
-                            <div class="kb-title">Admin Controls</div>
-                            <div class="setting-item">
+                            <div class="kb-title">Admin Settings (Read-only)</div>
+                            <p style="color: var(--text-sec); font-size: 11px; margin-bottom: 20px;">
+                                These settings are synchronized with the **Admin Panel**. You can only apply more restrictive local limits in the Chat tab.
+                            </p>
+                            <div class="setting-item" style="opacity: 0.7;">
                                 <label>Strict Budget Mode</label>
-                                <input type="checkbox" id="strict-mode" checked />
+                                <input type="checkbox" id="strict-mode" disabled />
                             </div>
-                            <div class="setting-item">
-                                <label>Max Task Cost ($)</label>
-                                <input type="number" id="global-task-limit" class="setting-input" step="0.1" value="0.5" />
+                            <div class="setting-item" style="opacity: 0.7;">
+                                <label>Global Task Limit ($)</label>
+                                <input type="number" id="global-task-limit" class="setting-input" disabled />
                             </div>
-                            <div class="setting-item">
-                                <label>Agentic Search</label>
-                                <input type="checkbox" id="deep-search-check" checked />
+                            <div class="setting-item" style="opacity: 0.7;">
+                                <label>Review Strategy</label>
+                                <input type="checkbox" id="review-strategy" disabled />
                             </div>
-                            <button class="primary-btn" onclick="saveSettings()">Save Configuration</button>
+                            <div class="setting-item" style="opacity: 0.7;">
+                                <label>Consensus Mode</label>
+                                <input type="checkbox" id="consensus-mode" disabled />
+                            </div>
                             <div style="margin-top: 40px; text-align: center; opacity: 0.5; font-size: 10px;">
-                                Orchestrator v4.1.0 • Antigravity Engine
+                                Orchestrator v4.2.0 • Antigravity Engine
                             </div>
                         </div>
                     </div>
@@ -462,7 +500,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     function switchTab(tabId) {
                         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        document.querySelector('.tab-btn[onclick*="' + tabId + '"]').classList.add('active');
+                        document.querySelector('.tab-btn[data-tab="' + tabId + '"]').classList.add('active');
                         document.getElementById('tab-' + tabId).classList.add('active');
                         if (tabId === 'knowledge') refreshCollections();
                     }
@@ -474,9 +512,90 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     const strategySelect = document.getElementById('strategy-select');
                     const modelSelect = document.getElementById('model-select');
                     const limitInput = document.getElementById('limit-input');
-                    const deepSearchCheck = document.getElementById('deep-search-check');
+                     const deepSearchCheck = document.getElementById('deep-search-check');
+                    const strictMode = document.getElementById('strict-mode');
+                    const globalTaskLimit = document.getElementById('global-task-limit');
 
                     let currentBotMessage = null;
+
+                    const reviewStrategy = document.getElementById('review-strategy');
+                    const consensusMode = document.getElementById('consensus-mode');
+                    const ingestTypeSelect = document.getElementById('ingest-type');
+
+                    async function loadSettings() {
+                        try {
+                            const res = await fetch(API_BASE_URL + '/config/client-settings');
+                            if (res.ok) {
+                                const data = await res.json();
+                                
+                                // Populate models
+                                if (data.models) {
+                                    modelSelect.innerHTML = '';
+                                    data.models.forEach(m => {
+                                        const opt = document.createElement('option');
+                                        opt.value = m.id;
+                                        opt.text = m.label;
+                                        modelSelect.appendChild(opt);
+                                    });
+                                }
+
+                                // Populate modes
+                                if (data.modes) {
+                                    strategySelect.innerHTML = '';
+                                    data.modes.forEach(mode => {
+                                        const opt = document.createElement('option');
+                                        opt.value = mode;
+                                        opt.text = mode.charAt(0).toUpperCase() + mode.slice(1);
+                                        strategySelect.appendChild(opt);
+                                    });
+                                }
+
+                                // Budget Limits
+                                if (data.daily_spend) {
+                                    const budget = data.daily_spend.limit_usd || 1.0;
+                                    if (globalTaskLimit) globalTaskLimit.value = budget;
+                                    if (limitInput) {
+                                        limitInput.value = budget;
+                                        limitInput.max = budget;
+                                        limitInput.title = "Admin Max: $" + budget;
+                                    }
+                                }
+
+                                // Advanced Options visually mapped
+                                if (data.advanced_options) {
+                                    if (reviewStrategy) reviewStrategy.checked = data.advanced_options.review_strategy;
+                                    if (consensusMode) consensusMode.checked = data.advanced_options.consensus_mode;
+                                }
+
+                                // Allowed RAG Tiers
+                                if (data.allowed_rag_tiers) {
+                                    const allowed = data.allowed_rag_tiers;
+                                    Array.from(ingestTypeSelect.options).forEach(opt => {
+                                        // Simple heuristic if not exact match: T1/T2 are index < 2
+                                        const val = opt.value;
+                                        let tierStr = 't1';
+                                        if (val === 'instruction_docs') tierStr = 't1';
+                                        else if (val === 'specialization_rules') tierStr = 't2';
+                                        else if (val === 'component_library') tierStr = 't3';
+                                        else if (val === 'database') tierStr = 't4';
+
+                                        if (!allowed.includes(tierStr)) {
+                                            opt.disabled = true;
+                                            opt.text += ' (Read-only)';
+                                        }
+                                    });
+                                }
+                                
+                                // Form Studio visually mapped
+                                if (data.form_studio_enabled === false) {
+                                    document.querySelector('.tab-btn[data-tab="form-studio"]').style.display = 'none';
+                                }
+                            }
+                        } catch (e) { console.error("Failed to load client settings", e); }
+                    }
+
+                    loadSettings();
+                    refreshCollections();
 
                     async function refreshCollections() {
                         const listDiv = document.getElementById('collection-list');
@@ -541,6 +660,18 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         chatHistory.scrollTop = chatHistory.scrollHeight;
                     }
 
+                    function generateForm() {
+                        const prompt = document.getElementById('form-prompt');
+                        const name = document.getElementById('form-project-name');
+                        if (!prompt.value || !name.value) {
+                            vscode.postMessage({ type: 'onError', value: 'Please provide both a name and a description.' });
+                            return;
+                        }
+                        switchTab('chat');
+                        vscode.postMessage({ type: 'onGenerateForm', value: prompt.value, name: name.value });
+                        prompt.value = '';
+                    }
+
                     window.addEventListener('message', event => {
                         const message = event.data;
                         switch (message.type) {
@@ -572,6 +703,21 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         }
                     });
 
+                    // Tab switching listeners
+                    document.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            switchTab(btn.dataset.tab);
+                        });
+                    });
+
+                    // Context Upload
+                    const browseBtn = document.getElementById('browse-context-btn');
+                    if (browseBtn) {
+                        browseBtn.addEventListener('click', () => {
+                            vscode.postMessage({ type: 'onBrowse', target: 'context' });
+                        });
+                    }
+
                     sendBtn.addEventListener('click', () => {
                         if (!chatInput.value) return;
                         const div = document.createElement('div');
@@ -579,14 +725,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         div.textContent = chatInput.value;
                         chatHistory.appendChild(div);
                         
+                        const localLimit = limitInput.value ? parseFloat(limitInput.value) : null;
+                        const maxLimit = limitInput.max ? parseFloat(limitInput.max) : 999;
+
+                        if (localLimit !== null && localLimit > maxLimit) {
+                            vscode.postMessage({ 
+                                type: 'onError', 
+                                value: 'Local limit ($' + localLimit + ') cannot exceed Admin limit ($' + maxLimit + ')' 
+                            });
+                            return;
+                        }
+
                         vscode.postMessage({ 
                             type: 'onCommand', 
                             value: chatInput.value,
                             options: { 
                                 mode: strategySelect.value, 
                                 model: modelSelect.value,
-                                localLimit: limitInput.value ? parseFloat(limitInput.value) : null,
-                                deepSearch: deepSearchCheck.checked || strategySelect.value === 'deep-search'
+                                localLimit: localLimit,
+                                deepSearch: strategySelect.value === 'deep-search'
                             }
                         });
                         chatInput.value = '';
@@ -638,7 +795,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     private async executeIngest(value: { type: string; path: string; collection?: string }) {
         try {
-            const response = await fetch('http://localhost:8000/admin/ingest/execute', {
+            const config = vscode.workspace.getConfiguration('aiOrchestrator');
+            const apiBaseUrl = config.get('apiBaseUrl') || 'http://localhost:8000';
+            const response = await fetch(`${apiBaseUrl}/admin/ingest/execute`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(value)
@@ -651,6 +810,30 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             } else {
                 const err: any = await response.json();
                 vscode.window.showErrorMessage(`Ingestion failed: ${err.detail?.errors?.join(', ') || err.detail || 'Unknown error'}`);
+            }
+        } catch (e) {
+            vscode.window.showErrorMessage(`Failed to connect to backend: ${e}`);
+        }
+    }
+
+    private async updateSettings(value: any) {
+        try {
+            const config = vscode.workspace.getConfiguration('aiOrchestrator');
+            const apiBaseUrl = config.get('apiBaseUrl') || 'http://localhost:8000';
+
+            const response = await fetch(`${apiBaseUrl}/config/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    models: {}, // Not changing models here
+                    global_config: value
+                })
+            });
+
+            if (response.ok) {
+                vscode.window.showInformationMessage(`Settings updated successfully.`);
+            } else {
+                vscode.window.showErrorMessage(`Failed to update settings.`);
             }
         } catch (e) {
             vscode.window.showErrorMessage(`Failed to connect to backend: ${e}`);
@@ -727,21 +910,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
         if (options) {
             if (options.mode) {
-                if (options.mode === 'fast') {
-                    args.push('--strategy'); args.push('fast');
-                } else if (options.mode === 'deep-search') {
-                    args.push('--strategy'); args.push('adaptive');
-                    args.push('--deep-search');
-                } else if (options.mode === 'auto-fix') {
-                    args.push('--strategy'); args.push('adaptive');
-                    args.push('--auto-fix');
-                } else if (options.mode === 'question') {
-                    args.push('--mode'); args.push('question');
-                }
+                args.push('--mode'); args.push(options.mode);
             }
             if (options.model) { args.push('--model'); args.push(options.model); }
             if (options.localLimit) { args.push('--local-limit'); args.push(options.localLimit.toString()); }
-            if (options.deepSearch && options.mode !== 'deep-search') { args.push('--deep-search'); }
         }
 
         this.contextFiles.forEach(file => {
@@ -786,6 +958,46 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 this._view?.webview.postMessage({ type: 'addResponse', value: `\n[Task Completed]` });
             } else if (code !== null) { // code is null if killed
                 this._view?.webview.postMessage({ type: 'addResponse', value: `\n[Task Failed with code ${code}]` });
+            }
+        });
+    }
+
+    private async runFormEngine(prompt: string, projectName: string) {
+        if (!this._view) return;
+
+        this._view.webview.postMessage({ type: 'addResponse', value: "Launching Form Engine Studio..." });
+
+        const config = vscode.workspace.getConfiguration('aiOrchestrator');
+        const pythonPath = config.get<string>('pythonPath') || 'python';
+        let projectRoot = config.get<string>('projectRoot');
+
+        if (!projectRoot && vscode.workspace.workspaceFolders) {
+            projectRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        }
+
+        if (!projectRoot) return;
+
+        let finalPythonPath = pythonPath;
+        const possibleVenvWin = path.join(projectRoot, '.venv', 'Scripts', 'python.exe');
+        if (fs.existsSync(possibleVenvWin)) finalPythonPath = possibleVenvWin;
+
+        const scriptPath = path.join(projectRoot, 'scripts', 'run_form_engine.py');
+
+        this._currentProcess = cp.spawn(finalPythonPath, ['-u', scriptPath, prompt, '--name', projectName], { cwd: projectRoot });
+
+        this._currentProcess.stdout?.on('data', (data) => {
+            this._view?.webview.postMessage({ type: 'appendResponse', value: data.toString() });
+        });
+
+        this._currentProcess.stderr?.on('data', (data) => {
+            this._view?.webview.postMessage({ type: 'appendResponse', value: `[Error]: ${data.toString()}` });
+        });
+
+        this._currentProcess.on('close', (code) => {
+            this._currentProcess = undefined;
+            this._view?.webview.postMessage({ type: 'setRunning', value: false });
+            if (code === 0) {
+                vscode.window.showInformationMessage("DynUI Form Project generated successfully!");
             }
         });
     }

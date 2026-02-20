@@ -2,57 +2,48 @@ import * as React from 'react';
 import { useState } from 'react';
 import type { Milestone, Task } from '../lib/types';
 import { useLogStream } from '../hooks/useLogStream';
-import { Send, SquareCode, Activity, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon, SlidersHorizontal, Check, Square, Layers } from 'lucide-react';
+import { Send, SquareCode, Activity, Settings, Search, Sparkles, Globe, Wrench, X, ImageIcon, SlidersHorizontal, Check, Square, Layers, Zap, Brain, Bot } from 'lucide-react';
 import clsx from 'clsx';
 import { ThinkingBlock } from './ThinkingBlock';
 import { KnowledgeTab } from './KnowledgeTab';
 import { AdvancedOptions } from './AdvancedOptions';
-import { SettingsModal } from './SettingsModal';
 import { AgentRegistry } from './AgentRegistry';
+import { FormStudioTab } from './FormStudioTab';
+import { api } from '../lib/api';
 
 interface OrchestratorUIProps {
     onOpenSettings?: () => void;
 }
 
-export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: OrchestratorUIProps) {
+export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
     const { logs, isConnected, plan, clearLogs } = useLogStream();
     const [prompt, setPrompt] = useState("");
     const [activePrompt, setActivePrompt] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = React.useRef<HTMLDivElement>(null);
-    const [activeTab, setActiveTab] = useState<'stream' | 'graph' | 'knowledge' | 'agents'>('stream');
+    const [activeTab, setActiveTab] = useState<'stream' | 'graph' | 'knowledge' | 'agents' | 'forms'>('stream');
 
-    // Feature Toggles (Phase 15, 16, 18)
-    const [features, setFeatures] = useState({
-        deepSearch: false,
-        autoFix: false,
-        askMode: false
-    });
+    // Phase 4: Client Settings
+    const [clientSettings, setClientSettings] = useState<any>(null);
+    const [activeMode, setActiveMode] = useState<'fast' | 'thinking' | 'agentic'>('agentic');
+
+    React.useEffect(() => {
+        api.get('/config/client-settings').then(data => {
+            setClientSettings(data);
+            if (data?.modes?.length > 0 && !data.modes.includes(activeMode)) {
+                setActiveMode(data.modes[0]);
+            }
+        }).catch(err => console.error("Failed to load client settings", err));
+    }, []);
+
     const [showOptions, setShowOptions] = useState(false);
-
-    // Legacy individual states (keeping for compatibility with existing logic if any)
-    const [deepSearch, setDeepSearch] = useState(false);
-    const [autoFix, setAutoFix] = useState(false);
-
-    const toggleFeature = (key: keyof typeof features) => {
-        setFeatures(prev => {
-            const newVal = !prev[key];
-            if (key === 'deepSearch') setDeepSearch(newVal);
-            if (key === 'autoFix') setAutoFix(newVal);
-            return { ...prev, [key]: newVal };
-        });
-    };
-
     const [retrievalStrategy, setRetrievalStrategy] = useState<'local' | 'hybrid' | 'external'>('local');
-    // Phase 16: Vision
+
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-    // Phase 17: Advanced Options
-    const [budgetLimit, setBudgetLimit] = useState<number | null>(1.0);
     const [selectedModel, setSelectedModel] = useState<string>('gpt-5.2');
     const [consensusMode, setConsensusMode] = useState(false);
     const [reviewStrategy, setReviewStrategy] = useState<'basic' | 'strict'>('basic');
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -117,12 +108,9 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                 headers: { 'Content-Type': 'application/json', 'x-api-key': '12345' },
                 body: JSON.stringify({
                     request: finalPrompt,
-                    mode: features.askMode ? 'question' : 'standard',
+                    mode: activeMode,
                     image: selectedImage,
-                    deep_search: deepSearch,
                     retrieval_strategy: retrievalStrategy,
-                    auto_fix: autoFix,
-                    budget_limit: budgetLimit,
                     consensus_mode: consensusMode,
                     review_strategy: reviewStrategy,
                     model: selectedModel
@@ -157,7 +145,7 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
     }, [logs]);
 
     return (
-        <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+        <div className="flex h-full w-full bg-background text-foreground overflow-hidden font-sans">
             {/* SIDEBAR - REFACTORED */}
             <aside className="w-80 border-r border-border bg-card/30 flex flex-col hidden md:flex shrink-0">
                 <div className="p-4 border-b border-border flex items-center gap-2 h-14">
@@ -174,6 +162,7 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                             { id: 'graph', label: 'Knowledge Graph', icon: Activity },
                             { id: 'knowledge', label: 'Manage Knowledge', icon: Layers },
                             { id: 'agents', label: 'Agent Registry', icon: Globe },
+                            ...(clientSettings?.form_studio_enabled !== false ? [{ id: 'forms', label: 'Form Studio', icon: SquareCode }] : [])
                         ].map((item) => (
                             <button
                                 key={item.id}
@@ -238,8 +227,8 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                 {/* Settings at Bottom */}
                 <div className="p-4 border-t border-border mt-auto">
                     <button
-                        onClick={() => setIsSettingsOpen(true)}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+                        onClick={onOpenSettings}
+                        className="w-full flex items-center justify-between p-3 rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors group"
                     >
                         <Settings className="w-4 h-4" />
                         Settings
@@ -248,10 +237,18 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                         <div className={clsx("w-2 h-2 rounded-full transition-colors", isConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-red-500")} />
                         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">{isConnected ? "System Online" : "Offline"}</span>
                     </div>
+                    {clientSettings?.daily_spend && (
+                        <div className="mt-3 px-3 py-2 bg-muted/20 border border-border/50 rounded-lg text-center">
+                            <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Daily Spend</div>
+                            <div className="text-sm font-mono text-foreground font-medium">
+                                ${clientSettings.daily_spend.today_usd?.toFixed(2)} / ${clientSettings.daily_spend.limit_usd?.toFixed(2)}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col relative bg-background/50 backdrop-blur-sm h-screen overflow-hidden">
+            <main className="flex-1 flex flex-col relative bg-background/50 backdrop-blur-sm h-full overflow-hidden">
                 {/* Header removed - blended into main area or sidebar */}
 
                 {/* Scrollable Content - Full Width Container enables scrollbar at edge */}
@@ -261,6 +258,8 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                             <KnowledgeTab />
                         ) : activeTab === 'agents' ? (
                             <AgentRegistry />
+                        ) : activeTab === 'forms' ? (
+                            <FormStudioTab />
                         ) : activeTab === 'graph' ? (
                             <div className="flex items-center justify-center h-full text-muted-foreground italic min-h-[50vh]">
                                 Knowledge Graph Visualization Coming Soon...
@@ -393,7 +392,7 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                         onClick={() => setShowOptions(!showOptions)}
                                         className={clsx(
                                             "p-2 rounded-full transition-all border",
-                                            showOptions || features.deepSearch || features.autoFix || features.askMode
+                                            showOptions
                                                 ? "bg-primary/20 text-primary border-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                                                 : "bg-background/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                                         )}
@@ -408,46 +407,53 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                                 Execution Mode
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleFeature('deepSearch')}
-                                                className={clsx(
-                                                    "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
-                                                    features.deepSearch ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
-                                                )}
-                                            >
-                                                <Search className="w-4 h-4 mr-2" />
-                                                Deep Search
-                                                {features.deepSearch && <Check className="w-4 h-4 ml-auto" />}
-                                            </button>
+                                            {clientSettings?.modes?.includes('fast') && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveMode('fast')}
+                                                    className={clsx(
+                                                        "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                        activeMode === 'fast' ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
+                                                    )}
+                                                >
+                                                    <Zap className="w-4 h-4 mr-2" />
+                                                    Fast
+                                                    {activeMode === 'fast' && <Check className="w-4 h-4 ml-auto" />}
+                                                </button>
+                                            )}
 
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleFeature('autoFix')}
-                                                className={clsx(
-                                                    "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
-                                                    features.autoFix ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
-                                                )}
-                                            >
-                                                <Wrench className="w-4 h-4 mr-2" />
-                                                Auto-Fix
-                                                {features.autoFix && <Check className="w-4 h-4 ml-auto" />}
-                                            </button>
+                                            {clientSettings?.modes?.includes('thinking') && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveMode('thinking')}
+                                                    className={clsx(
+                                                        "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                        activeMode === 'thinking' ? "bg-primary/20 text-primary" : "hover:bg-muted text-foreground"
+                                                    )}
+                                                >
+                                                    <Brain className="w-4 h-4 mr-2" />
+                                                    Thinking
+                                                    {activeMode === 'thinking' && <Check className="w-4 h-4 ml-auto" />}
+                                                </button>
+                                            )}
+
+                                            {clientSettings?.modes?.includes('agentic') && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveMode('agentic')}
+                                                    className={clsx(
+                                                        "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
+                                                        activeMode === 'agentic' ? "bg-indigo-500/20 text-indigo-400" : "hover:bg-muted text-foreground"
+                                                    )}
+                                                >
+                                                    <Bot className="w-4 h-4 mr-2" />
+                                                    Agentic
+                                                    {activeMode === 'agentic' && <Check className="w-4 h-4 ml-auto" />}
+                                                </button>
+                                            )}
 
                                             <div className="h-px bg-border my-1" />
 
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleFeature('askMode')}
-                                                className={clsx(
-                                                    "w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors",
-                                                    features.askMode ? "bg-indigo-500/20 text-indigo-400" : "hover:bg-muted text-foreground"
-                                                )}
-                                            >
-                                                <Sparkles className="w-4 h-4 mr-2" />
-                                                Ask Agent (Q&A)
-                                                {features.askMode && <Check className="w-4 h-4 ml-auto" />}
-                                            </button>
                                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                 Model Choice
                                             </div>
@@ -457,27 +463,20 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                                     onChange={(e) => setSelectedModel(e.target.value)}
                                                     className="w-full bg-background/50 border border-border rounded-lg text-xs p-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50"
                                                 >
-                                                    <option value="gpt-5.2">GPT-5.2 (Recommended)</option>
-                                                    <option value="claude-opus-4.6">Claude Opus 4.6</option>
-                                                    <option value="gpt-5-mini">GPT-5 Mini</option>
-                                                    <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
-                                                    <option value="gemini-3-pro">Gemini 3 Pro</option>
+                                                    {clientSettings?.models ? clientSettings.models.map((m: any) => (
+                                                        <option key={m.id} value={m.id}>{m.label}</option>
+                                                    )) : (
+                                                        <>
+                                                            <option value="gpt-5.2">GPT-5.2 (Recommended)</option>
+                                                            <option value="gpt-5-mini">GPT-5 Mini</option>
+                                                        </>
+                                                    )}
                                                 </select>
-                                            </div>
-
-                                            <div className="h-px bg-border my-1" />
-
-                                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                                Budget (USD)
-                                            </div>
-                                            <div className="px-2 pb-2">
-                                                <input
-                                                    type="number"
-                                                    value={budgetLimit}
-                                                    onChange={(e) => setBudgetLimit(e.target.value)}
-                                                    step="0.1"
-                                                    className="w-full bg-background/50 border border-border rounded-lg text-xs p-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                                                />
+                                                {clientSettings?.models && (
+                                                    <div className="text-[10px] text-muted-foreground mt-1 px-1">
+                                                        {clientSettings.models.find((m: any) => m.id === selectedModel)?.traits}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="h-px bg-border my-1" />
@@ -485,7 +484,7 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                                     )}
                                 </div>
 
-                                {features.deepSearch && (
+                                {activeMode === 'thinking' && (
                                     <div className="flex items-center gap-1 bg-muted/30 p-0.5 rounded-md border border-border">
                                         <button
                                             type="button"
@@ -544,12 +543,12 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                             </div >
 
                             <AdvancedOptions
-                                budget={budgetLimit}
-                                setBudget={setBudgetLimit}
                                 consensus={consensusMode}
                                 setConsensus={setConsensusMode}
                                 reviewStrategy={reviewStrategy}
                                 setReviewStrategy={setReviewStrategy}
+                                showReviewStrategy={clientSettings?.advanced_options?.review_strategy}
+                                showConsensusMode={clientSettings?.advanced_options?.consensus_mode}
                             />
 
                             <div className="mt-2 ml-2 text-[10px] text-muted-foreground opacity-60">
@@ -559,8 +558,6 @@ export function OrchestratorUI({ onOpenSettings: _onOpenSettings }: Orchestrator
                     </div >
                 )}
             </main >
-
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
         </div >
     );
 }

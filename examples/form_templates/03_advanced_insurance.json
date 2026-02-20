@@ -1,0 +1,92 @@
+{
+    "metadata": {
+        "title": "Ponuda za Osiguranje",
+        "version": "1.0",
+        "description": "Prikupljanje podataka za polisu osiguranja sa različitim nivoima rizika",
+        "outputSchema": true
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "imeOsiguranika",
+                "type": "text",
+                "label": "Ime i Prezime",
+                "required": true,
+                "placeholder": "Unesite ime i prezime lica koje se osigurava"
+            },
+            {
+                "id": "emailOsiguranika",
+                "type": "email",
+                "label": "Email Adresa",
+                "required": true,
+                "placeholder": "email@domen.com",
+                "validation": {
+                    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                },
+                "errorMessage": "Format email adrese nije validan"
+            },
+            {
+                "id": "datumRodjenja",
+                "type": "date",
+                "label": "Datum rođenja",
+                "required": true
+            },
+            {
+                "id": "rizik1Info",
+                "type": "label",
+                "label": "Rizik 1 (Osnovni)",
+                "helperText": "Obavezan, predefinisana suma: 10,000 EUR",
+                "defaultValue": "Aktiviran (10,000 EUR)"
+            },
+            {
+                "id": "rizik2Suma",
+                "type": "select",
+                "label": "Rizik 2 - Izbor osigurane sume",
+                "required": true,
+                "options": [
+                    {
+                        "value": "5000",
+                        "label": "5,000 EUR"
+                    },
+                    {
+                        "value": "10000",
+                        "label": "10,000 EUR"
+                    },
+                    {
+                        "value": "20000",
+                        "label": "20,000 EUR"
+                    }
+                ],
+                "defaultValue": "5000"
+            },
+            {
+                "id": "rizik3Aktivacija",
+                "type": "checkbox",
+                "label": "Rizik 3 (Opciono osiguranje opreme)",
+                "defaultValue": false
+            },
+            {
+                "id": "rizik3Suma",
+                "type": "number",
+                "label": "Rizik 3 - Unos osigurane sume (EUR)",
+                "required": true,
+                "visibility": {
+                    "dependsOn": "rizik3Aktivacija",
+                    "condition": "equals",
+                    "value": true
+                },
+                "validation": {
+                    "min": 100
+                },
+                "helperText": "Unesite željeni iznos osiguranja za opremu"
+            }
+        ],
+        "actions": [
+            {
+                "type": "submit",
+                "label": "Izračunaj i Podnesi",
+                "variant": "primary"
+            }
+        ]
+    }
+}

@@ -61,8 +61,8 @@ class ModelRouterV2:
     - Producer-reviewer loops
     """
     
-    def __init__(self, config_path: str = "config/model_mapping.yaml"):
-        # Default to model_mapping.yaml instead of v2 to align with new spec
+    def __init__(self, config_path: str = "config/model_mapping_v2.yaml"):
+        # Default to model_mapping_v2.yaml instead of v2 to align with new spec
         self.config_path = Path(config_path)
         self.config = self._load_config()
         logger.info(f"Model router initialized from {config_path}")

@@ -1,0 +1,85 @@
+{
+    "metadata": {
+        "version": "1.0",
+        "formType": "complex",
+        "title": "Onboarding Wizard",
+        "description": "Multi-step registration for new employees"
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "firstName",
+                "type": "text",
+                "label": "First Name",
+                "required": true
+            },
+            {
+                "id": "lastName",
+                "type": "text",
+                "label": "Last Name",
+                "required": true
+            },
+            {
+                "id": "email",
+                "type": "email",
+                "label": "Work Email"
+            },
+            {
+                "id": "department",
+                "type": "select",
+                "label": "Department",
+                "options": [
+                    "Engineering",
+                    "HR",
+                    "Sales",
+                    "Marketing"
+                ]
+            },
+            {
+                "id": "role",
+                "type": "text",
+                "label": "Job Title"
+            },
+            {
+                "id": "startDate",
+                "type": "date",
+                "label": "Start Date"
+            },
+            {
+                "id": "officeLocation",
+                "type": "text",
+                "label": "Office Location"
+            },
+            {
+                "id": "bio",
+                "type": "textarea",
+                "label": "Short Bio"
+            },
+            {
+                "id": "linkedin",
+                "type": "text",
+                "label": "LinkedIn Profile"
+            },
+            {
+                "id": "newsletter",
+                "type": "checkbox",
+                "label": "Subscribe to internal newsletter",
+                "defaultValue": true
+            },
+            {
+                "id": "agreement",
+                "type": "checkbox",
+                "label": "Accept security policy",
+                "required": true
+            }
+        ],
+        "actions": [
+            {
+                "id": "submit",
+                "type": "submit",
+                "label": "Finish Registration",
+                "color": "primary"
+            }
+        ]
+    }
+}

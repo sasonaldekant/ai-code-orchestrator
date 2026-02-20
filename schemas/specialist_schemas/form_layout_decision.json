@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Form Layout Decision Schema",
+    "description": "Schema for Agent's decision on which layout to use for a generated form",
+    "type": "object",
+    "required": [
+        "recommendedLayout",
+        "reasoning",
+        "structure"
+    ],
+    "properties": {
+        "recommendedLayout": {
+            "type": "string",
+            "enum": [
+                "standard",
+                "stepper",
+                "tabs",
+                "accordion"
+            ],
+            "description": "The best DynUI layout for the given data complexity"
+        },
+        "reasoning": {
+            "type": "string",
+            "description": "Why this layout was chosen based on field count or logical groupings"
+        },
+        "structure": {
+            "type": "array",
+            "description": "Logical grouping of fields into sections/steps",
+            "items": {
+                "type": "object",
+                "required": [
+                    "title",
+                    "fieldIds"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "fieldIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "complexity": {
+            "type": "string",
+            "enum": [
+                "low",
+                "medium",
+                "high"
+            ]
+        }
+    }
+}

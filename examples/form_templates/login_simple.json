@@ -1,0 +1,46 @@
+{
+    "metadata": {
+        "version": "1.0",
+        "formType": "simple",
+        "title": "User Login",
+        "description": "A standard login form with email and password"
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "email",
+                "type": "email",
+                "label": "Email Address",
+                "placeholder": "your@email.com",
+                "required": true,
+                "helperText": "We will never share your email."
+            },
+            {
+                "id": "password",
+                "type": "password",
+                "label": "Password",
+                "placeholder": "Enter your password",
+                "required": true
+            },
+            {
+                "id": "remember_me",
+                "type": "checkbox",
+                "label": "Remember me on this device",
+                "defaultValue": false
+            }
+        ],
+        "actions": [
+            {
+                "type": "submit",
+                "label": "Sign In",
+                "endpoint": "/api/v1/auth/login",
+                "variant": "primary"
+            },
+            {
+                "type": "cancel",
+                "label": "Cancel",
+                "variant": "ghost"
+            }
+        ]
+    }
+}

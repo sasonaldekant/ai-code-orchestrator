@@ -88,7 +88,7 @@ class OrchestratorV2:
 
     def __init__(
         self,
-        config_path: str = "config/model_mapping.yaml",
+        config_path: str = "config/model_mapping_v2.yaml",
         max_retries: int = 3,
         retry_delay: float = 1.0,
         max_feedback_iterations: int = 3,

@@ -21,12 +21,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from rag.chunking_strategies import MarkdownChunker, Chunk
 from rag.vector_store import SimplePersistentVectorStore, Document
 from rag.embeddings_provider import create_embeddings_provider
+from core.settings import get_dynui_path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # DynUI Docs Location
-DYNUI_DOCS_PATH = Path(r"c:\Users\mgasic\Documents\AIProjects\dyn-ui-main-v01\docs\rag-ready")
+DYNUI_DOCS_PATH = get_dynui_path() / "docs" / "rag-ready"
 
 # Tier Mapping (from Phase 4 plan)
 TIER_MAPPING = {

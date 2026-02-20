@@ -1,0 +1,54 @@
+{
+    "metadata": {
+        "title": "Korisnička Registracija",
+        "version": "1.0",
+        "description": "Jednostavna forma za registraciju novog korisnika",
+        "outputSchema": true
+    },
+    "form": {
+        "fields": [
+            {
+                "id": "ime",
+                "type": "text",
+                "label": "Ime",
+                "required": true,
+                "placeholder": "Unesite ime"
+            },
+            {
+                "id": "prezime",
+                "type": "text",
+                "label": "Prezime",
+                "required": true,
+                "placeholder": "Unesite prezime"
+            },
+            {
+                "id": "email",
+                "type": "email",
+                "label": "Email Adresa",
+                "required": true,
+                "placeholder": "vas@email.com",
+                "validation": {
+                    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                },
+                "errorMessage": "Unesite validnu email adresu"
+            },
+            {
+                "id": "lozinka",
+                "type": "password",
+                "label": "Lozinka",
+                "required": true,
+                "validation": {
+                    "minLength": 8
+                },
+                "helperText": "Lozinka mora imati najmanje 8 karaktera"
+            }
+        ],
+        "actions": [
+            {
+                "type": "submit",
+                "label": "Registruj se",
+                "variant": "primary"
+            }
+        ]
+    }
+}

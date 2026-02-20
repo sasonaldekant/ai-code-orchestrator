@@ -9,6 +9,7 @@ import logging
 
 from rag.vector_store import SimplePersistentVectorStore, SearchResult
 from rag.embeddings_provider import create_embeddings_provider
+from core.settings import resolve_path
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ class DomainAwareRetriever:
             return [
                 {
                     "content": r.document.text,
-                    "source": r.document.metadata.get("path") or r.document.metadata.get("source"),
+                    "source": resolve_path(r.document.metadata.get("full_path") or r.document.metadata.get("path") or r.document.metadata.get("source")),
                     "metadata": r.document.metadata,
                     "tier": tier_id
                 }
@@ -203,7 +204,7 @@ class DomainAwareRetriever:
                 {
                     "name": r.document.metadata.get("name"),
                     "content": r.document.text, # Include full text content now!
-                    "path": r.document.metadata.get("path"),
+                    "path": resolve_path(r.document.metadata.get("full_path") or r.document.metadata.get("path")),
                 }
                 for r in component_results
             ],

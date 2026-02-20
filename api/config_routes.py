@@ -7,7 +7,7 @@ from pathlib import Path
 
 router = APIRouter(prefix="/config", tags=["config"])
 
-CONFIG_PATH = Path("config/model_mapping.yaml")
+CONFIG_PATH = Path("config/model_mapping_v2.yaml")
 ENV_PATH = Path(".env")
 
 LIMITS_PATH = Path("config/limits.yaml")
@@ -24,9 +24,13 @@ class GlobalConfig(BaseModel):
     max_retries: int = 3
     max_feedback_iterations: int = 3
     deep_search: bool = False
+    per_task_budget: float = 0.5
+    per_hour_budget: float = 5.0
+    per_day_budget: float = 20.0
+    strict_mode: bool = True
 
 class GlobalSettings(BaseModel):
-    models: Dict[str, Any]
+    models: Optional[Dict[str, Any]] = None
     limits: Optional[Dict[str, Any]] = None
     api_keys: Optional[Dict[str, str]] = None
     global_config: Optional[GlobalConfig] = None
@@ -150,3 +154,61 @@ async def update_settings(settings: GlobalSettings):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/client-settings")
+async def get_client_settings():
+    try:
+        limits = load_limits_config()
+        global_conf = limits.get("global", {})
+        
+        # Define model traits statically
+        model_traits_catalog = {
+            "gpt-5-nano": {"label": "GPT-5 Nano ⚡", "traits": "Ultra Fast, Low Cost", "provider": "openai"},
+            "gpt-5-mini": {"label": "GPT-5 Mini 🚀", "traits": "Fast, Cost-Effective", "provider": "openai"},
+            "gpt-5.2": {"label": "GPT-5.2 🧠", "traits": "High Intelligence", "provider": "openai"},
+            "claude-sonnet-4.5": {"label": "Claude Sonnet 4.5 💡", "traits": "Balanced", "provider": "anthropic"},
+            "claude-opus-4.6": {"label": "Claude Opus 4.6 🔬", "traits": "Deep Thinking, Premium", "provider": "anthropic"},
+            "gemini-3-flash": {"label": "Gemini 3 Flash ⚡", "traits": "Ultra Fast", "provider": "google"},
+            "gemini-3-pro": {"label": "Gemini 3 Pro 📖", "traits": "Mega Context, 1M tokens", "provider": "google"},
+            "sonar-deep-research": {"label": "Sonar Deep Research 🌐", "traits": "Web Research", "provider": "perplexity"},
+            "sonar": {"label": "Sonar 🔍", "traits": "Fact Checking", "provider": "perplexity"}
+        }
+
+        allowed_model_ids = limits.get("allowed_user_models", ["gpt-5-mini", "gpt-5.2"])
+        client_models = []
+        for mid in allowed_model_ids:
+            if mid in model_traits_catalog:
+                entry = model_traits_catalog[mid].copy()
+                entry["id"] = mid
+                client_models.append(entry)
+
+        allowed_options = limits.get("allowed_user_options", {})
+        
+        from core.cost_manager import CostManager
+        cm = CostManager(enable_history=True)
+
+        return {
+            "models": client_models,
+            "modes": allowed_options.get("modes", ["fast", "thinking", "agentic"]),
+            "form_studio_enabled": allowed_options.get("form_studio", True),
+            "limits": {
+                "per_task_budget": global_conf.get("per_task_budget", 0.25),
+                "per_day_budget": global_conf.get("per_day_budget", 2.0)
+            },
+            "daily_spend": {
+                "today_usd": cm.day_cost,
+                "limit_usd": global_conf.get("per_day_budget", 2.0)
+            },
+            "advanced_options": {
+                "review_strategy": allowed_options.get("show_review_strategy", False),
+                "consensus_mode": allowed_options.get("show_consensus_mode", False),
+                "retrieval_mode": allowed_options.get("show_retrieval_mode", False)
+            },
+            "allowed_rag_tiers": limits.get("allowed_rag_tiers", [3, 4])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/approve")
+async def approve_settings(settings: GlobalSettings):
+    return await update_settings(settings)

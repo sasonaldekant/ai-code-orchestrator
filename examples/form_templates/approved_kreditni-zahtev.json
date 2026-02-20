@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "title": "Kreditni Zahtev",
+    "name": null,
+    "version": "1.0",
+    "description": "Kompleksnija forma za kredit sa uslovnim poljima (zavisnostima)",
+    "formType": null,
+    "outputSchema": true
+  },
+  "form": {
+    "fields": [
+      {
+        "id": "radniStatus",
+        "type": "select",
+        "label": "Radni Status",
+        "required": true,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": "Zaposlen na neodređeno",
+        "options": [
+          {
+            "value": "Zaposlen na neodređeno",
+            "label": "Zaposlen na neodređeno"
+          },
+          {
+            "value": "Zaposlen na određeno",
+            "label": "Zaposlen na određeno"
+          },
+          {
+            "value": "Nezaposlen",
+            "label": "Nezaposlen"
+          },
+          {
+            "value": "Penzioner",
+            "label": "Penzioner"
+          }
+        ],
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": null,
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "nazivPoslodavca",
+        "type": "text",
+        "label": "Naziv Poslodavca",
+        "required": true,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": {
+          "dependsOn": "radniStatus",
+          "condition": "notEquals",
+          "value": "Nezaposlen"
+        },
+        "validation": null,
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "istekUgovora",
+        "type": "date",
+        "label": "Datum isteka ugovora",
+        "required": true,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": {
+          "dependsOn": "radniStatus",
+          "condition": "equals",
+          "value": "Zaposlen na određeno"
+        },
+        "validation": null,
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "iznosKredita",
+        "type": "number",
+        "label": "Traženi iznos kredita (EUR)",
+        "required": true,
+        "placeholder": null,
+        "helperText": "Iznos mora biti između 1,000 i 50,000 EUR",
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": null,
+          "min": 1000.0,
+          "max": 50000.0,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      }
+    ],
+    "actions": [
+      {
+        "id": null,
+        "type": "submit",
+        "label": "Podnesi Zahtev",
+        "variant": "primary",
+        "color": null,
+        "endpoint": null
+      }
+    ]
+  },
+  "sections": null,
+  "logic": null,
+  "lookups": null,
+  "formId": null
+}
