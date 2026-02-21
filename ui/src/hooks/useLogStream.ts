@@ -13,8 +13,8 @@ export function useLogStream() {
         let retryTimeout: NodeJS.Timeout;
 
         const connect = () => {
-            // In production, use relative path if served from same origin
-            const url = "http://localhost:8000/stream/logs";
+            const API_BASE_URL = typeof window !== 'undefined' && (window as any)._env_?.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const url = `${API_BASE_URL}/stream/logs`;
 
             eventSource = new EventSource(url);
             eventSourceRef.current = eventSource;

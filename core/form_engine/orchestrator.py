@@ -131,12 +131,15 @@ class FormEngineOrchestrator:
         
         # Update App.tsx to import and show the form
         app_tsx = f"""import {{ {comp_name} }} from './{comp_name}';
+import {{ ThemeProvider, DynContainer }} from '@dyn-ui/react';
 
 export default function App() {{
   return (
-    <div style={{{{ padding: 'var(--dyn-spacing-xl)' }}}}>
-      <{comp_name} />
-    </div>
+    <ThemeProvider>
+      <DynContainer maxWidth="800px" style={{{{ margin: '0 auto', paddingTop: 'var(--dyn-spacing-xl)' }}}}>
+        <{comp_name} />
+      </DynContainer>
+    </ThemeProvider>
   );
 }}
 """

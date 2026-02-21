@@ -196,7 +196,8 @@ class FormSchemaInput(BaseModel):
                 raise ValueError("Form must have at least one field.")
             self.form = FormDefinition(fields=all_fields)
         elif self.form is None and not self.sections:
-            raise ValueError("Either 'form' or 'sections' must be provided.")
+            # Create an empty form definition dynamically if needed by down-stream processors
+            self.form = FormDefinition(fields=[])
         return self
 
 class PreviewRequest(BaseModel):
@@ -236,8 +237,8 @@ async def preview_form(req: PreviewRequest):
         meta = template.get("metadata") or {}
         sections = template.get("sections") or []
         total_fields = (
-            len(template.get("form", {}).get("fields", []))
-            or sum(len(s.get("fields", [])) for s in sections)
+            len((template.get("form") or {}).get("fields", []))
+            or sum(len((s or {}).get("fields", [])) for s in sections)
         )
         preview["metadata"] = {
             "title": meta.get("title", "Untitled Form"),

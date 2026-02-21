@@ -229,6 +229,18 @@ export function applyBusinessLogic(data: any) {
                 col_span = f.get("wrapperProps", {}).get("colSpan", "full")
                 field_def["layout"] = { "span": col_span }
                 
+                # Migrate validation props to validation object so engine picks them up
+                valid_keys = ["required", "pattern", "min", "max", "minLength", "maxLength", "errorMessage", "custom"]
+                validation_obj = field_def.get("validation") or {}
+                moved = False
+                for k in valid_keys:
+                    if k in field_def and field_def[k] is not None:
+                        validation_obj[k] = field_def.pop(k)
+                        moved = True
+                
+                if moved or validation_obj:
+                    field_def["validation"] = validation_obj
+                
                 schema_section["fields"].append(field_def)
                 
             form_schema["sections"].append(schema_section)

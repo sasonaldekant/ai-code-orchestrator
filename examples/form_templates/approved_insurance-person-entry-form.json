@@ -1,0 +1,2933 @@
+{
+  "metadata": {
+    "title": "Insurance Person Entry Form",
+    "name": null,
+    "version": "5.0",
+    "description": "Kompletan unos osiguranika i ugovarača - fizičko i pravno lice",
+    "formType": null,
+    "outputSchema": false
+  },
+  "form": {
+    "fields": [
+      {
+        "id": "tipUgovaraca",
+        "type": "radio",
+        "label": "Tip ugovarača",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": "fizicko",
+        "options": [
+          {
+            "value": "fizicko",
+            "label": "Fizičko lice"
+          },
+          {
+            "value": "pravno",
+            "label": "Pravno lice"
+          }
+        ],
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "imeUgovaraca",
+        "type": "text",
+        "label": "Ime",
+        "required": false,
+        "placeholder": "Unesite ime",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 2,
+          "maxLength": 50,
+          "pattern": "^[a-žA-Ž\\s-]+$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "prezimeUgovaraca",
+        "type": "text",
+        "label": "Prezime",
+        "required": false,
+        "placeholder": "Unesite prezime",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 2,
+          "maxLength": 50,
+          "pattern": "^[a-žA-Ž\\s-]+$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "jmbgUgovaraca",
+        "type": "text",
+        "label": "JMBG",
+        "required": false,
+        "placeholder": "13 cifara",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": "^[0-9]{13}$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "polUgovaraca",
+        "type": "radio",
+        "label": "Pol",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": [
+          {
+            "value": "M",
+            "label": "Muško"
+          },
+          {
+            "value": "Ž",
+            "label": "Žensko"
+          }
+        ],
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "datumRodjenjaUgovaraca",
+        "type": "date",
+        "label": "Datum rođenja",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "drzavljanstvoUgovaraca",
+        "type": "dropdown",
+        "label": "Državljanstvo",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "nationalities",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "mestoRodjenjaUgovaraca",
+        "type": "text",
+        "label": "Mesto rođenja",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "zanimanjeUgovaraca",
+        "type": "dropdown",
+        "label": "Zanimanje (šifra)",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "occupations",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "opisZanimanjaUgovaraca",
+        "type": "textarea",
+        "label": "Opis zanimanja",
+        "required": false,
+        "placeholder": "Opišite vaše zanimanje...",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": null,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": 200,
+          "pattern": null
+        },
+        "layout": {
+          "span": "full"
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "nazivPravnoLice",
+        "type": "text",
+        "label": "Naziv",
+        "required": false,
+        "placeholder": "Unesite naziv pravnog lica",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 3,
+          "maxLength": 200,
+          "pattern": null
+        },
+        "layout": {
+          "span": "full"
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "maticniBroj",
+        "type": "text",
+        "label": "Matični broj (MB)",
+        "required": false,
+        "placeholder": "9 cifara",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": "^[0-9]{9}$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "pib",
+        "type": "text",
+        "label": "PIB",
+        "required": false,
+        "placeholder": "9 cifara",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": "^[0-9]{9}$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "tekuciRacun",
+        "type": "text",
+        "label": "Tekući račun",
+        "required": false,
+        "placeholder": "16-18 cifara",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": "^[0-9]{16,18}$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "sifraDelatnosti",
+        "type": "dropdown",
+        "label": "Šifra delatnosti (NKDS)",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "activities",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "opisDelatnosti",
+        "type": "textarea",
+        "label": "Opis delatnosti",
+        "required": false,
+        "placeholder": "Opišite delatnost pravnog lica...",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": 300,
+          "pattern": null
+        },
+        "layout": {
+          "span": "full"
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "drzavaUgovaraca",
+        "type": "dropdown",
+        "label": "Država",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "countries",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "opstinaUgovaraca",
+        "type": "dropdown",
+        "label": "Opština",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "municipalities",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "gradUgovaraca",
+        "type": "dropdown",
+        "label": "Grad/Mesto",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "cities",
+        "lookupParams": {
+          "dependsOn": "opstinaUgovaraca"
+        },
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "adresaUgovaraca",
+        "type": "text",
+        "label": "Adresa",
+        "required": false,
+        "placeholder": "Ulica i broj",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 3,
+          "maxLength": 100,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "emailUgovaraca",
+        "type": "email",
+        "label": "Email",
+        "required": false,
+        "placeholder": "primer@email.com",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "mobilniTelefonUgovaraca",
+        "type": "tel",
+        "label": "Mobilni telefon",
+        "required": false,
+        "placeholder": "+381 6x xxx xxxx",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "ugovaracIstoKaoOsiguranik",
+        "type": "radio",
+        "label": "Ugovarač i osiguranik su isto lice?",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": [
+          {
+            "value": true,
+            "label": "Da"
+          },
+          {
+            "value": false,
+            "label": "Ne"
+          }
+        ],
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": "full"
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "imeOsiguranika",
+        "type": "text",
+        "label": "Ime",
+        "required": false,
+        "placeholder": "Unesite ime",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 2,
+          "maxLength": 50,
+          "pattern": "^[a-žA-Ž\\s-]+$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "prezimeOsiguranika",
+        "type": "text",
+        "label": "Prezime",
+        "required": false,
+        "placeholder": "Unesite prezime",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 2,
+          "maxLength": 50,
+          "pattern": "^[a-žA-Ž\\s-]+$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "jmbgOsiguranika",
+        "type": "text",
+        "label": "JMBG",
+        "required": false,
+        "placeholder": "13 cifara",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": "^[0-9]{13}$"
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "polOsiguranika",
+        "type": "radio",
+        "label": "Pol",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": [
+          {
+            "value": "M",
+            "label": "Muško"
+          },
+          {
+            "value": "Ž",
+            "label": "Žensko"
+          }
+        ],
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "datumRodjenjaOsiguranika",
+        "type": "date",
+        "label": "Datum rođenja",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "drzavaOsiguranika",
+        "type": "dropdown",
+        "label": "Država",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "countries",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "opstinaOsiguranika",
+        "type": "dropdown",
+        "label": "Opština",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "municipalities",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "gradOsiguranika",
+        "type": "dropdown",
+        "label": "Grad/Mesto",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "cities",
+        "lookupParams": {
+          "dependsOn": "opstinaOsiguranika"
+        },
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "adresaOsiguranika",
+        "type": "text",
+        "label": "Adresa",
+        "required": false,
+        "placeholder": "Ulica i broj",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": 3,
+          "maxLength": 100,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "emailOsiguranika",
+        "type": "email",
+        "label": "Email",
+        "required": false,
+        "placeholder": "primer@email.com",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "mobilniTelefonOsiguranika",
+        "type": "tel",
+        "label": "Mobilni telefon",
+        "required": false,
+        "placeholder": "+381 6x xxx xxxx",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "godisnjaPremija",
+        "type": "number",
+        "label": "Godišnja premija",
+        "required": false,
+        "placeholder": "0.00",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": 0.0,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "rataPremije",
+        "type": "number",
+        "label": "Rata premije",
+        "required": false,
+        "placeholder": "0.00",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": 0.0,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "valuta",
+        "type": "dropdown",
+        "label": "Valuta",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "currencies",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      },
+      {
+        "id": "nacinPlacanja",
+        "type": "dropdown",
+        "label": "Način plaćanja",
+        "required": false,
+        "placeholder": null,
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": "payment-methods",
+        "lookupParams": null,
+        "visibility": null,
+        "validation": {
+          "required": true,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null
+        },
+        "layout": {
+          "span": {
+            "mobile": "full",
+            "tablet": "half",
+            "desktop": "half"
+          }
+        },
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      }
+    ],
+    "actions": null
+  },
+  "sections": [
+    {
+      "id": "tip-ugovaraca-section",
+      "title": "Podaci ugovarača",
+      "sectionNumber": "1",
+      "description": null,
+      "fields": [
+        {
+          "id": "tipUgovaraca",
+          "type": "radio",
+          "label": "Tip ugovarača",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": "fizicko",
+          "options": [
+            {
+              "value": "fizicko",
+              "label": "Fizičko lice"
+            },
+            {
+              "value": "pravno",
+              "label": "Pravno lice"
+            }
+          ],
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": null,
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": null
+    },
+    {
+      "id": "fizicko-lice-section",
+      "title": "Podaci Fizičkog Lica - Ugovarač",
+      "sectionNumber": "1",
+      "description": null,
+      "fields": [
+        {
+          "id": "imeUgovaraca",
+          "type": "text",
+          "label": "Ime",
+          "required": false,
+          "placeholder": "Unesite ime",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "prezimeUgovaraca",
+          "type": "text",
+          "label": "Prezime",
+          "required": false,
+          "placeholder": "Unesite prezime",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "jmbgUgovaraca",
+          "type": "text",
+          "label": "JMBG",
+          "required": false,
+          "placeholder": "13 cifara",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": "^[0-9]{13}$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "polUgovaraca",
+          "type": "radio",
+          "label": "Pol",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": [
+            {
+              "value": "M",
+              "label": "Muško"
+            },
+            {
+              "value": "Ž",
+              "label": "Žensko"
+            }
+          ],
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "datumRodjenjaUgovaraca",
+          "type": "date",
+          "label": "Datum rođenja",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "drzavljanstvoUgovaraca",
+          "type": "dropdown",
+          "label": "Državljanstvo",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "nationalities",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "mestoRodjenjaUgovaraca",
+          "type": "text",
+          "label": "Mesto rođenja",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "zanimanjeUgovaraca",
+          "type": "dropdown",
+          "label": "Zanimanje (šifra)",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "occupations",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "opisZanimanjaUgovaraca",
+          "type": "textarea",
+          "label": "Opis zanimanja",
+          "required": false,
+          "placeholder": "Opišite vaše zanimanje...",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": null,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": 200,
+            "pattern": null
+          },
+          "layout": {
+            "span": "full"
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": null
+    },
+    {
+      "id": "pravno-lice-section",
+      "title": "Podaci Pravnog Lica - Ugovarač",
+      "sectionNumber": "1",
+      "description": null,
+      "fields": [
+        {
+          "id": "nazivPravnoLice",
+          "type": "text",
+          "label": "Naziv",
+          "required": false,
+          "placeholder": "Unesite naziv pravnog lica",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 3,
+            "maxLength": 200,
+            "pattern": null
+          },
+          "layout": {
+            "span": "full"
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "maticniBroj",
+          "type": "text",
+          "label": "Matični broj (MB)",
+          "required": false,
+          "placeholder": "9 cifara",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": "^[0-9]{9}$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "pib",
+          "type": "text",
+          "label": "PIB",
+          "required": false,
+          "placeholder": "9 cifara",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": "^[0-9]{9}$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "tekuciRacun",
+          "type": "text",
+          "label": "Tekući račun",
+          "required": false,
+          "placeholder": "16-18 cifara",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": "^[0-9]{16,18}$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "sifraDelatnosti",
+          "type": "dropdown",
+          "label": "Šifra delatnosti (NKDS)",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "activities",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "opisDelatnosti",
+          "type": "textarea",
+          "label": "Opis delatnosti",
+          "required": false,
+          "placeholder": "Opišite delatnost pravnog lica...",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": 300,
+            "pattern": null
+          },
+          "layout": {
+            "span": "full"
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": null
+    },
+    {
+      "id": "adresa-ugovaraca-section",
+      "title": "Adresa Ugovarača",
+      "sectionNumber": "1",
+      "description": null,
+      "fields": [
+        {
+          "id": "drzavaUgovaraca",
+          "type": "dropdown",
+          "label": "Država",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "countries",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "opstinaUgovaraca",
+          "type": "dropdown",
+          "label": "Opština",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "municipalities",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "gradUgovaraca",
+          "type": "dropdown",
+          "label": "Grad/Mesto",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "cities",
+          "lookupParams": {
+            "dependsOn": "opstinaUgovaraca"
+          },
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "adresaUgovaraca",
+          "type": "text",
+          "label": "Adresa",
+          "required": false,
+          "placeholder": "Ulica i broj",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 3,
+            "maxLength": 100,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "emailUgovaraca",
+          "type": "email",
+          "label": "Email",
+          "required": false,
+          "placeholder": "primer@email.com",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "mobilniTelefonUgovaraca",
+          "type": "tel",
+          "label": "Mobilni telefon",
+          "required": false,
+          "placeholder": "+381 6x xxx xxxx",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "ugovaracIstoKaoOsiguranik",
+          "type": "radio",
+          "label": "Ugovarač i osiguranik su isto lice?",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": [
+            {
+              "value": true,
+              "label": "Da"
+            },
+            {
+              "value": false,
+              "label": "Ne"
+            }
+          ],
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": "full"
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": null
+    },
+    {
+      "id": "osiguranik-section",
+      "title": "Podaci Osiguranika",
+      "sectionNumber": "1.5",
+      "description": "Unesite podatke osiguranika (ako nije isto lice kao ugovarač)",
+      "fields": [
+        {
+          "id": "imeOsiguranika",
+          "type": "text",
+          "label": "Ime",
+          "required": false,
+          "placeholder": "Unesite ime",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "prezimeOsiguranika",
+          "type": "text",
+          "label": "Prezime",
+          "required": false,
+          "placeholder": "Unesite prezime",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-žA-Ž\\s-]+$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "jmbgOsiguranika",
+          "type": "text",
+          "label": "JMBG",
+          "required": false,
+          "placeholder": "13 cifara",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": "^[0-9]{13}$"
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "polOsiguranika",
+          "type": "radio",
+          "label": "Pol",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": [
+            {
+              "value": "M",
+              "label": "Muško"
+            },
+            {
+              "value": "Ž",
+              "label": "Žensko"
+            }
+          ],
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "datumRodjenjaOsiguranika",
+          "type": "date",
+          "label": "Datum rođenja",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "drzavaOsiguranika",
+          "type": "dropdown",
+          "label": "Država",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "countries",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "opstinaOsiguranika",
+          "type": "dropdown",
+          "label": "Opština",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "municipalities",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "gradOsiguranika",
+          "type": "dropdown",
+          "label": "Grad/Mesto",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "cities",
+          "lookupParams": {
+            "dependsOn": "opstinaOsiguranika"
+          },
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "adresaOsiguranika",
+          "type": "text",
+          "label": "Adresa",
+          "required": false,
+          "placeholder": "Ulica i broj",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": 3,
+            "maxLength": 100,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "emailOsiguranika",
+          "type": "email",
+          "label": "Email",
+          "required": false,
+          "placeholder": "primer@email.com",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "mobilniTelefonOsiguranika",
+          "type": "tel",
+          "label": "Mobilni telefon",
+          "required": false,
+          "placeholder": "+381 6x xxx xxxx",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": null
+    },
+    {
+      "id": "osiguranje-section",
+      "title": "Detalji Osiguranja",
+      "sectionNumber": "2",
+      "description": null,
+      "fields": [
+        {
+          "id": "godisnjaPremija",
+          "type": "number",
+          "label": "Godišnja premija",
+          "required": false,
+          "placeholder": "0.00",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": 0.0,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "rataPremije",
+          "type": "number",
+          "label": "Rata premije",
+          "required": false,
+          "placeholder": "0.00",
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": null,
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": 0.0,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "valuta",
+          "type": "dropdown",
+          "label": "Valuta",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "currencies",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        },
+        {
+          "id": "nacinPlacanja",
+          "type": "dropdown",
+          "label": "Način plaćanja",
+          "required": false,
+          "placeholder": null,
+          "helperText": null,
+          "errorMessage": null,
+          "defaultValue": null,
+          "options": null,
+          "dropdownRef": null,
+          "lookupRef": "payment-methods",
+          "lookupParams": null,
+          "visibility": null,
+          "validation": {
+            "required": true,
+            "min": null,
+            "max": null,
+            "minLength": null,
+            "maxLength": null,
+            "pattern": null
+          },
+          "layout": {
+            "span": {
+              "mobile": "full",
+              "tablet": "half",
+              "desktop": "half"
+            }
+          },
+          "min": null,
+          "max": null,
+          "minLength": null,
+          "maxLength": null,
+          "pattern": null,
+          "step": null
+        }
+      ],
+      "showWhen": {
+        "field": "ugovaracIstoKaoOsiguranik",
+        "operator": "notEquals",
+        "value": null
+      }
+    }
+  ],
+  "logic": {
+    "conditionalVisibility": [
+      {
+        "targetField": "fizicko-lice-section",
+        "showWhen": {
+          "field": "tipUgovaraca",
+          "operator": "equals",
+          "value": "fizicko"
+        }
+      },
+      {
+        "targetField": "pravno-lice-section",
+        "showWhen": {
+          "field": "tipUgovaraca",
+          "operator": "equals",
+          "value": "pravno"
+        }
+      },
+      {
+        "targetField": "osiguranik-section",
+        "showWhen": {
+          "field": "ugovaracIstoKaoOsiguranik",
+          "operator": "equals",
+          "value": false
+        }
+      }
+    ],
+    "crossFieldValidation": [
+      {
+        "rule": "field rataPremije <= field godisnjaPremija",
+        "errorMessage": "Rata premije ne može biti veća od godišnje premije",
+        "errorTarget": "rataPremije"
+      }
+    ]
+  },
+  "lookups": {
+    "cities": {
+      "endpoint": "api/lookups/cities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "occupations": {
+      "endpoint": "api/lookups/occupations",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "countries": {
+      "endpoint": "api/lookups/countries",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 7200
+    },
+    "nationalities": {
+      "endpoint": "api/lookups/nationalities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 7200
+    },
+    "activities": {
+      "endpoint": "api/lookups/activities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 3600
+    },
+    "currencies": {
+      "endpoint": "api/lookups/currencies",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    },
+    "payment-methods": {
+      "endpoint": "api/lookups/payment-methods",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    },
+    "municipalities": {
+      "endpoint": "api/lookups/municipalities",
+      "method": "GET",
+      "cache": true,
+      "cacheTTL": 86400
+    }
+  },
+  "formId": "insurance-person-entry"
+}

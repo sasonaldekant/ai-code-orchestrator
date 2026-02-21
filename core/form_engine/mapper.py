@@ -184,12 +184,13 @@ class DynUIMapper:
             all_fields = []
             sections = []
             for sec in top_sections:
-                sec_fields = sec.get("fields", [])
+                if not sec: continue
+                sec_fields = sec.get("fields") or []
                 all_fields.extend(sec_fields)
                 sections.append({
                     "id": sec.get("id", ""),
                     "title": sec.get("title", "Section"),
-                    "fields": [{"id": f["id"], "colSpan": "full"} for f in sec_fields],
+                    "fields": [{"id": f["id"], "colSpan": "full"} for f in sec_fields if f],
                     "showWhen": sec.get("showWhen"),
                     "description": sec.get("description"),
                 })
@@ -197,7 +198,7 @@ class DynUIMapper:
 
         # Case 2: Standard flat format { form: { fields: [...] } }
         form = template.get("form") or {}
-        fields_json = form.get("fields", [])
+        fields_json = form.get("fields") or []
         return fields_json, [], False
 
     def _resolve_visibility_from_logic(self, template: Dict[str, Any]) -> Dict[str, Dict]:
@@ -249,6 +250,13 @@ class DynUIMapper:
             structure = layout_decision["structure"]
             layout = layout_decision["recommendedLayout"]
 
+        col_span_map = {}
+        if layout_decision and "structure" in layout_decision:
+            for sec in layout_decision["structure"]:
+                for f in sec.get("fields", []):
+                    if isinstance(f, dict) and "id" in f:
+                        col_span_map[f["id"]] = f.get("colSpan", "full")
+
         mapped_sections = []
         for section in structure:
             mapped_fields = []
@@ -260,6 +268,9 @@ class DynUIMapper:
                 else:
                     fid = f_info["id"]
                     colspan = f_info.get("colSpan", "full")
+                
+                if fid in col_span_map:
+                    colspan = col_span_map[fid]
                 
                 if fid in fields_by_id:
                     mapped_field = self.map_field(fields_by_id[fid])
@@ -325,7 +336,8 @@ class DynUIMapper:
         if has_native_sections:
             # Apply logic.conditionalVisibility to sections that don't already have showWhen
             for sec in native_sections:
-                if not sec.get("showWhen") and sec["id"] in visibility_rules:
+                if not sec: continue
+                if not sec.get("showWhen") and sec.get("id") in visibility_rules:
                     sec["showWhen"] = visibility_rules[sec["id"]]
 
             layout = layout_decision["recommendedLayout"] if layout_decision else (
@@ -344,6 +356,13 @@ class DynUIMapper:
         fields_by_id = {f["id"]: f for f in fields_json}
         warnings = self._check_circular_dependencies(fields_json)
 
+        col_span_map = {}
+        if layout_decision and "structure" in layout_decision:
+            for sec in layout_decision["structure"]:
+                for f in sec.get("fields", []):
+                    if isinstance(f, dict) and "id" in f:
+                        col_span_map[f["id"]] = f.get("colSpan", "full")
+
         # ─── FormEngine FieldType map ───────────────────────────────────────
         fe_type_map = {
             "text": "text", "email": "email", "tel": "tel", "number": "number",
@@ -359,13 +378,17 @@ class DynUIMapper:
             section_fields = []
             
             # Extract IDs from the new 'fields' format or old 'fieldIds' (backward compatibility)
-            raw_fields = section.get("fields", [])
+            raw_fields = section.get("fields") or []
             if not raw_fields and "fieldIds" in section:
                 raw_fields = [{"id": fid, "colSpan": "full"} for fid in section["fieldIds"]]
             
             for f_info in raw_fields:
-                fid = f_info if isinstance(f_info, str) else f_info["id"]
+                if not f_info: continue
+                fid = f_info if isinstance(f_info, str) else f_info.get("id")
                 col_span = "full" if isinstance(f_info, str) else f_info.get("colSpan", "full")
+
+                if fid in col_span_map:
+                    col_span = col_span_map[fid]
 
                 if fid not in fields_by_id:
                     warnings.append(f"Field '{fid}' referenced in section '{section['title']}' but not found.")

@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "title": "Example Form",
+    "name": null,
+    "version": "1.0",
+    "description": "A sample registration form",
+    "formType": null,
+    "outputSchema": false
+  },
+  "form": {
+    "fields": [
+      {
+        "id": "firstName",
+        "type": "text",
+        "label": "First Name",
+        "required": true,
+        "placeholder": "Enter first name",
+        "helperText": null,
+        "errorMessage": null,
+        "defaultValue": null,
+        "options": null,
+        "dropdownRef": null,
+        "lookupRef": null,
+        "lookupParams": null,
+        "visibility": null,
+        "validation": null,
+        "layout": null,
+        "min": null,
+        "max": null,
+        "minLength": null,
+        "maxLength": null,
+        "pattern": null,
+        "step": null
+      }
+    ],
+    "actions": null
+  },
+  "sections": null,
+  "logic": null,
+  "lookups": null,
+  "formId": null
+}

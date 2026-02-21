@@ -59,7 +59,7 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
     const handleStop = async (e: React.MouseEvent) => {
         e.preventDefault();
         try {
-            await fetch('http://localhost:8000/stop', { method: 'POST' });
+            await api.post('/stop', {});
             setIsLoading(false);
             // Add a system message to logs indicating cancellation
             // clearLogs(); // Optional: keep logs or clear them? Usually users want to see partial results.
@@ -81,13 +81,9 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
             // [Phase 16] Vision Analysis (if image present)
             if (selectedImage) {
                 try {
-                    const visionResp = await fetch('http://localhost:8000/vision/analyze', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            image: selectedImage,
-                            prompt: "Analyze this image in the context of software development. If it's a UI mockup, describe the components and layout. If it's an error, identify the issue."
-                        })
+                    const visionResp = await api.post('/vision/analyze', {
+                        image: selectedImage,
+                        prompt: "Analyze this image in the context of software development. If it's a UI mockup, describe the components and layout. If it's an error, identify the issue."
                     });
                     if (visionResp.ok) {
                         const visionData = await visionResp.json();
@@ -103,18 +99,14 @@ export function OrchestratorUI({ onOpenSettings }: OrchestratorUIProps) {
 
             setActivePrompt(finalPrompt); // Persist prompt for display
 
-            const response = await fetch('http://localhost:8000/orchestrate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-api-key': '12345' },
-                body: JSON.stringify({
-                    request: finalPrompt,
-                    mode: activeMode,
-                    image: selectedImage,
-                    retrieval_strategy: retrievalStrategy,
-                    consensus_mode: consensusMode,
-                    review_strategy: reviewStrategy,
-                    model: selectedModel
-                })
+            const response = await api.post('/orchestrate', {
+                request: finalPrompt,
+                mode: activeMode,
+                image: selectedImage,
+                retrieval_strategy: retrievalStrategy,
+                consensus_mode: consensusMode,
+                review_strategy: reviewStrategy,
+                model: selectedModel
             });
             if (!response.ok) throw new Error("Failed to start");
 

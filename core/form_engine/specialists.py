@@ -22,7 +22,12 @@ class FormArchitectSpecialist:
         """
         Analyzes the template and returns a layout decision.
         """
-        fields = template.get("form", {}).get("fields", [])
+        form_fields = (template.get("form") or {}).get("fields") or []
+        sections = template.get("sections") or []
+        fields = list(form_fields)
+        for sec in sections:
+            fields.extend(sec.get("fields") or [])
+            
         field_count = len(fields)
         
         system_prompt = """
@@ -63,10 +68,10 @@ class FormArchitectSpecialist:
         
         user_prompt = f"""
         Analyze this form template and assign colSpan values:
-        Title: {template.get('metadata', {}).get('title')}
-        Description: {template.get('metadata', {}).get('description')}
+        Title: {(template.get('metadata') or {}).get('title')}
+        Description: {(template.get('metadata') or {}).get('description')}
         Fields:
-        {json.dumps([{"id": f.get("id"), "label": f.get("label"), "type": f.get("type"), "maxLength": f.get("maxLength") or f.get("validation", {}).get("maxLength")} for f in fields], indent=2)}
+        {json.dumps([{"id": f.get("id"), "label": f.get("label"), "type": f.get("type"), "maxLength": f.get("maxLength") or (f.get("validation") or {}).get("maxLength")} for f in fields], indent=2)}
         """
         
         logger.info(f"Calling Architect AI for form analysis with {field_count} fields...")
