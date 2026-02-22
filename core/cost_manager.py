@@ -108,7 +108,9 @@ class CostManager:
         "claude-3-sonnet": ModelPricing(3.00, 15.0, "anthropic", 200000),
         "claude-3-haiku": ModelPricing(0.25, 1.25, "anthropic", 200000),
         
-        # Google Gemini 3 Generation (2026)
+        # Google Gemini 3.x Generation (2026)
+        "gemini-3.5-flash": ModelPricing(0.40, 2.40, "google", 300000),
+        "gemini-3.5-pro": ModelPricing(1.50, 8.00, "google", 500000),
         "gemini-3-flash": ModelPricing(0.50, 3.00, "google", 200000),
         "gemini-3-pro": ModelPricing(2.00, 12.00, "google", 200000),
         

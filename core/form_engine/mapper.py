@@ -106,7 +106,7 @@ class DynUIMapper:
         }
 
         # Handle options for select/dropdown/radio (normalize to object format)
-        if json_type in ("select", "dropdown", "radio") and "options" in field_json:
+        if json_type in ("select", "dropdown", "radio") and field_json.get("options"):
             raw_options = field_json["options"]
             normalized_options = []
             for opt in raw_options:
@@ -190,7 +190,12 @@ class DynUIMapper:
                 sections.append({
                     "id": sec.get("id", ""),
                     "title": sec.get("title", "Section"),
-                    "fields": [{"id": f["id"], "colSpan": "full"} for f in sec_fields if f],
+                    "fields": [
+                        {
+                            "id": f["id"], 
+                            "colSpan": f.get("colSpan") or f.get("layout", {}).get("span") or "full"
+                        } for f in sec_fields if f and isinstance(f, dict)
+                    ],
                     "showWhen": sec.get("showWhen"),
                     "description": sec.get("description"),
                 })
@@ -238,7 +243,7 @@ class DynUIMapper:
         # Determine the structure to map
         if has_native_sections:
             structure = native_sections
-            layout = layout_decision["recommendedLayout"] if layout_decision else (
+            layout = layout_decision.get("recommendedLayout") if layout_decision else (
                 "stepper" if len(native_sections) > 3 else "tabs" if len(native_sections) > 1 else "standard"
             )
         else:
@@ -247,11 +252,11 @@ class DynUIMapper:
                     "recommendedLayout": "standard",
                     "structure": [{"title": "General", "fields": [{"id": f["id"], "colSpan": "full"} for f in fields_json]}]
                 }
-            structure = layout_decision["structure"]
-            layout = layout_decision["recommendedLayout"]
+            structure = layout_decision.get("structure") or [{"title": "General", "fields": [{"id": f["id"], "colSpan": "full"} for f in fields_json]}]
+            layout = layout_decision.get("recommendedLayout", "standard")
 
         col_span_map = {}
-        if layout_decision and "structure" in layout_decision:
+        if layout_decision and layout_decision.get("structure"):
             for sec in layout_decision["structure"]:
                 for f in sec.get("fields", []):
                     if isinstance(f, dict) and "id" in f:
@@ -269,13 +274,16 @@ class DynUIMapper:
                     fid = f_info["id"]
                     colspan = f_info.get("colSpan", "full")
                 
-                if fid in col_span_map:
-                    colspan = col_span_map[fid]
-                
                 if fid in fields_by_id:
-                    mapped_field = self.map_field(fields_by_id[fid])
+                    fj = fields_by_id[fid]
+                    # Priority: 1. Field-level JSON colSpan, 2. AI Decision colSpan, 3. Default
+                    final_colspan = fj.get("colSpan") or (fj.get("layout") or {}).get("span")
+                    if not final_colspan:
+                        final_colspan = colspan # from structure/col_span_map
+                    
+                    mapped_field = self.map_field(fj)
                     # Add colspan to field wrapper metadata
-                    mapped_field["wrapperProps"]["colSpan"] = colspan
+                    mapped_field["wrapperProps"]["colSpan"] = final_colspan or "full"
                     mapped_fields.append(mapped_field)
             
             mapped_sections.append({
@@ -340,7 +348,7 @@ class DynUIMapper:
                 if not sec.get("showWhen") and sec.get("id") in visibility_rules:
                     sec["showWhen"] = visibility_rules[sec["id"]]
 
-            layout = layout_decision["recommendedLayout"] if layout_decision else (
+            layout = layout_decision.get("recommendedLayout") if layout_decision else (
                 "stepper" if len(native_sections) > 3 else "tabs" if len(native_sections) > 1 else "standard"
             )
             effective_sections = native_sections
@@ -351,13 +359,13 @@ class DynUIMapper:
                     "recommendedLayout": "standard",
                     "structure": [{"title": "General", "fields": [{"id": f["id"], "colSpan": "full"} for f in fields_json]}]
                 }
-            layout = layout_decision["recommendedLayout"]
-            effective_sections = layout_decision["structure"]
+            layout = layout_decision.get("recommendedLayout", "standard")
+            effective_sections = layout_decision.get("structure") or [{"title": "General", "fields": [{"id": f["id"], "colSpan": "full"} for f in fields_json]}]
         fields_by_id = {f["id"]: f for f in fields_json}
         warnings = self._check_circular_dependencies(fields_json)
 
         col_span_map = {}
-        if layout_decision and "structure" in layout_decision:
+        if layout_decision and layout_decision.get("structure"):
             for sec in layout_decision["structure"]:
                 for f in sec.get("fields", []):
                     if isinstance(f, dict) and "id" in f:
@@ -379,7 +387,7 @@ class DynUIMapper:
             
             # Extract IDs from the new 'fields' format or old 'fieldIds' (backward compatibility)
             raw_fields = section.get("fields") or []
-            if not raw_fields and "fieldIds" in section:
+            if not raw_fields and section.get("fieldIds"):
                 raw_fields = [{"id": fid, "colSpan": "full"} for fid in section["fieldIds"]]
             
             for f_info in raw_fields:
@@ -387,13 +395,15 @@ class DynUIMapper:
                 fid = f_info if isinstance(f_info, str) else f_info.get("id")
                 col_span = "full" if isinstance(f_info, str) else f_info.get("colSpan", "full")
 
-                if fid in col_span_map:
-                    col_span = col_span_map[fid]
-
                 if fid not in fields_by_id:
                     warnings.append(f"Field '{fid}' referenced in section '{section['title']}' but not found.")
                     continue
+                
                 fj = fields_by_id[fid]
+                # Priority: 1. Field JSON, 2. AI Decision Map, 3. Default full
+                final_col_span = fj.get("colSpan") or (fj.get("layout") or {}).get("span") or (fj.get("layout") or {}).get("colSpan")
+                if not final_col_span:
+                    final_col_span = col_span_map.get(fid, col_span)
                 json_type = fj.get("type", "text")
                 fe_type = fe_type_map.get(json_type, "text")
 
@@ -401,7 +411,7 @@ class DynUIMapper:
                     "id": fid,
                     "label": fj.get("label", fid),
                     "type": fe_type,
-                    "layout": {"span": col_span}
+                    "layout": {"span": final_col_span or "full"}
                 }
 
                 validation_dict = fj.get("validation") or {}

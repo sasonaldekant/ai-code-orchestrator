@@ -1,14 +1,27 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { api } from '../lib/api';
+import { api, API_BASE_URL } from '../lib/api';
 import clsx from 'clsx';
 import {
     Upload, Eye, Code2, LayoutGrid, Columns, ListOrdered,
     CheckCircle2, XCircle, AlertTriangle, FileJson, Loader2,
     Download, Sparkles, ChevronRight, Eye as EyeIcon,
-    GitBranch, ShieldCheck, Database, Zap, ChevronDown, ChevronUp
+    GitBranch, ShieldCheck, Database, Zap, ChevronDown, ChevronUp,
+    MessageSquare, StopCircle
 } from 'lucide-react';
+import { FormChatPanel } from './FormChatPanel';
+import './form-studio-preview.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+
+interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    updatedSchema?: any;
+    schemaDiff?: { changes: any[]; explanation: string };
+    ragSources?: string[];
+    timestamp: Date;
+    streaming?: boolean;
+}
 
 interface PreviewField {
     id: string;
@@ -195,52 +208,68 @@ const DEFAULT_TEMPLATE = JSON.stringify({
     }
 }, null, 2);
 
-// ─── Field Renderer ─────────────────────────────────────────────────────────
+// ─── Field Renderer (Token-Based) ───────────────────────────────────────────
 
 function PreviewFieldRenderer({ field, value }: { field: PreviewField; value: any }) {
-    const baseInputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
-
     switch (field.type) {
         case 'dropdown':
-        case 'radio':
             return (
-                <select className={baseInputClass} defaultValue={value || ''}>
+                <select className="fs-preview-input fs-preview-select" defaultValue={value || ''}>
                     <option value="" disabled>Select...</option>
                     {(field.options || []).map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                 </select>
             );
+        case 'radio':
+            return (
+                <div className="fs-preview-radio-group">
+                    {(field.options || []).map(opt => (
+                        <label key={opt.value} className="fs-preview-radio-wrap">
+                            <input
+                                type="radio"
+                                name={field.id}
+                                value={opt.value}
+                                defaultChecked={value === opt.value}
+                                className="fs-preview-radio"
+                            />
+                            <span className="fs-preview-radio-label">{opt.label}</span>
+                        </label>
+                    ))}
+                </div>
+            );
         case 'checkbox':
             return (
-                <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked={!!value} className="w-4 h-4 rounded border-border accent-primary" />
-                    <span className="text-sm text-foreground">{field.label}</span>
+                <label className="fs-preview-checkbox-wrap">
+                    <input type="checkbox" defaultChecked={!!value} className="fs-preview-checkbox" />
+                    <span className="fs-preview-checkbox-label">{field.label}</span>
                 </label>
             );
         case 'number':
-            return <input type="number" className={baseInputClass} defaultValue={value} min={field.min} max={field.max} placeholder={field.placeholder} />;
+            return <input type="number" className="fs-preview-input" defaultValue={value} min={field.min} max={field.max} placeholder={field.placeholder} />;
         case 'date':
-            return <input type="date" className={baseInputClass} defaultValue={value} />;
+            return <input type="date" className="fs-preview-input fs-preview-date" defaultValue={value} />;
         case 'email':
-            return <input type="email" className={baseInputClass} defaultValue={value} placeholder={field.placeholder || "email@example.com"} />;
+            return <input type="email" className="fs-preview-input" defaultValue={value} placeholder={field.placeholder || 'email@example.com'} />;
         case 'tel':
-            return <input type="tel" className={baseInputClass} defaultValue={value} placeholder={field.placeholder || "+381..."} />;
+            return <input type="tel" className="fs-preview-input" defaultValue={value} placeholder={field.placeholder || '+381...'} />;
+        case 'textarea':
+            return <textarea className="fs-preview-input fs-preview-textarea" defaultValue={value} placeholder={field.placeholder} rows={3} />;
         default:
-            return <input type="text" className={baseInputClass} defaultValue={value} placeholder={field.placeholder} />;
+            return <input type="text" className="fs-preview-input" defaultValue={value} placeholder={field.placeholder} />;
     }
 }
 
-// ─── Live Preview Component ─────────────────────────────────────────────────
+// ─── Live Preview Component (Token-Based) ───────────────────────────────────
 
 function FormPreview({ preview }: { preview: PreviewConfig }) {
     return (
-        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+        <div className="fs-preview bg-card border border-border rounded-xl overflow-hidden shadow-lg">
             {/* Form Header */}
-            <div className="px-6 py-4 border-b border-border bg-muted/30">
-                <h3 className="text-lg font-semibold text-foreground">{preview.metadata.title}</h3>
+            <div className="fs-preview-header">
+                <h3 className="fs-preview-title">{preview.metadata.title}</h3>
                 {preview.metadata.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5">{preview.metadata.description}</p>
+                    <p className="fs-preview-description">{preview.metadata.description}</p>
                 )}
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                     <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
@@ -259,44 +288,43 @@ function FormPreview({ preview }: { preview: PreviewConfig }) {
             </div>
 
             {/* Form Body */}
-            <div className="p-6 space-y-6">
+            <div className="fs-preview-body">
                 {preview.formConfig.sections.map((section, si) => (
-                    <div key={si} className="space-y-4">
+                    <div key={si} className="fs-preview-section">
                         {section.title !== 'General' && section.title !== 'Default' && (
-                            <h4 className="text-sm font-semibold text-foreground border-b border-border/50 pb-2">
+                            <h4 className="fs-preview-section-title">
                                 {section.title}
                             </h4>
                         )}
-                        <div className="grid grid-cols-12 gap-4">
+                        <div className="fs-preview-grid">
                             {section.fields.map(field => {
                                 const meta = preview.fieldMeta[field.id];
                                 const isCheckbox = field.type === 'checkbox';
-                                
-                                // Determine colSpan classes
+
+                                // colSpan → grid column span
                                 const span = field.layout?.span || 'full';
-                                let colSpanClass = 'col-span-12';
-                                if (span === 'half') colSpanClass = 'col-span-12 md:col-span-6';
-                                else if (span === 'third') colSpanClass = 'col-span-12 md:col-span-4';
-                                else if (span === 'quarter') colSpanClass = 'col-span-12 md:col-span-3';
+                                const colSpanStyle: React.CSSProperties = {};
+                                if (span === 'full') colSpanStyle.gridColumn = 'span 12';
+                                else if (span === 'half') colSpanStyle.gridColumn = 'span 6';
+                                else if (span === 'third') colSpanStyle.gridColumn = 'span 4';
+                                else if (span === 'quarter') colSpanStyle.gridColumn = 'span 3';
+                                else colSpanStyle.gridColumn = 'span 12';
 
                                 return (
                                     <div
                                         key={field.id}
-                                        className={clsx(
-                                            "space-y-1.5",
-                                            isCheckbox && "flex items-center",
-                                            colSpanClass
-                                        )}
+                                        className="fs-preview-field"
+                                        style={colSpanStyle}
                                     >
                                         {!isCheckbox && (
-                                            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                            <label className="fs-preview-label">
                                                 {field.label}
-                                                {field.required && <span className="text-red-400">*</span>}
+                                                {field.required && <span className="fs-preview-required">*</span>}
                                             </label>
                                         )}
                                         <PreviewFieldRenderer field={field} value={preview.dummyValues[field.id]} />
                                         {field.helperText && (
-                                            <p className="text-[10px] text-muted-foreground/70">{field.helperText}</p>
+                                            <p className="fs-preview-help">{field.helperText}</p>
                                         )}
                                     </div>
                                 );
@@ -306,15 +334,15 @@ function FormPreview({ preview }: { preview: PreviewConfig }) {
                 ))}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-border/50">
+                <div className="fs-preview-actions">
                     {preview.actions.map((action, ai) => (
                         <button
                             key={ai}
                             className={clsx(
-                                "px-5 py-2.5 rounded-lg text-sm font-medium transition-all",
+                                "fs-preview-btn",
                                 action.props.color === 'primary' || action.props.type === 'submit'
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                                    : "bg-muted text-foreground hover:bg-muted/80"
+                                    ? "fs-preview-btn-primary"
+                                    : "fs-preview-btn-secondary"
                             )}
                         >
                             {action.props.label}
@@ -334,10 +362,15 @@ export function FormStudioTab() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [layoutOverride, setLayoutOverride] = useState<string | null>(null);
-    const [activeView, setActiveView] = useState<'split' | 'preview' | 'editor'>('split');
+    const [activeView, setActiveView] = useState<'split' | 'preview' | 'editor' | 'chat'>('split');
     const [generating, setGenerating] = useState(false);
     const [generateResult, setGenerateResult] = useState<any>(null);
+    const [enrichedInstructions, setEnrichedInstructions] = useState<string | null>(null);
+    const [showEnrichedInstructions, setShowEnrichedInstructions] = useState(false);
+    const [autoRefreshed, setAutoRefreshed] = useState(false);
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const generateAbortRef = useRef<AbortController | null>(null);
 
     // ─── Preview generation ─────────────────────────────────────────────
 
@@ -378,6 +411,8 @@ export function FormStudioTab() {
     const handleGenerate = useCallback(async () => {
         setGenerating(true);
         setGenerateResult(null);
+        const controller = new AbortController();
+        generateAbortRef.current = controller;
         try {
             const parsed = JSON.parse(jsonInput);
             const projectName = (parsed.metadata?.title || 'form')
@@ -386,16 +421,35 @@ export function FormStudioTab() {
             const result = await api.post('/forms/generate', {
                 schema_data: parsed,
                 project_name: projectName,
-                layout_override: layoutOverride
-            });
+                layout_override: layoutOverride,
+                enriched_instructions: enrichedInstructions
+            }, { signal: controller.signal });
             // Attach project name for download link
             setGenerateResult({ ...result, projectName });
         } catch (err: any) {
-            setError(err.message || 'Generation failed.');
+            if (err.name === 'AbortError') {
+                setError('Generisanje prekinuto.');
+            } else {
+                setError(err.message || 'Generation failed.');
+            }
         } finally {
             setGenerating(false);
+            generateAbortRef.current = null;
         }
-    }, [jsonInput, layoutOverride]);
+    }, [jsonInput, layoutOverride, enrichedInstructions]);
+
+    const handleStopGeneration = useCallback(async () => {
+        // 1. Abort the frontend fetch
+        if (generateAbortRef.current) {
+            generateAbortRef.current.abort();
+        }
+        // 2. Call backend /stop to cancel server-side task
+        try {
+            await api.post('/stop', {});
+        } catch (_) {
+            // Ignore — stop is best-effort
+        }
+    }, []);
 
     // ─── Layout ─────────────────────────────────────────────────────────
 
@@ -405,6 +459,19 @@ export function FormStudioTab() {
         { id: 'tabs', label: 'Tabs', icon: Columns },
         { id: 'stepper', label: 'Stepper', icon: ListOrdered },
     ];
+
+    // ─── Chat integration ────────────────────────────────────────────
+
+    const handleChatSchemaUpdate = useCallback((newSchema: any) => {
+        setJsonInput(JSON.stringify(newSchema, null, 2));
+        generatePreview(JSON.stringify(newSchema, null, 2));
+        setAutoRefreshed(true);
+        setTimeout(() => setAutoRefreshed(false), 3000);
+    }, [generatePreview]);
+
+    const handleEnrichedGenerate = useCallback((prompt: string) => {
+        setEnrichedInstructions(prompt);
+    }, []);
 
     return (
         <div className="space-y-4">
@@ -441,17 +508,19 @@ export function FormStudioTab() {
                             { id: 'split' as const, label: 'Split' },
                             { id: 'editor' as const, label: 'Editor' },
                             { id: 'preview' as const, label: 'Preview' },
+                            { id: 'chat' as const, label: 'AI Chat', icon: MessageSquare },
                         ].map(v => (
                             <button
                                 key={v.id}
                                 onClick={() => setActiveView(v.id)}
                                 className={clsx(
-                                    "px-2.5 py-1.5 text-xs rounded-md transition-all",
+                                    "flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-md transition-all",
                                     activeView === v.id
                                         ? "bg-background shadow text-foreground font-medium"
                                         : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
+                                {'icon' in v && v.icon && <v.icon className="w-3 h-3" />}
                                 {v.label}
                             </button>
                         ))}
@@ -480,7 +549,7 @@ export function FormStudioTab() {
                     </div>
                     {generateResult.projectName && (
                         <button
-                            onClick={() => window.open(`http://localhost:8000/forms/download/${generateResult.projectName}`, '_blank')}
+                            onClick={() => window.open(`${API_BASE_URL}/forms/download/${generateResult.projectName}`, '_blank')}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all border border-green-500/30 whitespace-nowrap"
                         >
                             <Download className="w-3.5 h-3.5" />
@@ -493,12 +562,13 @@ export function FormStudioTab() {
             {/* Main Content */}
             <div className={clsx(
                 "gap-4",
-                activeView === 'split' && "grid grid-cols-1 lg:grid-cols-2",
+                activeView === 'split' && "grid grid-cols-1 lg:grid-cols-3",
                 activeView === 'editor' && "grid grid-cols-1",
                 activeView === 'preview' && "grid grid-cols-1",
+                activeView === 'chat' && "grid grid-cols-1 lg:grid-cols-2",
             )}>
                 {/* JSON Editor */}
-                {activeView !== 'preview' && (
+                {(activeView !== 'preview' && activeView !== 'chat') && (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -553,18 +623,30 @@ export function FormStudioTab() {
                                 Live Preview
                             </div>
                             {preview && (
-                                <button
-                                    onClick={handleGenerate}
-                                    disabled={generating}
-                                    className="flex items-center gap-1.5 px-4 py-2 text-xs rounded-lg bg-green-600 text-white hover:bg-green-500 font-medium transition-all disabled:opacity-50 shadow-sm"
-                                >
-                                    {generating ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    ) : (
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleGenerate}
+                                        disabled={generating}
+                                        className="flex items-center gap-1.5 px-4 py-2 text-xs rounded-lg bg-green-600 text-white hover:bg-green-500 font-medium transition-all disabled:opacity-50 shadow-sm"
+                                    >
+                                        {generating ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                        )}
+                                        {generating ? 'Generisanje...' : 'Approve & Generate Project'}
+                                    </button>
+                                    {generating && (
+                                        <button
+                                            onClick={handleStopGeneration}
+                                            className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-red-600 text-white hover:bg-red-500 font-medium transition-all shadow-sm"
+                                            title="Prekini generisanje"
+                                        >
+                                            <StopCircle className="w-3.5 h-3.5" />
+                                            Stop
+                                        </button>
                                     )}
-                                    Approve & Generate Project
-                                </button>
+                                </div>
                             )}
                         </div>
 
@@ -588,7 +670,61 @@ export function FormStudioTab() {
                         )}
                     </div>
                 )}
+
+                {/* AI Chat Panel */}
+                {(activeView === 'split' || activeView === 'chat') && (
+                    <FormChatPanel
+                        currentSchema={(() => { try { return JSON.parse(jsonInput); } catch { return {}; } })()}
+                        previewState={{
+                            layout: preview?.layout,
+                            complexity: preview?.complexity,
+                            fieldCount: preview?.metadata?.fieldCount,
+                            inferredSections: preview?.formConfig?.sections,
+                        }}
+                        messages={chatMessages}
+                        setMessages={setChatMessages}
+                        onSchemaUpdate={handleChatSchemaUpdate}
+                        onEnrichedGenerate={handleEnrichedGenerate}
+                    />
+                )}
             </div>
+
+            {/* Enriched Prompt Indicator */}
+            {enrichedInstructions && (
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-purple-500/10 text-purple-400 text-sm border border-purple-500/20 shadow-lg shadow-purple-500/5">
+                        <Sparkles className="w-4 h-4 shrink-0" />
+                        <span className="flex-1 font-medium italic">Obogaćeni prompt spreman — biće prosleđen orkestratoru pri generisanju.</span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setShowEnrichedInstructions(!showEnrichedInstructions)}
+                                className="flex items-center gap-1 px-2 py-1 rounded bg-purple-500/20 hover:bg-purple-500/30 transition-all text-xs"
+                            >
+                                {showEnrichedInstructions ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                {showEnrichedInstructions ? 'Sakrij instrukcije' : 'Prikaži instrukcije'}
+                            </button>
+                            <button
+                                onClick={() => { setEnrichedInstructions(null); setShowEnrichedInstructions(false); }}
+                                className="p-1 px-2 text-xs hover:text-purple-300 hover:bg-purple-500/10 rounded transition-all"
+                            >Obriši</button>
+                        </div>
+                    </div>
+
+                    {showEnrichedInstructions && (
+                        <div className="p-4 rounded-xl bg-[#0d1117] border border-purple-500/30 text-[#c9d1d9] font-mono text-xs whitespace-pre-wrap max-h-[40vh] overflow-y-auto custom-scrollbar animate-in slide-in-from-top-2 duration-300">
+                            {enrichedInstructions}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* AI Auto-refresh Toast */}
+            {autoRefreshed && (
+                <div className="fixed bottom-6 right-6 flex items-center gap-2 p-3 rounded-lg bg-green-600 text-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 z-50">
+                    <Zap className="w-4 h-4" />
+                    <span className="text-xs font-semibold">Preview osvežen (AI promene primenjene)</span>
+                </div>
+            )}
         </div>
     );
 }

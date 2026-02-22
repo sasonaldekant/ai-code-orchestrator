@@ -1,28 +1,33 @@
+allowed_rag_tiers:
+- 3
+- 4
+allowed_user_models:
+- gpt-5-mini
+- gpt-5.2
+- claude-sonnet-4.5
+allowed_user_options:
+  form_studio: true
+  modes:
+  - fast
+  - thinking
+  - agentic
+  show_consensus_mode: true
+  show_retrieval_mode: false
+  show_review_strategy: true
 budgets:
   max_input_tokens: 6000
   max_output_tokens: 1000
 concurrency:
   max_workers: 2
+global:
+  deep_search: true
+  max_feedback_iterations: 3
+  max_retries: 3
+  per_day_budget: 2.0
+  per_hour_budget: 1.0
+  per_task_budget: 0.25
+  temperature: 0.0
 retrieval:
   chunk_chars: 800
   chunk_overlap: 120
   top_k: 4
-global:
-  temperature: 0.0
-  max_retries: 3
-  max_feedback_iterations: 3
-  deep_search: true
-  per_task_budget: 0.25
-  per_hour_budget: 1.0
-  per_day_budget: 2.0
-allowed_user_models:
-  - gpt-5-mini
-  - gpt-5.2
-  - claude-sonnet-4.5
-allowed_user_options:
-  modes: ["fast", "thinking", "agentic"]
-  form_studio: true
-  show_review_strategy: false
-  show_consensus_mode: false
-  show_retrieval_mode: false
-allowed_rag_tiers: [3, 4]

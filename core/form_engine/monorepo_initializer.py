@@ -57,7 +57,8 @@ class FormMonorepoInitializer:
             "scripts": {
                 "build": "turbo run build",
                 "dev": "turbo run dev",
-                "lint": "turbo run lint"
+                "lint": "turbo run lint",
+                "verify": "turbo run verify"
             },
             "devDependencies": {
                 "turbo": "latest"
@@ -81,6 +82,10 @@ class FormMonorepoInitializer:
                 "dev": {
                     "cache": False,
                     "persistent": True
+                },
+                "verify": {
+                    "dependsOn": ["^build"],
+                    "cache": true
                 }
             }
         }
@@ -108,6 +113,14 @@ class FormMonorepoInitializer:
                 "@dyn-ui/react": "workspace:*",
                 "lucide-react": "latest",
                 "clsx": "latest"
+            },
+            "scripts": {
+                "verify": "tsc --noEmit"
+            },
+            "devDependencies": {
+                "typescript": "^5.2.0",
+                "@types/react": "^18.3.1",
+                "@types/node": "latest"
             }
         }
         with open(shared_dir / "package.json", "w", encoding="utf-8") as f:

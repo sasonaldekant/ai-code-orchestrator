@@ -63,7 +63,8 @@ class ProjectGenerator:
             "scripts": {
                 "dev": "vite",
                 "build": "tsc && vite build",
-                "preview": "vite preview"
+                "preview": "vite preview",
+                "verify": "tsc --noEmit"
             }
         }
         

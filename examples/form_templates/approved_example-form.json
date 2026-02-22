@@ -144,7 +144,9 @@
         "lookupParams": null,
         "visibility": null,
         "validation": null,
-        "layout": null,
+        "layout": {
+          "colSpan": "half"
+        },
         "min": null,
         "max": null,
         "minLength": null,

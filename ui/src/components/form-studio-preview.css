@@ -1,0 +1,414 @@
+/**
+ * Form Studio Preview Styles — DynUI Token-Based
+ * Dark/Light mode aware via prefers-color-scheme
+ *
+ * Token sources:
+ * - DynInput.module.css, DynSelect.module.css, DynFieldContainer.module.css, form-engine.css
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE TOKENS (default — matches Orchestrator UI)
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview {
+  --fs-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --fs-font-size-xs: 0.75rem;
+  --fs-font-size-sm: 0.875rem;
+  --fs-font-size-md: 1rem;
+  --fs-font-size-lg: 1.125rem;
+  --fs-font-size-xl: 1.25rem;
+
+  /* Dark mode colors */
+  --fs-input-bg: hsl(222 20% 14%);
+  --fs-input-color: hsl(0 0% 95%);
+  --fs-input-border: hsl(217 32% 28%);
+  --fs-input-border-hover: hsl(215 20% 45%);
+  --fs-input-border-focus: hsl(224 76% 48%);
+  --fs-input-placeholder: hsl(215 20% 50%);
+  --fs-input-error: #dc2626;
+  --fs-input-disabled-bg: hsl(222 20% 12%);
+
+  /* Layout */
+  --fs-input-radius: 0.5rem;
+  --fs-input-padding-y: 0.5rem;
+  --fs-input-padding-x: 0.75rem;
+  --fs-input-height: 40px;
+  --fs-input-transition: 0.2s ease;
+
+  /* Labels — MUST be visible on dark bg */
+  --fs-label-color: hsl(215 20% 85%);
+  --fs-label-font-size: 0.875rem;
+  --fs-label-font-weight: 600;
+  --fs-field-gap: 6px;
+  --fs-help-color: hsl(215 20% 60%);
+  --fs-required-color: #ef4444;
+
+  /* Section */
+  --fs-section-gap: 2.5rem;
+  --fs-section-title-color: hsl(217 91% 60%);
+  --fs-section-border: hsl(217 32% 22%);
+
+  /* Grid */
+  --fs-grid-gap: 1.5rem;
+  --fs-grid-columns: 12;
+
+  font-family: var(--fs-font-family);
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-input-color);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES (from browser preference)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+
+  :root[data-theme="auto"] .fs-preview,
+  :root:not([data-theme]) .fs-preview.fs-preview--light {
+    --fs-input-bg: #ffffff;
+    --fs-input-color: #0f172a;
+    --fs-input-border: #cbd5e1;
+    --fs-input-border-hover: #94a3b8;
+    --fs-input-border-focus: #3b82f6;
+    --fs-input-placeholder: #94a3b8;
+    --fs-input-disabled-bg: #f1f5f9;
+
+    --fs-label-color: #18181b;
+    --fs-help-color: #52525b;
+
+    --fs-section-title-color: #2563eb;
+    --fs-section-border: #f1f5f9;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORM CONTAINER
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-body {
+  padding: 1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-section {
+  margin-bottom: var(--fs-section-gap);
+}
+
+.fs-preview-section-title {
+  font-size: var(--fs-font-size-lg);
+  font-weight: 700;
+  color: var(--fs-section-title-color);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--fs-section-border);
+}
+
+.fs-preview-section-desc {
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-help-color);
+  margin: -0.5rem 0 1rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRID LAYOUT (12-column)
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--fs-grid-columns), 1fr);
+  gap: var(--fs-grid-gap);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FIELD CONTAINER — labels VISIBLE on dark bg
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs-field-gap);
+}
+
+.fs-preview-label {
+  font-size: var(--fs-label-font-size);
+  font-weight: var(--fs-label-font-weight);
+  color: var(--fs-label-color);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fs-preview-required {
+  color: var(--fs-required-color);
+  font-weight: 400;
+}
+
+.fs-preview-help {
+  font-size: var(--fs-font-size-xs);
+  color: var(--fs-help-color);
+  margin-top: -2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INPUT STYLES — dark bg, light text
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-input {
+  appearance: none;
+  width: 100%;
+  height: var(--fs-input-height);
+  padding: var(--fs-input-padding-y) var(--fs-input-padding-x);
+  font-family: var(--fs-font-family);
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-input-color);
+  background: var(--fs-input-bg);
+  border: 1px solid var(--fs-input-border);
+  border-radius: var(--fs-input-radius);
+  outline: none;
+  transition: border-color var(--fs-input-transition),
+    box-shadow var(--fs-input-transition);
+  box-sizing: border-box;
+}
+
+.fs-preview-input::placeholder {
+  color: var(--fs-input-placeholder);
+}
+
+.fs-preview-input:hover {
+  border-color: var(--fs-input-border-hover);
+}
+
+.fs-preview-input:focus {
+  border-color: var(--fs-input-border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.fs-preview-input:disabled {
+  background: var(--fs-input-disabled-bg);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SELECT
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-select {
+  appearance: none;
+  width: 100%;
+  height: var(--fs-input-height);
+  padding: var(--fs-input-padding-y) var(--fs-input-padding-x);
+  padding-right: 2rem;
+  font-family: var(--fs-font-family);
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-input-color);
+  background: var(--fs-input-bg);
+  border: 1px solid var(--fs-input-border);
+  border-radius: var(--fs-input-radius);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--fs-input-transition),
+    box-shadow var(--fs-input-transition);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  box-sizing: border-box;
+}
+
+.fs-preview-select option {
+  background: hsl(222 20% 14%);
+  color: hsl(0 0% 95%);
+}
+
+.fs-preview-select:hover {
+  border-color: var(--fs-input-border-hover);
+}
+
+.fs-preview-select:focus {
+  border-color: var(--fs-input-border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHECKBOX
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.fs-preview-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 0.25rem;
+  border: 1px solid var(--fs-input-border);
+  accent-color: hsl(224 76% 48%);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fs-preview-checkbox-label {
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-input-color);
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RADIO
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-radio-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+
+.fs-preview-radio-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+}
+
+.fs-preview-radio {
+  width: 18px;
+  height: 18px;
+  accent-color: hsl(224 76% 48%);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fs-preview-radio-label {
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-input-color);
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DATE PICKER
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-date {
+  height: 42px;
+}
+
+/* Fix date picker icon color in dark mode */
+.fs-preview-date::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TEXTAREA
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-textarea {
+  min-height: 80px;
+  resize: vertical;
+  height: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 1.5rem;
+  font-family: var(--fs-font-family);
+  font-size: var(--fs-font-size-sm);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--fs-input-radius);
+  cursor: pointer;
+  transition: all var(--fs-input-transition);
+}
+
+.fs-preview-btn-primary {
+  background: hsl(224 76% 48%);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.fs-preview-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.fs-preview-btn-secondary {
+  background: hsl(222 20% 18%);
+  color: var(--fs-input-color);
+  border: 1px solid var(--fs-input-border);
+}
+
+.fs-preview-btn-secondary:hover {
+  background: hsl(222 20% 22%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORM HEADER
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--fs-section-border);
+}
+
+.fs-preview-title {
+  margin: 0;
+  font-size: var(--fs-font-size-xl);
+  font-weight: 800;
+  color: var(--fs-section-title-color);
+  letter-spacing: -0.025em;
+}
+
+.fs-preview-description {
+  margin: 0.5rem 0 0 0;
+  font-size: var(--fs-font-size-sm);
+  color: var(--fs-help-color);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORM ACTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.fs-preview-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--fs-section-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  .fs-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fs-preview-actions {
+    flex-direction: column;
+  }
+
+  .fs-preview-actions .fs-preview-btn {
+    width: 100%;
+  }
+}

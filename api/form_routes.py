@@ -209,6 +209,7 @@ class GenerateRequest(BaseModel):
     project_name: str
     layout_override: Optional[str] = None
     layout_decision: Optional[Dict[str, Any]] = None
+    enriched_instructions: Optional[str] = None  # From Form Studio AI Chat
 
 
 # ─── Preview Endpoint (Deterministic, 0 AI tokens) ─────────────────────────
@@ -258,7 +259,9 @@ async def preview_form(req: PreviewRequest):
         return preview
 
     except Exception as e:
-        logger.error(f"Preview generation failed: {e}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Preview generation failed: {e}\n{error_details}")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -387,20 +390,31 @@ async def generate_project(req: GenerateRequest):
             str(temp_path), 
             req.project_name, 
             req.layout_override,
-            layout_decision_input=req.layout_decision
+            layout_decision_input=req.layout_decision,
+            enriched_instructions=req.enriched_instructions
         )
         
         await bus.publish(Event(type=EventType.DONE, agent="FormEngine", content=f"Projekat {req.project_name} uspešno izgenerisan!"))
 
-        return {
+        result = {
             "status": "success",
             "project_path": project_path,
             "project_name": req.project_name,
             "message": f"Project '{req.project_name}' generated successfully."
         }
+        
+        # 5. Optional verification (can be disabled if too slow)
+        verification = await orchestrator.verify_project(req.project_name)
+        result["verification_success"] = verification["success"]
+        if not verification["success"]:
+            result["verification_error"] = verification.get("error")
+            
+        return result
 
     except Exception as e:
-        logger.error(f"Project generation failed: {e}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Project generation failed: {e}\n{error_details}")
         await bus.publish(Event(type=EventType.ERROR, agent="FormEngine", content=f"Generisanje otkazano zbog greške: {str(e)}"))
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -426,10 +440,24 @@ async def download_project(project_name: str):
         # Create a temp ZIP file in outputs/archives
         archives_dir = Path("outputs") / "archives"
         archives_dir.mkdir(parents=True, exist_ok=True)
-        zip_base_name = archives_dir / project_name
+        zip_full_path = archives_dir / f"{project_name}.zip"
         
-        # Create ZIP archive (shutil.make_archive appends .zip automatically)
-        zip_full_path = shutil.make_archive(str(zip_base_name), 'zip', str(project_dir))
+        # Better ZIP logic: exclude node_modules and dist
+        import zipfile
+        with zipfile.ZipFile(zip_full_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(project_dir):
+                # Skip heavy/unnecessary folders
+                if 'node_modules' in dirs:
+                    dirs.remove('node_modules')
+                if 'dist' in dirs:
+                    dirs.remove('dist')
+                if '.turbo' in dirs:
+                    dirs.remove('.turbo')
+                    
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, project_dir)
+                    zipf.write(file_path, arcname)
         
         return FileResponse(
             path=zip_full_path, 

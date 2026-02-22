@@ -2,8 +2,8 @@
 title: Design Token System
 type: reference
 category: foundation
-version: 1.0.0
-last_updated: 2026-02-13
+version: 1.1.0
+last_updated: 2026-02-21
 ---
 
 # DynUI Design Token System
@@ -19,7 +19,7 @@ last_updated: 2026-02-13
 Layer 1: Foundation Tokens (Global, Immutable)
     ↓ references
 Layer 2: Component Tokens (Local, with fallbacks)
-    ↓ references  
+    ↓ references
 Layer 3: Theme Overrides (Context-based)
 ```
 
@@ -48,8 +48,9 @@ Layer 3: Theme Overrides (Context-based)
 /* In DynButton.module.css */
 :root {
   --dyn-button-bg: var(
-    --dyn-button-root-backgroundColor,    /* Component override */
-    var(--dyn-theme-primary, #2563eb)     /* Semantic + fallback */
+    --dyn-button-root-backgroundColor,
+    /* Component override */ var(--dyn-theme-primary, #2563eb)
+      /* Semantic + fallback */
   );
 }
 
@@ -68,7 +69,7 @@ Layer 3: Theme Overrides (Context-based)
 /* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
   :root {
-    --dyn-color-primary: #3b82f6;  /* Components auto-update */
+    --dyn-color-primary: #3b82f6; /* Components auto-update */
     --dyn-color-background: #0f172a;
   }
 }
@@ -187,37 +188,38 @@ Layer 3: Theme Overrides (Context-based)
 /* T-shirt sizing */
 --dyn-spacing-none: 0;
 --dyn-spacing-2xs: 2px;
---dyn-spacing-xs: 4px;     /* Label gap, cell padding */
---dyn-spacing-sm: 8px;     /* Grid gap, component spacing */
---dyn-spacing-md: 16px;    /* Section spacing */
---dyn-spacing-lg: 24px;    /* Large spacing */
---dyn-spacing-xl: 32px;    /* Extra large */
---dyn-spacing-2xl: 40px;   /* Container padding */
---dyn-spacing-3xl: 48px;   /* Page sections */
---dyn-spacing-4xl: 56px;   /* Hero sections */
+--dyn-spacing-xs: 4px; /* Label gap, cell padding */
+--dyn-spacing-sm: 8px; /* Grid gap, component spacing */
+--dyn-spacing-md: 16px; /* Section spacing */
+--dyn-spacing-lg: 24px; /* Large spacing */
+--dyn-spacing-xl: 32px; /* Extra large */
+--dyn-spacing-2xl: 40px; /* Container padding */
+--dyn-spacing-3xl: 48px; /* Page sections */
+--dyn-spacing-4xl: 56px; /* Hero sections */
 ```
 
 ### Spacing Usage Guide
 
-| Token | Value | Common Use Cases |
-|-------|-------|------------------|
-| `none/0` | 0 | Reset spacing |
-| `2xs` | 2px | Micro spacing, tight groups |
-| `xs` | 4px | **Label gap, cell padding** |
-| `sm` | 8px | **Grid gap, component spacing (DEFAULT)** |
-| `md` | 16px | Section spacing, between groups |
-| `lg` | 24px | Large sections |
-| `xl` | 32px | Page margins |
-| `2xl` | 40px | Container padding |
-| `3xl` | 48px | Page sections |
-| `4xl` | 56px | Hero/landing sections |
+| Token    | Value | Common Use Cases                          |
+| -------- | ----- | ----------------------------------------- |
+| `none/0` | 0     | Reset spacing                             |
+| `2xs`    | 2px   | Micro spacing, tight groups               |
+| `xs`     | 4px   | **Label gap, cell padding**               |
+| `sm`     | 8px   | **Grid gap, component spacing (DEFAULT)** |
+| `md`     | 16px  | Section spacing, between groups           |
+| `lg`     | 24px  | Large sections                            |
+| `xl`     | 32px  | Page margins                              |
+| `2xl`    | 40px  | Container padding                         |
+| `3xl`    | 48px  | Page sections                             |
+| `4xl`    | 56px  | Hero/landing sections                     |
 
 ## 🔤 Typography Tokens
 
 ### Font Families
 
 ```css
---dyn-font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--dyn-font-family-sans:
+  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 --dyn-font-family-mono: 'Monaco', 'Courier New', monospace;
 ```
 
@@ -295,6 +297,77 @@ Layer 3: Theme Overrides (Context-based)
 --dyn-size-avatar-xl: 64px;
 ```
 
+## 📐 Grid Span Tokens
+
+**Location**: `packages/design-tokens/styles/components/grid.css`
+
+```css
+--dyn-grid-span-full: span 12; /* 1 field per row */
+--dyn-grid-span-half: span 6; /* 2 fields per row */
+--dyn-grid-span-third: span 4; /* 3 fields per row */
+--dyn-grid-span-quarter: span 3; /* 4 fields per row */
+```
+
+### Grid Span Usage
+
+| Token                     | Columns | Fields/Row | Use Case                      |
+| ------------------------- | ------- | ---------- | ----------------------------- |
+| `--dyn-grid-span-full`    | 12      | 1          | Textarea, address, headers    |
+| `--dyn-grid-span-half`    | 6       | 2          | Name + Surname, Email + Phone |
+| `--dyn-grid-span-third`   | 4       | 3          | City + Zip + Country          |
+| `--dyn-grid-span-quarter` | 3       | 4          | Short codes, numbers          |
+
+## 📋 Form Layout Tokens
+
+**Location**: `packages/design-tokens/tokens/components/form.json`
+
+### Form Max-Width
+
+```css
+--dyn-form-maxWidth-narrow: 480px; /* Login, short forms */
+--dyn-form-maxWidth-standard: 720px; /* Enterprise forms (2-3 cols) */
+--dyn-form-maxWidth-wide: 960px; /* Multi-section dashboards */
+--dyn-form-maxWidth-full: 100%; /* Embedded in panels */
+```
+
+### Form Spacing
+
+```css
+/* Inner padding */
+--dyn-form-padding-x: 32px; /* Desktop horizontal */
+--dyn-form-padding-y: 32px; /* Desktop vertical */
+--dyn-form-padding-x-compact: 16px; /* Mobile horizontal */
+--dyn-form-padding-y-compact: 16px; /* Mobile vertical */
+
+/* Section spacing */
+--dyn-form-section-gap: 48px; /* Between sections */
+
+/* Field grid */
+--dyn-form-field-gap: 16px; /* Column gap between fields */
+--dyn-form-field-rowGap: 16px; /* Row gap between fields */
+--dyn-form-field-minHeight: 44px; /* WCAG 2.1 AA min touch target */
+
+/* Grid system */
+--dyn-form-layout-columns: 12; /* 12-column grid */
+```
+
+### colSpan Values
+
+```css
+--dyn-form-layout-colSpan-full: 12;
+--dyn-form-layout-colSpan-half: 6;
+--dyn-form-layout-colSpan-third: 4;
+--dyn-form-layout-colSpan-quarter: 3;
+--dyn-form-layout-colSpan-two-thirds: 8;
+```
+
+### Responsive Breakpoints
+
+| Breakpoint  | Value | Behavior                  |
+| ----------- | ----- | ------------------------- |
+| Collapse    | 768px | All fields to full width  |
+| Half active | 992px | Half/third colSpan active |
+
 ## ⏱️ Animation Tokens
 
 ### Durations
@@ -310,10 +383,10 @@ Layer 3: Theme Overrides (Context-based)
 ### Easing Functions
 
 ```css
---dyn-easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
---dyn-easing-emphasized: cubic-bezier(0.0, 0.0, 0.2, 1);
---dyn-easing-decelerated: cubic-bezier(0.0, 0.0, 0.2, 1);
---dyn-easing-accelerated: cubic-bezier(0.4, 0.0, 1, 1);
+--dyn-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+--dyn-easing-emphasized: cubic-bezier(0, 0, 0.2, 1);
+--dyn-easing-decelerated: cubic-bezier(0, 0, 0.2, 1);
+--dyn-easing-accelerated: cubic-bezier(0.4, 0, 1, 1);
 ```
 
 ## 🎭 Opacity Tokens
@@ -347,20 +420,20 @@ Layer 3: Theme Overrides (Context-based)
     --dyn-color-background: #0f172a;
     --dyn-color-background-secondary: #1e293b;
     --dyn-color-surface: #1a1f35;
-    
+
     /* Text */
     --dyn-color-text-primary: #f1f5f9;
     --dyn-color-text-secondary: #cbd5f5;
     --dyn-color-text-tertiary: #a0aec0;
-    
+
     /* Borders */
     --dyn-color-border: #334155;
     --dyn-color-border-light: #475569;
-    
+
     /* Brand */
     --dyn-color-primary: #3b82f6;
     --dyn-color-primary-hover: #2563eb;
-    
+
     /* Status */
     --dyn-color-success: #34d399;
     --dyn-color-warning: #fbbf24;
@@ -400,12 +473,12 @@ Layer 3: Theme Overrides (Context-based)
     --dyn-button-root-backgroundColor,
     var(--dyn-theme-primary, #2563eb)
   );
-  
+
   --dyn-button-padding-x: var(
     --dyn-button-root-paddingX,
     var(--dyn-spacing-md, 16px)
   );
-  
+
   --dyn-button-border-radius: var(
     --dyn-button-root-borderRadius,
     var(--dyn-border-radius-md, 8px)
@@ -445,7 +518,7 @@ Layer 3: Theme Overrides (Context-based)
 
 ```tsx
 // ✅ CORRECT - Use tokens
-<DynBox 
+<DynBox
   style={{
     backgroundColor: 'var(--dyn-color-surface)',
     padding: 'var(--dyn-spacing-md)',
@@ -454,7 +527,7 @@ Layer 3: Theme Overrides (Context-based)
 />
 
 // ❌ WRONG - Hardcoded values
-<DynBox 
+<DynBox
   style={{
     backgroundColor: '#ffffff',
     padding: '16px',
@@ -467,23 +540,24 @@ Layer 3: Theme Overrides (Context-based)
 
 ### Quick Reference
 
-| Need | Use Token | Value |
-|------|-----------|-------|
-| Primary color | `--dyn-color-primary` | #2563eb |
-| Background | `--dyn-color-background` | #ffffff |
-| Text | `--dyn-color-text-primary` | #111827 |
-| Border | `--dyn-color-border` | #d0d5dd |
-| Grid gap | `--dyn-spacing-sm` | 8px |
-| Padding | `--dyn-spacing-md` | 16px |
-| Border radius | `--dyn-border-radius-md` | 8px |
-| Input height (md) | `--dyn-size-height-md` | 40px |
-| Transition | `--dyn-duration-normal` | 250ms |
+| Need              | Use Token                  | Value   |
+| ----------------- | -------------------------- | ------- |
+| Primary color     | `--dyn-color-primary`      | #2563eb |
+| Background        | `--dyn-color-background`   | #ffffff |
+| Text              | `--dyn-color-text-primary` | #111827 |
+| Border            | `--dyn-color-border`       | #d0d5dd |
+| Grid gap          | `--dyn-spacing-sm`         | 8px     |
+| Padding           | `--dyn-spacing-md`         | 16px    |
+| Border radius     | `--dyn-border-radius-md`   | 8px     |
+| Input height (md) | `--dyn-size-height-md`     | 40px    |
+| Transition        | `--dyn-duration-normal`    | 250ms   |
 
 ## 🔗 Related Documentation
 
 - [Styling Guide](04-STYLING_GUIDE.md) - How to apply tokens
 - [Component Catalog](03-COMPONENT_CATALOG.md) - Components using these tokens
 - [Code Examples](05-CODE_EXAMPLES.md) - Token usage in context
+- [Form Engine Layout Standards](../../apps/form-engine/docs/ai-rag-docs/05-LAYOUT-STANDARDS-RAG.md) - Form layout standards using these tokens
 
 ---
 

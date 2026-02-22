@@ -15,13 +15,25 @@ interface PhaseConfig {
 
 interface ModelConfig {
     version: string;
-    default: {
+    default?: {
         model: string;
         temperature: number;
         max_tokens: number;
     };
     routing: {
-        phase: Record<string, PhaseConfig>;
+        phase?: Record<string, PhaseConfig>;
+        phases?: Record<string, PhaseConfig>;
+    };
+    cost_management?: {
+        budget_alert_threshold: number;
+        max_cascade_depth: number;
+        prefer_cached: boolean;
+    };
+    caching?: {
+        enabled: boolean;
+        tier_1_rules?: { ttl_seconds: number };
+        tier_2_tokens?: { ttl_seconds: number };
+        tier_3_catalog?: { ttl_seconds: number };
     };
 }
 
@@ -31,13 +43,17 @@ const AVAILABLE_MODELS = [
     { value: 'gpt-5.2', label: 'GPT-5.2 (Recommended)', provider: 'openai' },
     { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5', provider: 'anthropic' },
     { value: 'claude-opus-4.6', label: 'Claude Opus 4.6', provider: 'anthropic' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (New)', provider: 'google' },
+    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (New)', provider: 'google' },
     { value: 'gemini-3-flash', label: 'Gemini 3 Flash', provider: 'google' },
     { value: 'gemini-3-pro', label: 'Gemini 3 Pro', provider: 'google' },
+    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', provider: 'google' },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', provider: 'google' },
     { value: 'sonar', label: 'Sonar', provider: 'perplexity' },
     { value: 'sonar-deep-research', label: 'Sonar Deep Research', provider: 'perplexity' },
 ];
 
-const PHASES = ['analyst', 'architect', 'implementer', 'tester', 'reviewer'];
+const PHASES = ['gate', 'analyst', 'architect', 'implementer_frontend', 'implementer_backend', 'tester', 'reviewer', 'self_healer', 'research', 'monitor', 'fact_checker'];
 
 export function ModelConfigPanel() {
     const [config, setConfig] = useState<ModelConfig | null>(null);
@@ -86,14 +102,18 @@ export function ModelConfigPanel() {
 
     const updatePhaseConfig = (phase: string, field: keyof PhaseConfig, value: any) => {
         if (!config) return;
+        const routing = config.routing;
+        const phaseKey = routing.phases ? 'phases' : 'phase';
+        const currentPhases = (routing as any)[phaseKey] || {};
+
         setConfig({
             ...config,
             routing: {
-                ...config.routing,
-                phase: {
-                    ...config.routing.phase,
+                ...routing,
+                [phaseKey]: {
+                    ...currentPhases,
                     [phase]: {
-                        ...config.routing.phase[phase],
+                        ...(currentPhases[phase] || {}),
                         [field]: value,
                     },
                 },
@@ -170,8 +190,15 @@ export function ModelConfigPanel() {
                     <div>
                         <label className="block text-sm font-medium mb-2">Default Model</label>
                         <select
-                            value={config?.default.model || ''}
-                            onChange={(e) => setConfig(c => c ? { ...c, default: { ...c.default, model: e.target.value } } : c)}
+                            value={config?.default?.model || ''}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                default: {
+                                    model: e.target.value,
+                                    temperature: c.default?.temperature || 0,
+                                    max_tokens: c.default?.max_tokens || 4000
+                                }
+                            } : c)}
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
                         >
                             {AVAILABLE_MODELS.map(m => (
@@ -186,8 +213,15 @@ export function ModelConfigPanel() {
                             step="0.1"
                             min="0"
                             max="1"
-                            value={config?.default.temperature || 0}
-                            onChange={(e) => setConfig(c => c ? { ...c, default: { ...c.default, temperature: parseFloat(e.target.value) } } : c)}
+                            value={config?.default?.temperature || 0}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                default: {
+                                    model: c.default?.model || '',
+                                    temperature: parseFloat(e.target.value),
+                                    max_tokens: c.default?.max_tokens || 4000
+                                }
+                            } : c)}
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
                         />
                     </div>
@@ -195,8 +229,151 @@ export function ModelConfigPanel() {
                         <label className="block text-sm font-medium mb-2">Max Tokens</label>
                         <input
                             type="number"
-                            value={config?.default.max_tokens || 4000}
-                            onChange={(e) => setConfig(c => c ? { ...c, default: { ...c.default, max_tokens: parseInt(e.target.value) } } : c)}
+                            value={config?.default?.max_tokens || 4000}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                default: {
+                                    model: c.default?.model || '',
+                                    temperature: c.default?.temperature || 0,
+                                    max_tokens: parseInt(e.target.value)
+                                }
+                            } : c)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Cost Management */}
+            <div className="bg-card border border-border rounded-xl p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+                    Cost Management & Optimization
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Budget Alert Threshold (0.0-1.0)</label>
+                        <input
+                            type="number"
+                            step="0.05"
+                            min="0"
+                            max="1"
+                            value={config?.cost_management?.budget_alert_threshold || 0}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                cost_management: {
+                                    budget_alert_threshold: parseFloat(e.target.value),
+                                    max_cascade_depth: c.cost_management?.max_cascade_depth || 2,
+                                    prefer_cached: c.cost_management?.prefer_cached ?? true
+                                }
+                            } : c)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Max Cascade Depth</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="5"
+                            value={config?.cost_management?.max_cascade_depth || 2}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                cost_management: {
+                                    budget_alert_threshold: c.cost_management?.budget_alert_threshold || 0.8,
+                                    max_cascade_depth: parseInt(e.target.value),
+                                    prefer_cached: c.cost_management?.prefer_cached ?? true
+                                }
+                            } : c)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div className="flex items-end pb-2">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={config?.cost_management?.prefer_cached ?? true}
+                                onChange={(e) => setConfig(c => c ? {
+                                    ...c,
+                                    cost_management: {
+                                        budget_alert_threshold: c.cost_management?.budget_alert_threshold || 0.8,
+                                        max_cascade_depth: c.cost_management?.max_cascade_depth || 2,
+                                        prefer_cached: e.target.checked
+                                    }
+                                } : c)}
+                                className="w-4 h-4 rounded border-border accent-primary"
+                            />
+                            <div>
+                                <span className="text-sm font-medium">Prefer Cached Results</span>
+                                <p className="text-xs text-muted-foreground">Reuse deterministic LLM outputs</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {/* Caching Settings */}
+            <div className="bg-card border border-border rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Caching (Domain & Token)
+                    </h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={config?.caching?.enabled ?? true}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                caching: { ...(c.caching || { enabled: true }), enabled: e.target.checked }
+                            } : c)}
+                            className="w-4 h-4 rounded border-border accent-primary"
+                        />
+                        <span className="text-sm font-medium">Enable Cache</span>
+                    </label>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Tier 1 (Rules) TTL (s)</label>
+                        <input
+                            type="number"
+                            value={config?.caching?.tier_1_rules?.ttl_seconds || 3600}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                caching: {
+                                    ...(c.caching || { enabled: true }),
+                                    tier_1_rules: { ttl_seconds: parseInt(e.target.value) }
+                                }
+                            } : c)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Tier 2 (Tokens) TTL (s)</label>
+                        <input
+                            type="number"
+                            value={config?.caching?.tier_2_tokens?.ttl_seconds || 3600}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                caching: {
+                                    ...(c.caching || { enabled: true }),
+                                    tier_2_tokens: { ttl_seconds: parseInt(e.target.value) }
+                                }
+                            } : c)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Tier 3 (Catalog) TTL (s)</label>
+                        <input
+                            type="number"
+                            value={config?.caching?.tier_3_catalog?.ttl_seconds || 1800}
+                            onChange={(e) => setConfig(c => c ? {
+                                ...c,
+                                caching: {
+                                    ...(c.caching || { enabled: true }),
+                                    tier_3_catalog: { ttl_seconds: parseInt(e.target.value) }
+                                }
+                            } : c)}
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm"
                         />
                     </div>
@@ -210,7 +387,7 @@ export function ModelConfigPanel() {
                 </h3>
 
                 {PHASES.map(phase => {
-                    const phaseConfig = config?.routing?.phase?.[phase];
+                    const phaseConfig = config?.routing?.phases?.[phase] || config?.routing?.phase?.[phase];
                     if (!phaseConfig) return null;
 
                     const isArchitect = phase === 'architect';
@@ -363,3 +540,4 @@ export function ModelConfigPanel() {
         </div>
     );
 }
+

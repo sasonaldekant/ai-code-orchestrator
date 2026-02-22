@@ -2,8 +2,8 @@
 title: Quick Reference
 type: cheatsheet
 category: reference
-version: 1.0.0
-last_updated: 2026-02-13
+version: 1.1.0
+last_updated: 2026-02-21
 ---
 
 # DynUI Quick Reference
@@ -27,6 +27,7 @@ import { ComponentName } from '@dyn-ui/react';
 ## 🎨 Essential Tokens
 
 ### Colors
+
 ```css
 /* Brand */
 --dyn-color-primary: #2563eb;
@@ -43,30 +44,52 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Spacing
+
 ```css
---dyn-spacing-xs: 4px;   /* Label gap, cell padding */
---dyn-spacing-sm: 8px;   /* Grid gap, DEFAULT */
---dyn-spacing-md: 16px;  /* Section spacing */
---dyn-spacing-lg: 24px;  /* Large spacing */
+--dyn-spacing-xs: 4px; /* Label gap, cell padding */
+--dyn-spacing-sm: 8px; /* Grid gap, DEFAULT */
+--dyn-spacing-md: 16px; /* Section spacing */
+--dyn-spacing-lg: 24px; /* Large spacing */
 ```
 
 ### Sizes
+
 ```css
 --dyn-size-height-sm: 32px;
---dyn-size-height-md: 40px;  /* DEFAULT */
+--dyn-size-height-md: 40px; /* DEFAULT */
 --dyn-size-height-lg: 48px;
 ```
 
 ### Border Radius
+
 ```css
 --dyn-border-radius-sm: 4px;
---dyn-border-radius-md: 8px;  /* DEFAULT */
+--dyn-border-radius-md: 8px; /* DEFAULT */
 --dyn-border-radius-lg: 12px;
+```
+
+### Grid Span
+
+```css
+--dyn-grid-span-full: span 12; /* 1 per row */
+--dyn-grid-span-half: span 6; /* 2 per row */
+--dyn-grid-span-third: span 4; /* 3 per row */
+--dyn-grid-span-quarter: span 3; /* 4 per row */
+```
+
+### Form Layout
+
+```css
+--dyn-form-maxWidth-standard: 720px;
+--dyn-form-field-gap: 16px;
+--dyn-form-section-gap: 48px;
+--dyn-form-layout-columns: 12;
 ```
 
 ## 📦 Component Quick Ref
 
 ### Layout
+
 ```tsx
 <DynBox gap="sm" padding="md" display="flex" align="center">
 <DynFlex direction="row" justify="between" gap="sm">
@@ -76,6 +99,7 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Forms
+
 ```tsx
 <DynButton color="primary" size="md" loading={false}>
 <DynInput type="text" size="md" placeholder="..." error="...">
@@ -85,6 +109,7 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Display
+
 ```tsx
 <DynAvatar src="..." size="md" badge={{ count: 5 }}>
 <DynBadge color="success" size="sm">Active</DynBadge>
@@ -93,12 +118,14 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Data
+
 ```tsx
 <DynTable columns={[...]} data={[...]} size="md" striped hoverable>
 <DynChart type="bar" data={[...]}>
 ```
 
 ### Advanced
+
 ```tsx
 <DynModal open={true} onClose={() => {}} size="md" title="...">
 <DynDialog open={true} title="..." actions={<>...</>}>
@@ -108,6 +135,7 @@ import { ComponentName } from '@dyn-ui/react';
 ## 📝 Common Patterns
 
 ### Simple Form
+
 ```tsx
 <DynBox gap="md" direction="vertical">
   <DynFieldContainer label="Email" required>
@@ -120,13 +148,14 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Card
+
 ```tsx
 <DynBox
   padding="md"
   style={{
     backgroundColor: 'var(--dyn-color-surface)',
     borderRadius: 'var(--dyn-border-radius-md)',
-    border: '1px solid var(--dyn-color-border)'
+    border: '1px solid var(--dyn-color-border)',
   }}
 >
   Content
@@ -134,6 +163,7 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Flex Row
+
 ```tsx
 <DynBox display="flex" align="center" gap="sm">
   <DynAvatar size="md" />
@@ -142,11 +172,9 @@ import { ComponentName } from '@dyn-ui/react';
 ```
 
 ### Grid Layout
+
 ```tsx
-<DynGrid 
-  columns={{ mobile: 1, tablet: 2, desktop: 3 }}
-  gap="md"
->
+<DynGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
   <div>Item 1</div>
   <div>Item 2</div>
   <div>Item 3</div>
@@ -155,21 +183,21 @@ import { ComponentName } from '@dyn-ui/react';
 
 ## 🔍 Size Scale
 
-| Size | Form Height | Spacing | Use Case |
-|------|-------------|---------|----------|
-| `sm` | 32px | 8px | Compact UI |
-| `md` | 40px | 16px | **Default** |
-| `lg` | 48px | 24px | Prominent |
+| Size | Form Height | Spacing | Use Case    |
+| ---- | ----------- | ------- | ----------- |
+| `sm` | 32px        | 8px     | Compact UI  |
+| `md` | 40px        | 16px    | **Default** |
+| `lg` | 48px        | 24px    | Prominent   |
 
 ## 🎨 Color Variants
 
-| Variant | Token | Hex | Use |
-|---------|-------|-----|-----|
-| `primary` | `--dyn-color-primary` | #2563eb | Main actions |
-| `success` | `--dyn-color-success` | #10b981 | Positive |
-| `danger` | `--dyn-color-danger` | #dc2626 | Destructive |
-| `warning` | `--dyn-color-warning` | #f59e0b | Caution |
-| `info` | `--dyn-color-info` | #0ea5e9 | Informational |
+| Variant   | Token                 | Hex     | Use           |
+| --------- | --------------------- | ------- | ------------- |
+| `primary` | `--dyn-color-primary` | #2563eb | Main actions  |
+| `success` | `--dyn-color-success` | #10b981 | Positive      |
+| `danger`  | `--dyn-color-danger`  | #dc2626 | Destructive   |
+| `warning` | `--dyn-color-warning` | #f59e0b | Caution       |
+| `info`    | `--dyn-color-info`    | #0ea5e9 | Informational |
 
 ## ❌ Common Mistakes
 
@@ -178,9 +206,9 @@ import { ComponentName } from '@dyn-ui/react';
 <div style={{ color: '#2563eb', padding: '16px' }}>
 
 // ✅ CORRECT
-<DynBox style={{ 
-  color: 'var(--dyn-color-primary)', 
-  padding: 'var(--dyn-spacing-md)' 
+<DynBox style={{
+  color: 'var(--dyn-color-primary)',
+  padding: 'var(--dyn-spacing-md)'
 }}>
 ```
 
@@ -209,13 +237,13 @@ import { ComponentName } from '@dyn-ui/react';
 
 ## 📖 Need More Info?
 
-| Question | Check Document |
-|----------|----------------|
-| How do I... | [01-QUICK_START.md](01-QUICK_START.md) |
-| What token for... | [02-DESIGN_TOKENS.md](02-DESIGN_TOKENS.md) |
-| Component API | [03-COMPONENT_CATALOG.md](03-COMPONENT_CATALOG.md) |
-| Styling pattern | [04-STYLING_GUIDE.md](04-STYLING_GUIDE.md) |
-| Code example | [05-CODE_EXAMPLES.md](05-CODE_EXAMPLES.md) |
+| Question          | Check Document                                     |
+| ----------------- | -------------------------------------------------- |
+| How do I...       | [01-QUICK_START.md](01-QUICK_START.md)             |
+| What token for... | [02-DESIGN_TOKENS.md](02-DESIGN_TOKENS.md)         |
+| Component API     | [03-COMPONENT_CATALOG.md](03-COMPONENT_CATALOG.md) |
+| Styling pattern   | [04-STYLING_GUIDE.md](04-STYLING_GUIDE.md)         |
+| Code example      | [05-CODE_EXAMPLES.md](05-CODE_EXAMPLES.md)         |
 
 ---
 

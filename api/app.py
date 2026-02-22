@@ -49,7 +49,9 @@ app.include_router(agent_router)
 app.include_router(knowledge_router)
 
 from api.form_routes import router as form_router
+from api.form_chat_routes import router as form_chat_router
 app.include_router(form_router)
+app.include_router(form_chat_router)
 
 # Enable CORS for local UI
 app.add_middleware(

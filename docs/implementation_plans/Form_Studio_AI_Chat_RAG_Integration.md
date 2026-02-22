@@ -25,11 +25,11 @@ Proširiti **Form Studio tab** dodavanjem ugrađenog AI Chat panela koji je 100%
 
 | Tab | Komponenta | Relevantno za nas |
 |:---|:---|:---|
-| **Client Config** | [ClientSettingsPanel.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/admin/ClientSettingsPanel.tsx) | Kontroliše modele, modove, Form Studio enabled |
-| **RAG Ingestion** | [IngestionPanel.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/admin/IngestionPanel.tsx) | Tier-based ingestion sa validacijom ✅ |
-| **Model Config** | [ModelConfigPanel.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/admin/ModelConfigPanel.tsx) | Model routig i cascade ✅ |
-| **Knowledge Base** | [KnowledgeExplorer.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/admin/KnowledgeExplorer.tsx) | Collections CRUD + semantic query ✅ |
-| **Budgets & Limits** | [BudgetPanel.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/admin/BudgetPanel.tsx) | Budget limiti ✅ |
+| **Client Config** | `ClientSettingsPanel.tsx` | Kontroliše modele, modove, Form Studio enabled |
+| **RAG Ingestion** | `IngestionPanel.tsx` | Tier-based ingestion sa validacijom ✅ |
+| **Model Config** | `ModelConfigPanel.tsx` | Model routig i cascade ✅ |
+| **Knowledge Base** | `KnowledgeExplorer.tsx` | Collections CRUD + semantic query ✅ |
+| **Budgets & Limits** | `BudgetPanel.tsx` | Budget limiti ✅ |
 | Global Settings, Dev Tools, Monitoring, Graph, API Keys | Ostali | Nisu direktno relevantni |
 
 ### Backend infrastruktura koju REUSE-ujemo
@@ -77,7 +77,7 @@ graph LR
 | 1 | `FormChatService` — backend servis sa RAG + LLM | **[NEW]** Python modul |
 | 2 | `POST /forms/chat` + `POST /forms/chat/summarize` | **[NEW]** API rute |
 | 3 | `FormChatPanel.tsx` — React komponenta za chat | **[NEW]** Frontend |
-| 4 | [FormStudioTab.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/FormStudioTab.tsx) — dodavanje chat panela | **[MODIFY]** Frontend |
+| 4 | `FormStudioTab.tsx` — dodavanje chat panela | **[MODIFY]** Frontend |
 | 5 | Token-based preview CSS | **[MODIFY]** Frontend CSS |
 | 6 | `enriched_instructions` u generate flow | **[MODIFY]** Backend |
 | 7 | Form Engine sync iz DynUI projekta | **[SYNC]** File copy |
@@ -129,13 +129,13 @@ class FormChatService:
 
 #### [MODIFY] [form_routes.py](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/api/form_routes.py) — GenerateRequest
 
-Dodati `enriched_instructions: Optional[str] = None` u [GenerateRequest](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/api/form_routes.py#207-212). Prosleđuje se u `orchestrator.generate_ui_project()`.
+Dodati `enriched_instructions: Optional[str] = None` u `GenerateRequest`. Prosleđuje se u `orchestrator.generate_ui_project()`.
 
 ---
 
 #### [MODIFY] [orchestrator.py](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/core/form_engine/orchestrator.py)
 
-[generate_ui_project()](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/core/form_engine/orchestrator.py#54-150) prima `enriched_instructions` → injektuje u [FormArchitectSpecialist](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/core/form_engine/specialists.py#9-97) i [CodeGenerator](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/core/form_engine/code_generator.py#6-257) kontekst.
+`generate_ui_project()` prima `enriched_instructions` → injektuje u `FormArchitectSpecialist` i `CodeGenerator` kontekst.
 
 ---
 
@@ -215,32 +215,32 @@ Inputi, selecti, radio u preview-u dobijaju **iste proporcije** kao DynUI kompon
 dyn-ui-main-v01/apps/form-engine/src/  →  forms-workspace/packages/form-engine/src/
 ```
 
-Fajlovi: [FormEngine.tsx](file:///c:/Users/mgasic/Documents/AIProjects/dyn-ui-main-v01/apps/form-engine/src/FormEngine.tsx), [FieldRenderer.tsx](file:///c:/Users/mgasic/Documents/AIProjects/dyn-ui-main-v01/apps/form-engine/src/FieldRenderer.tsx), [Section.tsx](file:///c:/Users/mgasic/Documents/AIProjects/dyn-ui-main-v01/apps/form-engine/src/Section.tsx), [form-engine.css](file:///c:/Users/mgasic/Documents/AIProjects/dyn-ui-main-v01/apps/form-engine/src/form-engine.css), `core/*`, `hooks/*`, `types/*`, `utils/*`
+Fajlovi: `FormEngine.tsx`, `FieldRenderer.tsx`, `Section.tsx`, `form-engine.css`, `core/*`, `hooks/*`, `types/*`, `utils/*`
 
 ---
 
 ## Implementacione Faze
 
-### Faza 1: Backend Chat Servis
-- [ ] `form_chat_service.py` — reuse RAG + LLM
-- [ ] `form_chat_routes.py` — `/forms/chat` i `/forms/chat/summarize`
-- [ ] Dodati `enriched_instructions` u generate flow
+### Faza 1: Backend Chat Servis ✅
+- [x] `form_chat_service.py` — reuse RAG + LLM
+- [x] `form_chat_routes.py` — `/forms/chat` i `/forms/chat/summarize`
+- [x] Dodati `enriched_instructions` u generate flow
 
-### Faza 2: Frontend Chat Panel
-- [ ] `FormChatPanel.tsx` — chat UI komponenta
-- [ ] Restrukturirati [FormStudioTab.tsx](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/FormStudioTab.tsx) — tri panela
-- [ ] Chat ↔ JSON editor sinhronizacija
-- [ ] Enriched "Approve & Generate" flow
+### Faza 2: Frontend Chat Panel ✅
+- [x] `FormChatPanel.tsx` — chat UI komponenta
+- [x] Restrukturirati `FormStudioTab.tsx` — tri panela
+- [x] Chat ↔ JSON editor sinhronizacija
+- [x] Enriched "Approve & Generate" flow
 
-### Faza 3: Preview Styling + Sync
-- [ ] `form-studio-preview.css` sa DynUI tokenima
-- [ ] Ažurirati [PreviewFieldRenderer](file:///c:/Users/mgasic/Documents/AIProjects/ai-code-orchestrator/ui/src/components/FormStudioTab.tsx#200-233) na token klase
-- [ ] Sinhronizovati form-engine iz DynUI projekta
+### Faza 3: Preview Styling + Sync ✅
+- [x] `form-studio-preview.css` sa DynUI tokenima
+- [x] Ažurirati `PreviewFieldRenderer` na token klase
+- [x] Sinhronizovati form-engine iz DynUI projekta
 
-### Faza 4: Polish
-- [ ] Chat streaming (SSE)
-- [ ] Schema diff highlighting
-- [ ] Quick action dugmad
+### Faza 4: Polish ✅
+- [x] Chat streaming (SSE) — `POST /forms/chat/stream` + frontend SSE consumer sa stop dugmetom
+- [x] Schema diff highlighting — `computeSchemaDiff()`, per-change vizualizacija, session-wide diff banner
+- [x] Quick action dugmad — kontekstualna na osnovu broja polja, sekcija, validacija i logike u šemi
 
 ---
 

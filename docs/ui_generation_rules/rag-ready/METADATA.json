@@ -1,7 +1,7 @@
 {
-  "documentation_version": "1.0.0",
+  "documentation_version": "1.1.0",
   "library_version": "2.1.0",
-  "last_updated": "2026-02-13",
+  "last_updated": "2026-02-21",
   "status": "production",
   "purpose": "RAG-optimized documentation for AI agents and code generators",
   
@@ -36,8 +36,8 @@
         "priority": "high",
         "tokens": 5500,
         "sections": 15,
-        "keywords": ["tokens", "colors", "spacing", "typography", "css variables", "theming"],
-        "token_count": 85
+        "keywords": ["tokens", "colors", "spacing", "typography", "css variables", "theming", "grid span", "form layout", "colSpan", "responsive"],
+        "token_count": 110
       }
     ],
     
@@ -96,7 +96,7 @@
     "total_tokens_approx": 22800,
     "total_components": 45,
     "total_code_examples": 35,
-    "total_design_tokens": 85
+    "total_design_tokens": 110
   },
   
   "indexing_recommendations": {

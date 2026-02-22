@@ -51,9 +51,10 @@ class FormEngineOrchestrator:
             
         return await self.generate_ui_project(str(temp_path), project_name)
 
-    async def generate_ui_project(self, template_path: str, project_name: str, layout_override=None, layout_decision_input=None):
+    async def generate_ui_project(self, template_path: str, project_name: str, layout_override=None, layout_decision_input=None, enriched_instructions=None):
         """
         Full project generation from a template. Returns path to the new project.
+        enriched_instructions: Optional string from Form Studio AI Chat with user-refined details.
         """
         logger.info(f"Starting generation for project: {project_name}")
         
@@ -93,6 +94,10 @@ class FormEngineOrchestrator:
         layout = layout_decision["recommendedLayout"]
         logger.info(f"Layout decision: {layout} ({layout_decision.get('complexity', 'unknown')})")
 
+        # Log enriched instructions from Form Studio Chat
+        if enriched_instructions:
+            logger.info(f"Enriched instructions received from Form Studio Chat ({len(enriched_instructions)} chars)")
+
         # CACHE LAYER 2: Bypass cache for now to ensure we get newly generated code
         cached_variant = None
 
@@ -106,6 +111,10 @@ class FormEngineOrchestrator:
         else:
             # 2. Map to DynUI
             mapped_data = self.mapper.process_template(template, layout_decision)
+            
+            # Inject enriched instructions into mapped data for code generation
+            if enriched_instructions:
+                mapped_data["enriched_instructions"] = enriched_instructions
             
             # 3. Generate Code
             component_code = self.code_gen.generate_component_code(mapped_data)
@@ -147,3 +156,26 @@ export default function App() {{
         
         logger.info(f"Project {project_name} generated successfully at {project_dir}")
         return str(project_dir)
+
+    async def verify_project(self, project_name: str) -> Dict[str, Any]:
+        """Runs a build/tsc verification on the generated project."""
+        import subprocess
+        workspace_dir = Path("outputs") / "forms-workspace"
+        
+        logger.info(f"Verifying project {project_name}...")
+        try:
+            # Run turbo verify for just this project
+            process = subprocess.run(
+                ["pnpm", "turbo", "run", "verify", "--filter", project_name],
+                cwd=str(workspace_dir),
+                capture_output=True,
+                text=True,
+                shell=True
+            )
+            
+            if process.returncode == 0:
+                return {"success": True, "output": process.stdout}
+            else:
+                return {"success": False, "error": process.stderr or process.stdout}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
